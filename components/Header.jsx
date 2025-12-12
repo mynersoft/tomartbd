@@ -5,6 +5,8 @@ import { useSession, signOut } from "next-auth/react";
 
 export default function Header() {
 	const { data: session } = useSession();
+	
+	
 
 	return (
 		<header className="bg-white shadow-md">
@@ -46,9 +48,11 @@ export default function Header() {
 									alt={session.user.name}
 									className="w-8 h-8 rounded-full object-cover"
 								/>
-								<span className="hidden sm:block text-gray-700 font-medium">
-									{session.user.name}
-								</span>
+								<Link href={"/dashboard/admin"}>
+									<span className="hidden sm:block text-gray-700 font-medium">
+										{session.user.name}
+									</span>
+								</Link>
 							</div>
 							<button
 								onClick={() => signOut({ callbackUrl: "/" })}
