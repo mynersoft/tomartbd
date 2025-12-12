@@ -1,0 +1,47 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["DOM", "DOM.Iterable", "ES2022"],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"noEmit": true,
+		"module": "ESNext",
+		"moduleResolution": "Node",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"jsx": "react-jsx",
+		"incremental": true,
+
+		"esModuleInterop": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./*"]
+		},
+		"plugins": [
+			{
+				"name": "next"
+			}
+		]
+	},
+	"include": [
+		"next-env.d.ts",
+		"**/*.ts",
+		"**/*.tsx",
+		"types/**/*.d.ts",
+		".next/types/**/*.ts",
+		".next/dev/types/**/*.ts",
+		"app/api/auth/[...nextauth]/route.js",
+		"models/User.js",
+		"lib/db.js",
+		"app/layout.jsx",
+		"app/auth/login/page.jsx",
+		"hooks/useAuth.js",
+		"models/Product.js",
+		"app/dashboard/admin/layout.jsx",
+		"app/shop/ShopClient.jsx",
+		"app/api/auth/login/route.js"
+, "app/api/products/route.js", "app/api/products/[slug]/route.js"	],
+	"exclude": ["node_modules"]
+}
