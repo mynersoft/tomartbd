@@ -1,102 +1,46 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
-const ProductSchema = new Schema(
+const ProductSchema = new mongoose.Schema(
 	{
-		name: {
-			type: String,
-			required: [true, "Product name is required"],
-			trim: true,
-		},
-		slug: {
-			type: String,
-			required: true,
-			unique: true,
-			lowercase: true,
-			trim: true,
-		},
-		description: {
-			type: String,
-			required: [true, "Product description is required"],
-		},
-		category: {
-			type: String,
-			required: true,
-			enum: ["electronics", "mobile", "fashion", "hardware", "other"], // customize
-		},
-		brand: { type: String },
-		price: {
-			type: Number,
-			required: true,
-		},
-		discount: {
-			type: Number, // percentage
-			default: 0,
-		},
-		finalPrice: {
-			type: Number,
-		},
-		stock: {
-			type: Number,
-			default: 0,
-		},
-		inStock: {
-			type: Boolean,
-			default: true,
-		},
-		sku: { type: String, unique: true },
-		images: [
-			{
-				url: String,
-				alt: String,
-			},
-		],
-		variants: [
-			{
-				color: String,
-				size: String,
-				price: Number,
-				stock: Number,
-				sku: String,
-			},
-		],
-		ratings: {
-			type: Number,
-			default: 0,
-		},
-		reviews: [
-			{
-				user: { type: Schema.Types.ObjectId, ref: "User" },
-				rating: Number,
-				comment: String,
-				createdAt: { type: Date, default: Date.now },
-			},
-		],
-		tags: [String],
-		featured: {
-			type: Boolean,
-			default: false,
-		},
-		bestseller: {
-			type: Boolean,
-			default: false,
-		},
-		newArrival: {
-			type: Boolean,
-			default: true,
-		},
+		name: { type: String, required: true },
+		slug: { type: String, unique: true },
+		price: { type: Number, required: true },
+		brand: String,
+		category: String,
+		stock: Number,
+		description: String,
+		images: [String],
 	},
 	{ timestamps: true }
 );
 
-// Pre-save hook to calculate final price after discount
-ProductSchema.pre("save", function (next) {
-	if (this.discount > 0) {
-		this.finalPrice = this.price - (this.price * this.discount) / 100;
-	} else {
-		this.finalPrice = this.price;
+// 🔥 Slugify helper function
+function slugify(text) {
+	return text
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+}
+
+ProductSchema.pre("save", async function (next) {
+	if (!this.isModified("name")) return next();
+
+	let baseSlug = slugify(this.name) + "-tomartbd";
+	let slug = baseSlug;
+
+	// Check if slug exists
+	const Product = mongoose.model("Product");
+
+	let counter = 1;
+	let exists = await Product.findOne({ slug });
+
+	while (exists) {
+		slug = `${baseSlug}-${counter}`;
+		counter++;
+		exists = await Product.findOne({ slug });
 	}
 
-	this.inStock = this.stock > 0;
+	this.slug = slug;
 	next();
 });
 

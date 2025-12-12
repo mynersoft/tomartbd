@@ -1,9 +1,7 @@
-
 import Product from "@/models/Product";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { connectDB } from "@/lib/db";
-
 
 export async function GET() {
 	await connectDB();
@@ -11,28 +9,31 @@ export async function GET() {
 	return new Response(JSON.stringify(products), { status: 200 });
 }
 
-
 export async function POST(req) {
-  try {
-    await  connectDB();
-    const data = await req.json();
+	try {
+		await connectDB();
 
-    const product = new Product(data);
-    await product.save();
+		const data = await req.json();
 
-    return new Response(JSON.stringify({ success: true, product }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: err.message }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+		const product = new Product(data);
+		await product.save();
+
+		return new Response(JSON.stringify({ success: true, product }), {
+			status: 201,
+			headers: { "Content-Type": "application/json" },
+		});
+	} catch (err) {
+		console.log(err);
+		
+		return new Response(
+			JSON.stringify({ success: false, error: err }),
+			{
+				status: 400,
+				headers: { "Content-Type": "application/json" },
+			}
+		);
+	}
 }
-
-
 
 
 

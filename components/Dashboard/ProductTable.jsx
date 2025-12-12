@@ -1,12 +1,13 @@
 "use client";
-import useProducts from "@/hooks/useProducts";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { useProducts } from "@/hooks/useProducts.js"
 
 export default function ProductTable() {
 	const { data: products, isLoading, isError } = useProducts();
 	const [deleting, setDeleting] = useState(false);
+
 
 	const handleDelete = async (id) => {
 		const confirm = window.confirm(
