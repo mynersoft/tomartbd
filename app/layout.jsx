@@ -3,7 +3,7 @@ import "./globals.css";
 import Header from "../components/Header";
 
 
-import BottomNavigation from "../components/BottomMenu
+import BottomNavigation from "../components/BottomMenu";
 
 export default function RootLayout({ children }) {
 const [activeTab, setActiveTab] = useState('Home')
