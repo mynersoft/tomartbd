@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaTimes } from "react-icons/fa";
 
 export default function AdminSidebar({ open, setOpen }) {
 	const pathname = usePathname();
@@ -51,3 +50,4 @@ export default function AdminSidebar({ open, setOpen }) {
 		</>
 	);
 }
+

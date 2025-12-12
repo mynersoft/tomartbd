@@ -1,9 +1,7 @@
 "use client";
 
-import AdminSidebar from "@/components/Dashboard/Admin/AdminSidebar";
 import { useState } from "react";
-// your sidebar
-import { FaBars } from "react-icons/fa";
+import AdminSidebar from "../../../components/Dashboard/AdminSidebar";
 
 export default function AdminLayout({ children }) {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
