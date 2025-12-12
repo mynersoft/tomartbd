@@ -27,7 +27,8 @@ export default function Login() {
 			redirect: false,
 		});
 		if (res?.ok) router.push("/dashboard");
-		else alert(res?.error);
+		else {
+console.log(res?.error)};
 	};
 
 	return (
