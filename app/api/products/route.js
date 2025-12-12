@@ -17,8 +17,31 @@ export async function POST(req) {
 
 		const data = await req.json();
 
+		// Slugify function
+		function slugify(text) {
+			return text
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, "-")
+				.replace(/^-+|-+$/g, "");
+		}
+
+		const baseSlug = slugify(data.name) + "-tomartbd";
+		let slug = baseSlug;
+
+		// Duplicate check (NOW WORKS 🔥)
+		let counter = 1;
+		let exists = await Product.findOne({ slug });
+
+		while (exists) {
+			slug = `${baseSlug}-${counter}`;
+			counter++;
+			exists = await Product.findOne({ slug });
+		}
+
+		// Create product
 		const product = new Product({
 			...data,
+			slug,
 			images: data.images || [],
 		});
 
@@ -40,6 +63,11 @@ export async function POST(req) {
 		);
 	}
 }
+
+
+
+
+
 
 
 

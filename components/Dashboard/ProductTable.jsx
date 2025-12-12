@@ -1,33 +1,19 @@
 "use client";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import axios from "axios";
-import { useProducts } from "@/hooks/useProducts.js"
+
+import { useProducts, useDeleteProduct } from "@/hooks/useProducts";
 
 export default function ProductTable() {
 	const { data: products, isLoading, isError } = useProducts();
-	const [deleting, setDeleting] = useState(false);
-
-
-	const handleDelete = async (id) => {
-		const confirm = window.confirm(
-			"Are you sure you want to delete this product?"
-		);
-		if (!confirm) return;
-
-		try {
-			setDeleting(true);
-			await axios.delete(`/api/products/${id}`);
-			toast.success("Product deleted successfully!");
-		} catch (err) {
-			toast.error("Failed to delete product: " + err.message);
-		} finally {
-			setDeleting(false);
-		}
-	};
+	const deleteMutation = useDeleteProduct();
 
 	if (isLoading) return <p>Loading products...</p>;
 	if (isError) return <p>Failed to load products</p>;
+
+	const handleDelete = (id) => {
+		if (window.confirm("Are you sure you want to delete this product?")) {
+			deleteMutation.mutate(id);
+		}
+	};
 
 	return (
 		<div className="overflow-x-auto bg-white shadow rounded p-4">
@@ -48,9 +34,7 @@ export default function ProductTable() {
 						<tr key={p._id} className="hover:bg-gray-50">
 							<td className="p-2 border">{p.name}</td>
 							<td className="p-2 border">{p.category}</td>
-							<td className="p-2 border">
-								{p.finalPrice || p.price}৳
-							</td>
+							<td className="p-2 border">{p.price}৳</td>
 							<td className="p-2 border">{p.stock}</td>
 							<td className="p-2 border">
 								{p.featured ? "Yes" : "No"}
@@ -69,8 +53,10 @@ export default function ProductTable() {
 								<button
 									className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
 									onClick={() => handleDelete(p._id)}
-									disabled={deleting}>
-									{deleting ? "Deleting..." : "Delete"}
+									disabled={deleteMutation.isLoading}>
+									{deleteMutation.isLoading
+										? "Deleting..."
+										: "Delete"}
 								</button>
 							</td>
 						</tr>

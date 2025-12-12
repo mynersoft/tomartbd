@@ -67,3 +67,38 @@ export function useAddProduct() {
 		}
 	);
 }
+
+
+
+
+
+
+
+
+
+export const useDeleteProduct = () => {
+	const queryClient = useQueryClient();
+	const dispatch = useDispatch();
+
+	return useMutation({
+		mutationFn: async (id) => {
+			const res = await axios.delete(`/api/products/${id}`);
+			return res.data;
+		},
+		onMutate: (id) => {
+			toast.loading("Deleting product...", { id: "delete-product" });
+		},
+		onSuccess: (_, id) => {
+			dispatch(removeProduct(id));
+			queryClient.invalidateQueries(["products"]);
+			toast.success("Product deleted successfully!", {
+				id: "delete-product",
+			});
+		},
+		onError: (error) => {
+			toast.error("Failed to delete product: " + error.message, {
+				id: "delete-product",
+			});
+		},
+	});
+};
