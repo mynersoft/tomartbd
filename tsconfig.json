@@ -42,6 +42,6 @@
 		"app/dashboard/admin/layout.jsx",
 		"app/shop/ShopClient.jsx",
 		"app/api/auth/login/route.js"
-, "app/api/products/route.js", "app/api/products/delete/[slug]/route.js", "components/Dashboard/Admin/AdminSidebar.jsx", "tailwind.config.js", "app/api/wishlist/route.js", "hooks/useProducts.js", "lib/cloudinary.js", "app/dashboard/user/order-details/page.jsx", "app/dashboard/user/page.jsx", "app/dashboard/admin/analytics/page.jsx", "app/dashboard/admin/page.jsx", "models/Brand.js"	],
+, "app/api/products/route.js", "app/api/products/delete/[slug]/route.js", "components/Dashboard/Admin/AdminSidebar.jsx", "tailwind.config.js", "app/api/wishlist/route.js", "hooks/useProducts.js", "lib/cloudinary.js", "app/dashboard/user/order-details/page.jsx", "app/dashboard/user/page.jsx", "app/dashboard/admin/analytics/page.jsx", "app/dashboard/admin/page.jsx", "models/Brand.js", "lib/api.js"	],
 	"exclude": ["node_modules"]
 }

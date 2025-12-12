@@ -1,16 +1,25 @@
 "use client";
 
 import { toast } from "react-hot-toast";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../store/slices/cartSlice";
+import { toggleWishlist } from "../../store/slices/wishlistSlice";
 
-export default function ProductCard({ product }) { 
+export default function ProductCard({ product }) {
 	const dispatch = useDispatch();
 
+	const wishlist = useSelector((state) => state.wishlist.items);
+
+	const isWishlisted = wishlist.some((item) => item._id === product._id);
 	const handleQuickView = () => toast("Quick view coming soon!");
 
-	const handleWishlist = () => {
-		toast.success("Toggled wishlist!");
+
+
+	const handleToggle = () => {
+		dispatch(toggleWishlist(product));
+		toast.success(
+			isWishlisted ? "Removed from wishlist" : "Added to wishlist"
+		);
 	};
 
 	const handleAddToCart = () => {
@@ -32,7 +41,7 @@ export default function ProductCard({ product }) {
 					<span className="text-gray-400">No Image</span>
 				)}
 				<button
-					onClick={handleWishlist}
+					onClick={handleToggle}
 					className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-red-100 transition">
 					❤️
 				</button>

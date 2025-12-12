@@ -5,13 +5,16 @@ import { useSession, signOut } from "next-auth/react";
 import { useCart } from "@/hooks/useCart";
 import { FaShoppingCart } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 
 export default function Header() {
 	const { qty } = useSelector((state) => state.cart);
 
 	const { data: session } = useSession();
 	const userId = session?.user?._id;
-
+	const [mounted, setMounted] = useState(false);
+	useEffect(() => setMounted(true), []);
+	
 	return (
 		<header className="bg-white shadow-md">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
@@ -45,7 +48,7 @@ export default function Header() {
 						href="/cart"
 						className="relative text-gray-700 hover:text-blue-600">
 						<FaShoppingCart size={24} />
-						{qty > 0 && (
+						{mounted && qty > 0 && (
 							<span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
 								{qty}
 							</span>
