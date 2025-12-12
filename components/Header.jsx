@@ -11,10 +11,12 @@ export default function Header() {
 	const { qty } = useSelector((state) => state.cart);
 
 	const { data: session } = useSession();
+	console.log(session);
+	
 	const userId = session?.user?._id;
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);
-	
+
 	return (
 		<header className="bg-white shadow-md">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
