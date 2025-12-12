@@ -2,19 +2,15 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useCart, useRemoveFromCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/useCart";
 import { FaShoppingCart } from "react-icons/fa";
-import { useEffect, useState, useCallback } from "react";
+import { useSelector } from "react-redux";
 
 export default function Header() {
+	const { qty } = useSelector((state) => state.cart);
+
 	const { data: session } = useSession();
 	const userId = session?.user?._id;
-
-	const { totalItems } = useCart();
-
-	
-
-	
 
 	return (
 		<header className="bg-white shadow-md">
@@ -49,9 +45,9 @@ export default function Header() {
 						href="/cart"
 						className="relative text-gray-700 hover:text-blue-600">
 						<FaShoppingCart size={24} />
-						{totalItems > 0 && (
+						{qty > 0 && (
 							<span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-								{totalItems}
+								{qty}
 							</span>
 						)}
 					</Link>

@@ -1,14 +1,12 @@
 "use client";
 
 import { toast } from "react-hot-toast";
-import { useAddToCart } from "../../hooks/useCart";
-import { useSession } from "next-auth/react";
-import { useCart } from "@/hooks/useCartRedux";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../../store/slices/cartSlice";
 
+export default function ProductCard({ product }) { 
+	const dispatch = useDispatch();
 
-export default function ProductCard({ product }) {
-	
-const { addToCart } = useCart();
 	const handleQuickView = () => toast("Quick view coming soon!");
 
 	const handleWishlist = () => {
@@ -16,7 +14,7 @@ const { addToCart } = useCart();
 	};
 
 	const handleAddToCart = () => {
-		addToCart(product, 1);
+		dispatch(addToCart({ product }));
 		toast.success("Added to cart!");
 	};
 

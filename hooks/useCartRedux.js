@@ -5,7 +5,7 @@ import {
 	updateQuantity,
 	clearCart,
 	setCart,
-} from "@/slices/cartSlice";
+} from "@/store/slices/cartSlice";
 
 export const useCart = () => {
 	const items = useSelector((state) => state.cart.items);
