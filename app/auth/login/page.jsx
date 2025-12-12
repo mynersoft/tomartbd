@@ -9,7 +9,11 @@ export default function Login() {
 	const router = useRouter();
 	const { data: session } = useSession();
 
-	if (session) router.push("/dashboard");
+	if (session?.user?.role === "admin") {
+		router.push("/dashboard/admin");
+	} else {
+		router.push("/");
+	}
 
 	const handleLogin = async (e) => {
 		e.preventDefault();

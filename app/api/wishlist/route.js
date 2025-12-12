@@ -1,13 +1,8 @@
-// pages/api/wishlist.ts
-import { NextApiRequest, NextApiResponse } from "next";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import { getUserFromToken } from "@/lib/auth";
 
-export default async function handler(
-	req: NextApiRequest,
-	res: NextApiResponse
-) {
+export default async function handler() {
 	await connectDB();
 	const user = await getUserFromToken(req);
 

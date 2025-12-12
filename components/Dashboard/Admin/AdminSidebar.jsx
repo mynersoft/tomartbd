@@ -5,13 +5,11 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 
-export default function AdminSidebar({
-	logoutMutation,
-}: {
-	logoutMutation: any;
-}) {
+export default function AdminSidebar() {
 	const pathname = usePathname();
 	const [open, setOpen] = useState(false);
+
+
 
 	const menu = [
 		{ name: "Dashboard", href: "/admin" },

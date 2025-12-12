@@ -42,6 +42,6 @@
 		"app/dashboard/admin/layout.jsx",
 		"app/shop/ShopClient.jsx",
 		"app/api/auth/login/route.js"
-, "app/api/products/route.js", "app/api/products/[slug]/route.js"	],
+, "app/api/products/route.js", "app/api/products/[slug]/route.js", "components/Dashboard/Admin/AdminSidebar.jsx", "tailwind.config.js", "app/api/wishlist/route.js"	],
 	"exclude": ["node_modules"]
 }
