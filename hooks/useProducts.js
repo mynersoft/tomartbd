@@ -15,7 +15,7 @@ export function useProducts() {
 		queryFn: async () => {
       const res = await axios.get("/api/products");     
 			dispatch(setProducts(res.data)); // store in Redux
-			return res.data.products;
+			return res.data;
 		},
 		onError: (error) => {
 			toast.error(`Failed to fetch products: ${error.message}`);

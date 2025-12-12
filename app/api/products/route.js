@@ -9,13 +9,19 @@ export async function GET() {
 	return new Response(JSON.stringify(products), { status: 200 });
 }
 
+
+
 export async function POST(req) {
 	try {
 		await connectDB();
 
 		const data = await req.json();
 
-		const product = new Product(data);
+		const product = new Product({
+			...data,
+			images: data.images || [],
+		});
+
 		await product.save();
 
 		return new Response(JSON.stringify({ success: true, product }), {
@@ -23,17 +29,20 @@ export async function POST(req) {
 			headers: { "Content-Type": "application/json" },
 		});
 	} catch (err) {
-		console.log(err);
-		
+		console.error("API ERROR:", err);
+
 		return new Response(
-			JSON.stringify({ success: false, error: err }),
+			JSON.stringify({ success: false, error: err.message }),
 			{
-				status: 400,
+				status: 500,
 				headers: { "Content-Type": "application/json" },
 			}
 		);
 	}
 }
+
+
+
 
 
 

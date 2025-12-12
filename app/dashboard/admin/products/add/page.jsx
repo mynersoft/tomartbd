@@ -6,7 +6,6 @@ import { toast } from "react-hot-toast";
 export default function AddProductPage() {
 	const [form, setForm] = useState({
 		name: "",
-		slug: "",
 		description: "",
 		category: "electronics",
 		brand: "",
@@ -29,6 +28,55 @@ export default function AddProductPage() {
 		}));
 	};
 
+
+
+
+
+
+const handleUploadImages = async (e) => {
+	const files = e.target.files;
+
+	if (!files.length) return;
+
+	toast.loading("Uploading images...");
+
+	const uploaded = [];
+
+	for (const file of files) {
+		const formData = new FormData();
+		formData.append("file", file);
+		formData.append(
+			"upload_preset",
+			process.env.CLOUDINARY_UPLOAD_PRESET
+		);
+
+		const res = await fetch(
+			`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
+			{
+				method: "POST",
+				body: formData,
+			}
+		);
+
+		const data = await res.json();
+		uploaded.push(data.secure_url);
+	}
+
+	toast.dismiss();
+	toast.success("Images uploaded!");
+
+	setForm((prev) => ({
+		...prev,
+		images: uploaded,
+	}));
+};
+
+
+
+
+
+
+
 	const handleAddProduct = async (e) => {
 		e.preventDefault();
 
@@ -50,7 +98,6 @@ export default function AddProductPage() {
 				toast.success("Product added successfully!");
 				setForm({
 					name: "",
-					slug: "",
 					description: "",
 					category: "electronics",
 					brand: "",
@@ -85,15 +132,15 @@ export default function AddProductPage() {
 					className="w-full border px-3 py-2 rounded"
 					required
 				/>
+
 				<input
-					type="text"
-					name="slug"
-					value={form.slug}
-					onChange={handleChange}
-					placeholder="Slug (unique)"
+					type="file"
+					multiple
+					accept="image/*"
+					onChange={handleUploadImages}
 					className="w-full border px-3 py-2 rounded"
-					required
 				/>
+
 				<textarea
 					name="description"
 					value={form.description}
