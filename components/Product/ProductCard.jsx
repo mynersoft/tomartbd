@@ -3,12 +3,12 @@
 import { toast } from "react-hot-toast";
 import { useAddToCart } from "../../hooks/useCart";
 import { useSession } from "next-auth/react";
+import { useCart } from "@/hooks/useCartRedux";
+
 
 export default function ProductCard({ product }) {
-	const { data: session } = useSession();
-	const userId = session?.user?._id; // or session.user.id
-	const addToCartMutation = useAddToCart();
-
+	
+const { addToCart } = useCart();
 	const handleQuickView = () => toast("Quick view coming soon!");
 
 	const handleWishlist = () => {
@@ -16,12 +16,8 @@ export default function ProductCard({ product }) {
 	};
 
 	const handleAddToCart = () => {
-		// ✅ Pass the full product object and userId
-		addToCartMutation.mutate({
-			user: userId, // undefined for guest
-			product,
-			quantity: 1,
-		});
+		addToCart(product, 1);
+		toast.success("Added to cart!");
 	};
 
 	return (
