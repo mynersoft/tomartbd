@@ -2,12 +2,17 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { useCart, useRemoveFromCart } from "@/hooks/useCart";
 
 export default function Header() {
 	const { data: session } = useSession();
-	
-	console.log(session);
-	
+
+	const userId = session?.user?._id;
+
+	const { data: cart = [], isLoading } = useCart(userId);
+	const removeFromCartMutation = useRemoveFromCart();
+
+	const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
 	return (
 		<header className="bg-white shadow-md">

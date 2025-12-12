@@ -24,6 +24,7 @@ export default function ProductCard({ product }) {
 		});
 	};
 
+
 	
 	return (
 		<div className="bg-white shadow rounded overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-200">
