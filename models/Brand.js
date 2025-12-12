@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
 
-export interface IBrand extends mongoose.Document {
-  name: string;
-  slug: string;
-  logo?: string;
-  status: "active" | "inactive";
-}
 
 const BrandSchema = new mongoose.Schema(
   {
@@ -18,4 +12,4 @@ const BrandSchema = new mongoose.Schema(
 );
 
 export default mongoose.models.Brand ||
-  mongoose.model<IBrand>("Brand", BrandSchema);
+  mongoose.model("Brand", BrandSchema);
