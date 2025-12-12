@@ -1,6 +1,5 @@
 import { connectDB } from "@/lib/db";
 import Cart from "@/models/Cart";
-import Product from "@/models/Product";
 
 // GET cart for a user (optional if you have auth)
 export async function GET(req) {
@@ -27,9 +26,7 @@ export async function GET(req) {
 	}
 }
 
-// POST add product to cart
-import { connectDB } from "@/lib/db";
-import Cart from "@/models/Cart";
+
 
 export async function POST(req) {
 	try {

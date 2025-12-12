@@ -3,6 +3,7 @@
 import { toast } from "react-hot-toast";
 import { useAddToCart } from "../../hooks/useCart";
 import { useSession } from "next-auth/react";
+
 export default function ProductCard({ product }) {
 	const { data: session } = useSession();
 	const userId = session?.user?._id; // or session.user.id
@@ -11,26 +12,23 @@ export default function ProductCard({ product }) {
 	const handleQuickView = () => toast("Quick view coming soon!");
 
 	const handleWishlist = () => {
-		if (onToggleWishlist) onToggleWishlist(product._id);
 		toast.success("Toggled wishlist!");
 	};
 
 	const handleAddToCart = () => {
-		if (!userId) return toast.error("Please login first!");
+		// ✅ Pass the full product object and userId
 		addToCartMutation.mutate({
-			user: userId,
-			productId: product._id,
+			user: userId, // undefined for guest
+			product,
 			quantity: 1,
 		});
 	};
 
-
-	
 	return (
 		<div className="bg-white shadow rounded overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-200">
 			{/* Image */}
 			<div className="h-48 w-full bg-gray-100 flex items-center justify-center relative">
-				{product.images && product.images.length > 0 ? (
+				{product.images?.length > 0 ? (
 					<img
 						src={product.images[0]}
 						alt={product.name}
@@ -39,7 +37,6 @@ export default function ProductCard({ product }) {
 				) : (
 					<span className="text-gray-400">No Image</span>
 				)}
-				{/* Wishlist button on top-right */}
 				<button
 					onClick={handleWishlist}
 					className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-red-100 transition">
@@ -67,7 +64,6 @@ export default function ProductCard({ product }) {
 					৳
 				</p>
 
-				{/* Buttons */}
 				<div className="mt-auto flex gap-2">
 					<button
 						onClick={handleQuickView}

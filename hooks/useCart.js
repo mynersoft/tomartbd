@@ -48,7 +48,6 @@ export function useAddToCart() {
 				const exists = cart.find(
 					(item) => item.product._id === product._id
 				);
-
 				if (exists) {
 					exists.quantity += quantity;
 				} else {
