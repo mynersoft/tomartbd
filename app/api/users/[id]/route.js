@@ -1,10 +1,12 @@
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 
+
 export async function PUT(req, { params }) {
 	try {
 		await connectDB();
-		const { id } = params;
+        const { id } = params;
+        
 		const { role } = await req.json();
 
 		const user = await User.findByIdAndUpdate(id, { role }, { new: true });
