@@ -10,3 +10,8 @@ Replace image inputs with Cloudinary upload flow
 Push notifications
 Chat per user
 WhatsApp integration
+
+
+
+api- react query
+state - react redux

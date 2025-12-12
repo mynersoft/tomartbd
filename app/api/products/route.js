@@ -11,19 +11,30 @@ export async function GET() {
 	return new Response(JSON.stringify(products), { status: 200 });
 }
 
-export async function POST(req) {
-	const session = await getServerSession(authOptions);
-	if (!session || session.user.role !== "admin") {
-		return new Response(JSON.stringify({ message: "Unauthorized" }), {
-			status: 401,
-		});
-	}
 
-	const body = await req.json();
-	await connectDB();
-	const product = await Product.create(body);
-	return new Response(JSON.stringify(product), { status: 201 });
+export async function POST(req) {
+  try {
+    await  connectDB();
+    const data = await req.json();
+
+    const product = new Product(data);
+    await product.save();
+
+    return new Response(JSON.stringify({ success: true, product }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ success: false, error: err.message }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
+
+
+
+
 
 export async function PUT(req) {
 	const session = await getServerSession(authOptions);

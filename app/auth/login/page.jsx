@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -9,11 +10,14 @@ export default function Login() {
 	const router = useRouter();
 	const { data: session } = useSession();
 
-	if (session?.user?.role === "admin") {
-		router.push("/dashboard/admin");
-	} else {
-		router.push("/");
-	}
+	// Redirect after session loads
+	useEffect(() => {
+		if (session?.user?.role === "admin") {
+			router.push("/dashboard/admin");
+		} else if (session?.user) {
+			router.push("/");
+		}
+	}, [session, router]);
 
 	const handleLogin = async (e) => {
 		e.preventDefault();
