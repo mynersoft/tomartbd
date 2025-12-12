@@ -1,3 +1,5 @@
+"use client";
+
 import Providers from "./providers/Providers";
 import "./globals.css";
 import Header from "../components/Header";
