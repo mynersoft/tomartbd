@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 export default function Header() {
 	const { data: session } = useSession();
 	
+	console.log(session);
 	
 
 	return (
