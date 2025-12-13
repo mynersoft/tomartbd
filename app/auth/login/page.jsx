@@ -37,7 +37,7 @@ export default function Login() {
     }
   }, [session, router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
