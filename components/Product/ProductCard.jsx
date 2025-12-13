@@ -2,6 +2,7 @@
 
 import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
 import { addToCart } from "../../store/slices/cartSlice";
 import { toggleWishlist } from "../../store/slices/wishlistSlice";
 import ProductQuickView from "./ProductQuickView";
