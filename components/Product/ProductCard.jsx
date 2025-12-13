@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../store/slices/cartSlice";
 import { toggleWishlist } from "../../store/slices/wishlistSlice";
+import ProductQuickView from "./ProductQuickView";
 
 export default function ProductCard({ product }) {
 	const dispatch = useDispatch();
@@ -40,7 +41,12 @@ setOpen(true);
 
  <>
 
+< ProductQuickView
 
+product ={product}
+onClose=handleQuickView
+
+/>
 
 		<div className="bg-white shadow rounded overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-200">
 			{/* Image */}
