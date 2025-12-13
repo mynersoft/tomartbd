@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 export function useUsers() {
 	return useQuery({
@@ -15,6 +16,18 @@ export function useUsers() {
 }
 
 
+
+
+
+export default function useLoginUser() {
+	const { data: session, status } = useSession();
+	return {
+		user: session?.user || null,
+		isLoading: status === "loading",
+		isAuthenticated: !!session,
+		isAdmin: session?.user?.role === "admin",
+	};
+}
 
 
 

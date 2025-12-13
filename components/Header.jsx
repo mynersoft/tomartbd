@@ -6,14 +6,14 @@ import { useCart } from "@/hooks/useCart";
 import { FaShoppingCart } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import useLoginUser from "@/hooks/useAuth";
 
 export default function Header() {
 	const { qty } = useSelector((state) => state.cart);
 
-	const { data: session } = useSession();
-	console.log(session);
+	const { user, isAuthenticated, isAdmin } = useLoginUser();
+	console.log(user, isAuthenticated, isAdmin);
 	
-	const userId = session?.user?._id;
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);
 
@@ -57,20 +57,20 @@ export default function Header() {
 						)}
 					</Link>
 
-					{session ? (
+					{user ? (
 						<>
 							<div className="flex items-center space-x-2">
 								<img
 									src={
-										session.user.image ||
+										user ||
 										"/default-avatar.png"
 									}
-									alt={session.user.name || "User"}
+									alt={user.name || "User"}
 									className="w-8 h-8 rounded-full object-cover"
 								/>
 								<Link href="/dashboard/admin">
 									<span className="hidden sm:block text-gray-700 font-medium">
-										{session.user.name}
+										{user.name}
 									</span>
 								</Link>
 							</div>
