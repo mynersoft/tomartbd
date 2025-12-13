@@ -8,101 +8,103 @@ import { toggleWishlist } from "../../store/slices/wishlistSlice";
 import ProductQuickView from "./ProductQuickView";
 
 export default function ProductCard({ product }) {
-	const dispatch = useDispatch();
+  const dispatch = useDispatch();
+  const wishlist = useSelector((state) => state.wishlist.items);
 
-	const wishlist = useSelector((state) => state.wishlist.items);
+  const isWishlisted = wishlist.some((item) => item._id === product._id);
+  const [open, setOpen] = useState(false);
 
-	const isWishlisted = wishlist.some((item) => item._id === product._id);
+  // ✅ Open quick view
+  const handleQuickView = () => {
+    setOpen(true);
+  };
 
-const[open,setOpen] =useState(false);
+  // ✅ Close quick view
+  const handleCloseQuickView = () => {
+    setOpen(false);
+  };
 
-	const handleQuickView = (id) =>{
-setOpen(true);
-};
+  const handleToggle = () => {
+    dispatch(toggleWishlist(product));
+    toast.success(
+      isWishlisted ? "Removed from wishlist" : "Added to wishlist"
+    );
+  };
 
+  const handleAddToCart = () => {
+    dispatch(addToCart({ product }));
+    toast.success("Added to cart!");
+  };
 
+  return (
+    <>
+      {/* ✅ Render modal only when open */}
+      {open && (
+        <ProductQuickView
+          product={product}
+          onClose={handleCloseQuickView}
+          onAddToCart={() => {
+            handleAddToCart();
+            setOpen(false);
+          }}
+        />
+      )}
 
-	const handleToggle = () => {
-		dispatch(toggleWishlist(product));
-		toast.success(
-			isWishlisted ? "Removed from wishlist" : "Added to wishlist"
-		);
-	};
+      <div className="bg-white shadow rounded overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-200">
+        {/* Image */}
+        <div className="h-48 w-full bg-gray-100 flex items-center justify-center relative">
+          {product.images?.length > 0 ? (
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              className="object-contain h-full w-full p-2"
+            />
+          ) : (
+            <span className="text-gray-400">No Image</span>
+          )}
 
-	const handleAddToCart = () => {
-		dispatch(addToCart({ product }));
-		toast.success("Added to cart!");
-	};
+          <button
+            onClick={handleToggle}
+            className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-red-100 transition"
+          >
+            ❤️
+          </button>
+        </div>
 
+        {/* Content */}
+        <div className="p-4 flex flex-col flex-1">
+          <h3 className="font-semibold text-lg line-clamp-2 mb-1">
+            {product.name}
+          </h3>
 
+          {product.brand && (
+            <p className="text-gray-500 text-sm mb-2">{product.brand}</p>
+          )}
 
+          <p className="font-bold text-blue-600 mb-2">
+            {product.discount
+              ? ((product.price * (100 - product.discount)) / 100).toFixed(2)
+              : product.price}{" "}
+            ৳
+          </p>
 
+          <div className="mt-auto flex gap-2">
+            <button
+              onClick={handleQuickView}
+              className="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition"
+            >
+              Quick View
+            </button>
 
-	return (
-
- <>
-
-< ProductQuickView
-
-product ={product}
-onClose=handleQuickView
-
-/>
-
-		<div className="bg-white shadow rounded overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-200">
-			{/* Image */}
-			<div className="h-48 w-full bg-gray-100 flex items-center justify-center relative">
-				{product.images?.length > 0 ? (
-					<img
-						src={product.images[0]}
-						alt={product.name}
-						className="object-contain h-full w-full p-2"
-					/>
-				) : (
-					<span className="text-gray-400">No Image</span>
-				)}
-				<button
-					onClick={handleToggle}
-					className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-red-100 transition">
-					❤️
-				</button>
-			</div>
-
-			{/* Content */}
-			<div className="p-4 flex flex-col flex-1">
-				<h3 className="font-semibold text-lg line-clamp-2 mb-1">
-					{product.name}
-				</h3>
-				{product.brand && (
-					<p className="text-gray-500 text-sm mb-2">
-						{product.brand}
-					</p>
-				)}
-				<p className="font-bold text-blue-600 mb-2">
-					{product.discount
-						? (
-								(product.price * (100 - product.discount)) /
-								100
-						  ).toFixed(2)
-						: product.price}{" "}
-					৳
-				</p>
-
-				<div className="mt-auto flex gap-2">
-					<button
-						onClick={handleQuickView}
-						className="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition">
-						Quick View
-					</button>
-					<button
-						onClick={handleAddToCart}
-						className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-						Add to Cart
-					</button>
-				</div>
-			</div>
-		</div>
-
-</>
-	);
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            >
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
