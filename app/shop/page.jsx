@@ -11,7 +11,9 @@ import {
   ChevronRight,
   SlidersHorizontal,
   Grid3x3,
-  List
+  List,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 export default function ShopPage() {
@@ -23,7 +25,19 @@ export default function ShopPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
+  const [isMobile, setIsMobile] = useState(false);
   const itemsPerPage = 12;
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Extract unique categories from products
   const categories = products ? [
@@ -167,58 +181,73 @@ export default function ShopPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Mobile Filter Toggle */}
-        <div className="lg:hidden mb-6">
-          <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
-            <button
-              onClick={() => setShowMobileFilters(!showMobileFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <SlidersHorizontal className="w-5 h-5" />
-              <span className="font-medium">Filters</span>
-              {Object.keys(filteredProducts).length !== products.length && (
-                <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {Object.keys(filteredProducts).length}
-                </span>
-              )}
-            </button>
-            
-            <div className="flex items-center gap-2">
+        {/* Mobile Filter Toggle - Only on Mobile */}
+        {isMobile && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
               <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 rounded ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "text-gray-600"}`}
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors font-medium"
               >
-                <Grid3x3 className="w-5 h-5" />
+                {showMobileFilters ? (
+                  <>
+                    <ChevronUp className="w-5 h-5" />
+                    <span>Hide Filters</span>
+                  </>
+                ) : (
+                  <>
+                    <SlidersHorizontal className="w-5 h-5" />
+                    <span>Show Filters</span>
+                    {Object.keys(filteredProducts).length !== products.length && (
+                      <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {Object.keys(filteredProducts).length}
+                      </span>
+                    )}
+                  </>
+                )}
               </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 rounded ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "text-gray-600"}`}
-              >
-                <List className="w-5 h-5" />
-              </button>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "text-gray-600"}`}
+                >
+                  <Grid3x3 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "text-gray-600"}`}
+                >
+                  <List className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar - Desktop */}
-          <aside className={`lg:w-1/4 ${showMobileFilters ? "block" : "hidden lg:block"}`}>
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
+          {/* Sidebar - Always visible on Desktop, conditional on Mobile */}
+          <aside className={`lg:w-1/4 ${!isMobile || showMobileFilters ? "block" : "hidden"}`}>
+            <div className="bg-white rounded-xl shadow-lg p-6 lg:sticky lg:top-6">
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900">Filters</h2>
-                <button
-                  onClick={resetFilters}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Clear all
-                </button>
-                <button
-                  onClick={() => setShowMobileFilters(false)}
-                  className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={resetFilters}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Clear all
+                  </button>
+                  {isMobile && (
+                    <button
+                      onClick={() => setShowMobileFilters(false)}
+                      className="p-2 hover:bg-gray-100 rounded-lg"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Search */}
@@ -257,7 +286,11 @@ export default function ShopPage() {
                     >
                       <div className="flex items-center justify-between">
                         <span className="capitalize">{cat}</span>
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          categoryFilter === cat 
+                            ? "bg-blue-500" 
+                            : "bg-gray-100 text-gray-600"
+                        }`}>
                           {products.filter(p => cat === "all" || p.category === cat).length}
                         </span>
                       </div>
@@ -311,7 +344,7 @@ export default function ShopPage() {
               </div>
 
               {/* Sort By */}
-              <div>
+              <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">Sort By</h3>
                 <select
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
@@ -329,8 +362,50 @@ export default function ShopPage() {
                 </select>
               </div>
 
+              {/* Active Filters Summary */}
+              {(search || categoryFilter !== "all" || priceRange[0] > 0 || priceRange[1] < 5000) && (
+                <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">Active Filters:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {search && (
+                      <span className="inline-flex items-center gap-1 bg-white border border-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm">
+                        Search: "{search}"
+                        <button
+                          onClick={() => setSearch("")}
+                          className="ml-1 text-blue-500 hover:text-blue-700"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    )}
+                    {categoryFilter !== "all" && (
+                      <span className="inline-flex items-center gap-1 bg-white border border-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm">
+                        Category: {categoryFilter}
+                        <button
+                          onClick={() => setCategoryFilter("all")}
+                          className="ml-1 text-blue-500 hover:text-blue-700"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    )}
+                    {(priceRange[0] > 0 || priceRange[1] < 5000) && (
+                      <span className="inline-flex items-center gap-1 bg-white border border-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm">
+                        Price: ${priceRange[0]} - ${priceRange[1]}
+                        <button
+                          onClick={() => setPriceRange([0, 5000])}
+                          className="ml-1 text-blue-500 hover:text-blue-700"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Results Count */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="pt-6 border-t border-gray-200">
                 <p className="text-sm text-gray-600">
                   Showing{" "}
                   <span className="font-semibold text-gray-900">
@@ -399,6 +474,33 @@ export default function ShopPage() {
               </div>
             ) : (
               <>
+                {/* Mobile Results Info */}
+                {isMobile && (
+                  <div className="mb-6 bg-white p-4 rounded-lg shadow">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="font-bold text-gray-900 text-lg">
+                          {filteredProducts.length} Products
+                        </h2>
+                        <p className="text-sm text-gray-600">
+                          {categoryFilter === "all" 
+                            ? "All Categories" 
+                            : categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)}
+                        </p>
+                      </div>
+                      {!showMobileFilters && (
+                        <button
+                          onClick={() => setShowMobileFilters(true)}
+                          className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                        >
+                          <SlidersHorizontal className="w-4 h-4" />
+                          <span>Filters</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className={`grid gap-6 ${
                   viewMode === "grid" 
                     ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
