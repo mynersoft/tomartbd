@@ -1,10 +1,9 @@
-import type { Metadata } from "next";
 import Providers from "../components/Providers";
 import "./globals.css";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Tomartbd Shop - Hardware, Home Decor & Accessories Online",
   description:
     "Shop high-quality hardware, home decor, electrical items, and accessories at Tomartbd. Affordable prices, fast delivery, and a wide selection for every home and project.",
@@ -55,8 +54,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children}) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
