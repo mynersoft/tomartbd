@@ -45,7 +45,7 @@ const BottomNavigation = ({ activeTab, setActiveTab }) => {
 		},
 		{
 			name: session ? "Account" : "Login",
-			href: session ? "/dashboard" : "/auth/login",
+			href: session ? "/dashboard/user" : "/auth/login",
 			icon: HiUser,
 		},
 	];
