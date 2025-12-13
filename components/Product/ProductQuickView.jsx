@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { X } from "lucide-react";
+
 
 export default function ProductQuickView({
   product,
@@ -26,7 +26,7 @@ export default function ProductQuickView({
           aria-label="Close quick view"
           className="absolute right-4 top-4 rounded-full bg-gray-100 p-2 hover:bg-gray-200"
         >
-          <X size={18} />
+          x
         </button>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
