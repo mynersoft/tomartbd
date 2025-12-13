@@ -1,38 +1,39 @@
 import Providers from "../components/Providers";
 import "./globals.css";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
 export const metadata = {
-	title: "MahirProStore - Your Online Agro & Tech Hub",
+	title: "Tomart BD - Your Online Agro & Tech Hub",
 	description:
-		"MahirProStore offers high-quality agro products, tech solutions, and insightful blogs. Explore, shop, and learn with us!",
-	keywords: "MahirProStore, Agro Products, Tech Blog, Online Store, Farming",
-	author: "Mahir",
+		"Tomart BD offers high-quality agro products, tech solutions, and insightful blogs. Explore, shop, and learn with us!",
 	openGraph: {
-		title: "MahirProStore - Your Online Agro & Tech Hub",
+		title: "Tomart BD - Your Online Agro & Tech Hub",
 		description:
-			"MahirProStore offers high-quality agro products, tech solutions, and insightful blogs. Explore, shop, and learn with us!",
-		url: "https://www.mahirprostore.com",
-		siteName: "MahirProStore",
+			"Tomart BD offers high-quality agro products, tech solutions, and insightful blogs. Explore, shop, and learn with us!",
+		url: BASE_URL,
+		siteName: "Tomart BD",
 		images: [
 			{
-				url: "/og-image.png",
+				url: `${BASE_URL}/og-image.png`,
 				width: 1200,
 				height: 630,
-				alt: "MahirProStore Logo",
+				alt: "Tomart BD Logo",
 			},
 		],
 		type: "website",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "MahirProStore - Your Online Agro & Tech Hub",
+		title: "Tomart BD - Your Online Agro & Tech Hub",
 		description:
-			"MahirProStore offers high-quality agro products, tech solutions, and insightful blogs. Explore, shop, and learn with us!",
-		images: ["/og-image.png"],
-		site: "@MahirProStore",
-		creator: "@MahirProStore",
+			"Tomart BD offers high-quality agro products, tech solutions, and insightful blogs. Explore, shop, and learn with us!",
+		images: [`${BASE_URL}/og-image.png`],
+		site: "@Tomart BD",
+		creator: "@Tomart BD",
 	},
 };
+
 
 export default function RootLayout({ children }) {
 	return (
