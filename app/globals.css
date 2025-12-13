@@ -18,3 +18,15 @@
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-in-out;
 }
+
+/* Hide by default (desktop) */
+.mobile-only {
+  display: none;
+}
+
+/* Show only on mobile */
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block;
+  }
+}
