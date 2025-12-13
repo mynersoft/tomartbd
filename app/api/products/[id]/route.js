@@ -6,11 +6,10 @@ export async function DELETE(req, { params }) {
 	try {
 		await connectDB();
 
-		const { id } = params;
-		console.log( "===================" + id, params);
-		
+		const { id } = params; // <- DO NOT overwrite this
+		console.log("Product ID from params:", id);
 
-		if (!mongoose.Types.ObjectId.isValid(id)) {
+		if (!id || !mongoose.Types.ObjectId.isValid(id)) {
 			return new Response(
 				JSON.stringify({ success: false, error: "Invalid product ID" }),
 				{ status: 400, headers: { "Content-Type": "application/json" } }

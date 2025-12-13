@@ -3,6 +3,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { removeFromCart, updateQuantity } from "@/store/slices/cartSlice";
 import { toast } from "react-hot-toast";
+import Link from "next/link";
 
 export default function CartPage() {
 	const dispatch = useDispatch();
@@ -107,14 +108,11 @@ export default function CartPage() {
 						Total Price: {totalPrice.toFixed(2)} ৳
 					</p>
 				</div>
-<Link href="/checkout" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-					
-					>
-		
-					
+				<Link
+					href="/checkout"
+					className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
 					Checkout
-				
-</Link>
+				</Link>
 				<button
 					className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
 					onClick={() =>

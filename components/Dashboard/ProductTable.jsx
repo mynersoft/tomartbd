@@ -15,6 +15,8 @@ export default function ProductTable() {
 		}
 	};
 
+
+	
 	return (
 		<div className="overflow-x-auto bg-white shadow rounded p-4">
 			<table className="w-full table-auto border-collapse">

@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 export function useProducts() {
 	const dispatch = useDispatch();
 
+
 	return useQuery({
 		queryKey: ["products"],
 		queryFn: async () => {
@@ -76,15 +77,20 @@ export function useAddProduct() {
 
 
 
+
+
+
 export const useDeleteProduct = () => {
 	const queryClient = useQueryClient();
 	const dispatch = useDispatch();
 
 	return useMutation({
 		mutationFn: async (id) => {
+						
 			const res = await axios.delete(`/api/products/${id}`);
 			return res.data;
 		},
+
 		onMutate: (id) => {
 			toast.loading("Deleting product...", { id: "delete-product" });
 		},
