@@ -11,7 +11,12 @@ export default function ProductCard({ product }) {
 	const wishlist = useSelector((state) => state.wishlist.items);
 
 	const isWishlisted = wishlist.some((item) => item._id === product._id);
-	const handleQuickView = () => toast("Quick view coming soon!");
+
+const[open,setOpen] =useState(false);
+
+	const handleQuickView = (id) =>{
+setOpen(true);
+};
 
 
 
@@ -27,7 +32,16 @@ export default function ProductCard({ product }) {
 		toast.success("Added to cart!");
 	};
 
+
+
+
+
 	return (
+
+ <>
+
+
+
 		<div className="bg-white shadow rounded overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-200">
 			{/* Image */}
 			<div className="h-48 w-full bg-gray-100 flex items-center justify-center relative">
@@ -81,5 +95,7 @@ export default function ProductCard({ product }) {
 				</div>
 			</div>
 		</div>
+
+</>
 	);
 }
