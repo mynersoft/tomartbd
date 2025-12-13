@@ -31,13 +31,13 @@ export default function Register() {
   const allRulesMet = passwordRules.every(rule => rule.met);
   const isFormValid = form.name && form.email && form.password && passwordsMatch && allRulesMet;
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = () => {
     setForm(prev => ({ ...prev, [field]: value }));
     // Clear errors when user starts typing
     if (error) setError("");
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
