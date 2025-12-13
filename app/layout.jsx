@@ -19,9 +19,7 @@ export const metadata = {
 
   authors: [{ name: "Tomartbd" }],
 
-  verification: {
-    google: "eAot73MjOvRjOy1w5IgBUge9d5zFtYqfUZdugtaD16c",
-  },
+ 
 
   openGraph: {
     title: "Tomartbd Shop - Hardware, Home Decor & Accessories Online",
@@ -57,6 +55,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+<meta name="google-site-verification" content="OlqGBlfLEkJDmZZ3SppeQU1MDwI_CL6SEFXYSLv_DmA" />
       <body>
         <Providers>{children}</Providers>
       </body>
