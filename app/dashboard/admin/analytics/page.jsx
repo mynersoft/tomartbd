@@ -1,7 +1,7 @@
 "use client";
 import { TrendingUp, Users, ShoppingCart, DollarSign } from "lucide-react";
 
-import AdminAnalytics from " @/components/Dashboard/AdminAnalytics";
+import AdminAnalytics from "@/components/Dashboard/AdminAnalytics";
 
 
 
