@@ -8,7 +8,7 @@ import {
 	updateQuantity,
 	clearCart,
 } from "@/store/slices/cartSlice";
-import { useAddOrder } from "@/hooks/useOrders";
+import { useAddOrder } from "@/hooks/useOrder";
 
 export default function CheckoutPage() {
 	const dispatch = useDispatch();
