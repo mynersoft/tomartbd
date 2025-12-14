@@ -1,3 +1,7 @@
+
+"use client";
+
+
 // components/ProductsDashboard.tsx
 import { ChevronDown, Search, Edit2, Package, X, Filter } from 'lucide-react';
 import { useState } from 'react';
