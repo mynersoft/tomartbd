@@ -1,84 +1,47 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
-const initialState = {
-	orders: [],        // all orders (admin / user)
-	myOrders: [],      // logged-in user's orders (optional)
-	loading: false,
-	error: null,
-};
+export const placeOrderCOD = createAsyncThunk(
+	"order/placeOrderCOD",
+	async (orderData, thunkAPI) => {
+		try {
+			const res = await axios.post("/api/orders", orderData);
+			return res.data;
+		} catch (err) {
+			return thunkAPI.rejectWithValue(err.response.data);
+		}
+	}
+);
 
 const orderSlice = createSlice({
 	name: "order",
-	initialState,
+	initialState: {
+		loading: false,
+		success: false,
+		error: null,
+	},
 	reducers: {
-		// ------------------------
-		// Set all orders
-		// ------------------------
-		setOrders(state, action) {
-			state.orders = action.payload;
-		},
-
-		// ------------------------
-		// Set logged-in user's orders
-		// ------------------------
-		setMyOrders(state, action) {
-			state.myOrders = action.payload;
-		},
-
-		// ------------------------
-		// Add new order
-		// ------------------------
-		addOrder(state, action) {
-			state.orders.unshift(action.payload);
-			state.myOrders.unshift(action.payload);
-		},
-
-		// ------------------------
-		// Update order status
-		// ------------------------
-		updateOrderStatus(state, action) {
-			const { orderId, status } = action.payload;
-
-			const update = (order) => {
-				if (order._id === orderId) {
-					order.status = status;
-				}
-			};
-
-			state.orders.forEach(update);
-			state.myOrders.forEach(update);
-		},
-
-		// ------------------------
-		// Remove order
-		// ------------------------
-		removeOrder(state, action) {
-			state.orders = state.orders.filter(
-				(order) => order._id !== action.payload
-			);
-			state.myOrders = state.myOrders.filter(
-				(order) => order._id !== action.payload
-			);
-		},
-
-		// ------------------------
-		// Clear all orders (logout)
-		// ------------------------
-		clearOrders(state) {
-			state.orders = [];
-			state.myOrders = [];
+		resetOrder: (state) => {
+			state.loading = false;
+			state.success = false;
 			state.error = null;
 		},
 	},
+	extraReducers: (builder) => {
+		builder
+			.addCase(placeOrderCOD.pending, (state) => {
+				state.loading = true;
+			})
+			.addCase(placeOrderCOD.fulfilled, (state) => {
+				state.loading = false;
+				state.success = true;
+			})
+			.addCase(placeOrderCOD.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.payload;
+			});
+	},
 });
 
-export const {
-	setOrders,
-	setMyOrders,
-	addOrder,
-	updateOrderStatus,
-	removeOrder,
-	clearOrders,
-} = orderSlice.actions;
-
+export const { resetOrder } = orderSlice.actions;
 export default orderSlice.reducer;
