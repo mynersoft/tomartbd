@@ -33,42 +33,30 @@ export function useOrders() {
 // ------------------------
 // Add order
 // ------------------------
+
+
 export function useAddOrder() {
-  const queryClient = useQueryClient();
-  const dispatch = useDispatch();
+    const queryClient = useQueryClient();
+    const dispatch = useDispatch();
 
-  return useMutation(
-    async (orderData) => {
-      const res = await axios.post("/api/orders", orderData);
-      return res.data.order;
-    },
-    {
-      onMutate: () => {
-        toast.loading("Placing order...", { id: "add-order" });
-      },
-      onSuccess: (newOrder) => {
-        dispatch(addOrder(newOrder)); // update Redux
-        queryClient.invalidateQueries(["orders"]);
-        toast.success("Order placed successfully!", {
-          id: "add-order",
-        });
-      },
-      onError: (error) => {
-        let message = "Failed to place order";
-
-        if (axios.isAxiosError(error)) {
-          message =
-            error.response?.data?.error ||
-            error.response?.data?.message ||
-            error.message;
-        } else if (error instanceof Error) {
-          message = error.message;
+    return useMutation(
+        async (orderData) => {
+            const res = await axios.post("/api/orders", orderData);
+            return res.data.order;
+        },
+        {
+            onMutate: () => {
+                // optional: toast for loading
+            },
+            onSuccess: (newOrder) => {
+                dispatch(addOrder(newOrder)); // update Redux
+                queryClient.invalidateQueries(["orders"]);
+            },
+            onError: (err) => {
+                console.error(err);
+            },
         }
-
-        toast.error(message, { id: "add-order" });
-      },
-    }
-  );
+    );
 }
 
 // ------------------------
