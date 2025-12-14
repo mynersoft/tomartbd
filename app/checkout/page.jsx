@@ -50,4 +50,38 @@ export default function CheckoutPage() {
 						<span>
 							{item.name} × {item.quantity}
 						</span>
-						<span>৳{item.price * item
+						<span>৳{item.price * item.quantity}</span>
+					</div>
+				))}
+
+				<div className="flex justify-between mt-4 font-bold">
+					<span>Total</span>
+					<span>৳{totalAmount}</span>
+				</div>
+			</div>
+
+			<div className="bg-white shadow rounded p-4">
+				<h2 className="text-lg font-semibold mb-4">Payment Method</h2>
+
+				<div className="flex items-center gap-2 mb-4">
+					<input type="radio" checked readOnly />
+					<span>Cash on Delivery</span>
+				</div>
+
+				<button
+					onClick={handlePlaceOrder}
+					disabled={loading || cart.length === 0}
+					className="w-full bg-black text-white py-3 rounded hover:bg-gray-800"
+				>
+					{loading ? "Placing Order..." : "Confirm Order"}
+				</button>
+
+				{success && (
+					<p className="text-green-600 mt-4 text-center">
+						Order placed successfully!
+					</p>
+				)}
+			</div>
+		</div>
+	);
+}
