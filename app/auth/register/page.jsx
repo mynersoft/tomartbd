@@ -31,7 +31,7 @@ export default function Register() {
   const allRulesMet = passwordRules.every(rule => rule.met);
   const isFormValid = form.name && form.email && form.password && passwordsMatch && allRulesMet;
 
-  const handleChange = () => {
+  const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
     // Clear errors when user starts typing
     if (error) setError("");
