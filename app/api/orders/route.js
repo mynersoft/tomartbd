@@ -17,7 +17,7 @@ console.log(session);
 
 		if (!session || !session.user?.id) {
 			return NextResponse.json(
-				{ message: "Unauthorized" + session},
+				{ message: "Unauthorized" + session.user},
 				{ status: 401 }
 			);
 		}
