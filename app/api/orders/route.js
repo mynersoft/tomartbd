@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/db";
 import Order from "@/models/Order";
 import { getServerSession } from "next-auth";
-import {authOptions}  from " @/lib/auth";
+import {authOptions}  from "@/lib/auth";
 
 export async function POST(req) {
 	await connectDB();
