@@ -9,6 +9,8 @@ import {
 	clearCart,
 } from "@/store/slices/cartSlice";
 import { useAddOrder } from "@/hooks/useOrder";
+import {useLoginUser} from "@/hooks/useAuth";
+
 
 export default function CheckoutPage() {
 	const dispatch = useDispatch();
