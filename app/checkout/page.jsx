@@ -3,11 +3,20 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { removeFromCart, updateQuantity } from "@/store/slices/cartSlice"; // make sure path is correct
+import {
+	removeFromCart,
+	updateQuantity,
+	clearCart,
+} from "@/store/slices/cartSlice";
+import { useAddOrder } from "@/hooks/useOrders";
 
 export default function CheckoutPage() {
 	const dispatch = useDispatch();
 	const cartItems = useSelector((state) => state.cart.items);
+	const user = useSelector((state) => state.auth.user); // logged-in user
+
+	const { mutate: addOrder, isPending } = useAddOrder();
+
 	const [billingInfo, setBillingInfo] = useState({
 		name: "",
 		email: "",
@@ -40,19 +49,46 @@ export default function CheckoutPage() {
 		0
 	);
 
+	// ------------------------
+	// Handle place order
+	// ------------------------
 	const handlePlaceOrder = () => {
-		if (!billingInfo.name || !billingInfo.address) {
+		if (!user?._id) {
+			return toast.error("Please login to place order");
+		}
+
+		if (!billingInfo.name || !billingInfo.address || !billingInfo.phone) {
 			return toast.error("Please fill in all required fields");
 		}
-		// Save order API call here
 
+		if (cartItems.length === 0) {
+			return toast.error("Your cart is empty");
+		}
 
-		toast.success("Order placed successfully!");
+		// Map cart to OrderSchema format
+		const products = cartItems.map((item) => ({
+			productId: item._id,
+			quantity: item.quantity,
+			price:
+				item.price *
+				(item.discount ? (100 - item.discount) / 100 : 1),
+		}));
+
+		// Frontend total (backend must re-calc)
+		const orderPayload = {
+			user: user._id,
+			products,
+			totalAmount,
+			status: "pending",
+		};
+
+		addOrder(orderPayload, {
+			onSuccess: () => {
+				dispatch(clearCart());
+				toast.success("Order placed successfully!");
+			},
+		});
 	};
-
-
-
-
 
 	return (
 		<div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
@@ -138,7 +174,6 @@ export default function CheckoutPage() {
 								</div>
 
 								<div className="flex items-center gap-2">
-									{/* Quantity */}
 									<input
 										type="number"
 										value={item.quantity}
@@ -151,7 +186,6 @@ export default function CheckoutPage() {
 										}
 										className="w-16 border text-center rounded"
 									/>
-									{/* Remove */}
 									<button
 										onClick={() => handleRemove(item._id)}
 										className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition">
@@ -170,8 +204,9 @@ export default function CheckoutPage() {
 
 				<button
 					onClick={handlePlaceOrder}
-					className="mt-6 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition">
-					Place Order
+					disabled={isPending}
+					className="mt-6 w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition disabled:opacity-50">
+					{isPending ? "Placing Order..." : "Place Order"}
 				</button>
 			</div>
 		</div>
