@@ -1,8 +1,11 @@
+"use client";
+
+
 export const dynamic = "force-dynamic";
 
 
 
-"use client";
+
 
 import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
