@@ -1,12 +1,7 @@
 "use client";
-
-import { Metadata } from "next";
 import { TrendingUp, Users, ShoppingCart, DollarSign } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Analytics Dashboard",
-  description: "Website analytics overview with users, orders and revenue",
-};
+
 
 const stats = [
   {
