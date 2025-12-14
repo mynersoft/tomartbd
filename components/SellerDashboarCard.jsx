@@ -24,8 +24,8 @@ const SellerDashboarCard = () => {
               className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 hover:border-blue-300"
             >
               <div className="flex flex-col items-center justify-center space-y-3">
-                <span className="text-3xl">{button.icon}</span>
-                <span className="text-lg font-medium text-gray-800">{button.label}</span>
+                <span className="text-2xl">{button.icon}</span>
+                <span className="text-sm font-medium text-gray-800">{button.label}</span>
               </div>
             </button>
           ))}
