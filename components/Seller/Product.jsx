@@ -86,90 +86,11 @@ export default function Product() {
           </div>
         </div>
 
-        {/* Sort and Filter Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8 p-4 bg-white border border-gray-200 rounded-lg">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-600 font-medium">Sort By:</span>
-              <button className="flex items-center gap-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-                <span className="font-medium">Last Updated</span>
-                <ChevronDown className="w-4 h-4 text-gray-500" />
-              </button>
-            </div>
-            
-            <div className="relative">
-              <button 
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
-              >
-                <Filter className="w-4 h-4" />
-                <span className="font-medium">Filter</span>
-                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Filter Dropdown */}
-              {showFilters && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-4">
-                  <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">Price Range</h3>
-                    <div className="flex items-center gap-2">
-                      <input type="number" placeholder="Min" className="w-full px-3 py-1.5 border border-gray-300 rounded" />
-                      <span className="text-gray-500">to</span>
-                      <input type="number" placeholder="Max" className="w-full px-3 py-1.5 border border-gray-300 rounded" />
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">Stock Status</h3>
-                    <select className="w-full px-3 py-1.5 border border-gray-300 rounded">
-                      <option>All</option>
-                      <option>In Stock</option>
-                      <option>Low Stock</option>
-                      <option>Out of Stock</option>
-                    </select>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <button 
-                      onClick={() => setShowFilters(false)}
-                      className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                    <button className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
-                      Apply
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="text-sm text-gray-500">
-            Showing {filteredProducts.length} products
-          </div>
-        </div>
-
+        
         {/* Divider */}
         <div className="border-t border-gray-200 my-6"></div>
 
-        {/* Quick Actions */}
-        <div className="flex flex-wrap gap-4 md:gap-6 mb-8">
-          <button className="flex flex-col items-center justify-center w-full md:w-40 h-32 bg-white border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 group">
-            <div className="mb-3 p-3 bg-blue-50 rounded-full group-hover:bg-blue-100 transition">
-              <Edit2 className="w-6 h-6 text-blue-600" />
-            </div>
-            <span className="font-semibold text-gray-900">Edit Price</span>
-            <span className="text-sm text-gray-500 mt-1">Update product pricing</span>
-          </button>
-
-          <button className="flex flex-col items-center justify-center w-full md:w-40 h-32 bg-white border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 group">
-            <div className="mb-3 p-3 bg-green-50 rounded-full group-hover:bg-green-100 transition">
-              <Package className="w-6 h-6 text-green-600" />
-            </div>
-            <span className="font-semibold text-gray-900">Edit Stock</span>
-            <span className="text-sm text-gray-500 mt-1">Manage inventory</span>
-          </button>
-        </div>
-
+        
         {/* Products Table */}
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
