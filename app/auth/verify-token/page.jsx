@@ -4,11 +4,10 @@
 
 import { Suspense } from 'react';
 import VerifyTokenContent from './VerifyTokenContent';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export default function VerifyTokenPage() {
   return (
-    <Suspense fallback={<LoadingSpinner />}>
+    <Suspense>
       <VerifyTokenContent />
     </Suspense>
   );
