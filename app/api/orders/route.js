@@ -12,6 +12,9 @@ export async function POST(req) {
 		// 2️⃣ Check session
 		const session = await getServerSession(authOptions);
 
+console.log(session);
+
+
 		if (!session || !session.user?.id) {
 			return NextResponse.json(
 				{ message: "Unauthorized" },
