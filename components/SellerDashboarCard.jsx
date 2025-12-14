@@ -17,7 +17,7 @@ const SellerDashboarCard = () => {
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Basic Function</h1>
         <p className="text-gray-600 mb-8">Dashboard control panel</p>
         
-        <div className="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
           {buttons.map((button, index) => (
             <button
               key={index}
