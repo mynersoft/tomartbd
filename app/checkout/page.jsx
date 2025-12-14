@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { removeFromCart, updateQuantity, clearCart } from "@/store/slices/cartSlice";
-import { useAddOrder } from "@/hooks/useOrders";
+import { useAddOrder } from "@/hooks/useOrder";
 import useLoginUser from "@/hooks/useAuth";
 
 export default function CheckoutPage() {
