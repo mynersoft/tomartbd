@@ -17,10 +17,10 @@ export default function Product() {
 
   // Mock data for products - in real app this would come from API
   const products = [
-    { id: 1, name: 'Wireless Headphones', price: '$99.99', stock: 45, status: 'Active' as StatusType, lastUpdated: '2 hours ago' },
-    { id: 2, name: 'Smart Watch', price: '$199.99', stock: 0, status: 'Out' as StatusType, lastUpdated: '1 day ago' },
-    { id: 3, name: 'USB-C Cable', price: '$19.99', stock: 120, status: 'Active' as StatusType, lastUpdated: '3 hours ago' },
-    { id: 4, name: 'Laptop Backpack', price: '$59.99', stock: 23, status: 'Active' as StatusType, lastUpdated: '5 hours ago' },
+    { id: 1, name: 'Wireless Headphones', price: '$99.99', stock: 45, status: 'Active' , lastUpdated: '2 hours ago' },
+    { id: 2, name: 'Smart Watch', price: '$199.99', stock: 0, status: 'Out', lastUpdated: '1 day ago' },
+    { id: 3, name: 'USB-C Cable', price: '$19.99', stock: 120, status: 'Active', lastUpdated: '3 hours ago' },
+    { id: 4, name: 'Laptop Backpack', price: '$59.99', stock: 23, status: 'Active' , lastUpdated: '5 hours ago' },
   ];
 
   const filteredProducts = products.filter(product => 
