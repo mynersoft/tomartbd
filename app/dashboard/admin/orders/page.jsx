@@ -121,7 +121,7 @@ const OrderManagement = () => {
     // Sort orders
     result.sort((a, b) => {
       let aValue, bValue;
-
+      
       switch(sortBy) {
         case 'date':
           aValue = new Date(a.date);
@@ -225,7 +225,7 @@ const OrderManagement = () => {
             </div>
           </div>
         </div>
-
+        
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -239,7 +239,7 @@ const OrderManagement = () => {
             </div>
           </div>
         </div>
-
+        
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -253,7 +253,7 @@ const OrderManagement = () => {
             </div>
           </div>
         </div>
-
+        
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -267,7 +267,7 @@ const OrderManagement = () => {
             </div>
           </div>
         </div>
-
+        
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -329,7 +329,7 @@ const OrderManagement = () => {
                 <option value="total">Sort by Total</option>
                 <option value="customer">Sort by Customer</option>
               </select>
-
+              
               <button
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
@@ -627,3 +627,5 @@ const OrderManagement = () => {
     </div>
   );
 };
+
+export default OrderManagement;
