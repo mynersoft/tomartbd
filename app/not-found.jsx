@@ -1,52 +1,66 @@
 import Link from 'next/link'
-import { useRouter } from 'next/router'
-import Navigation from '@/components/Navigation'
+import { HomeIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 
 export default function NotFound() {
-  const router = useRouter()
-  
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      
-      <main className="max-w-7xl mx-auto py-16 px-4">
-        <div className="text-center">
-          <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide">
-            404 error
-          </p>
-          <h1 className="mt-2 text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
-            Page not found.
-          </h1>
-          <p className="mt-2 text-base text-gray-500">
-            Sorry, we couldn't find the page you're looking for.
-          </p>
-          
-          <div className="mt-12">
-            <div className="grid gap-4 max-w-sm mx-auto">
-              <button
-                onClick={() => router.back()}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Go back
-              </button>
-              
-              <Link
-                href="/"
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-              >
-                Go to home
-              </Link>
-              
-              <Link
-                href="/support"
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-blue-600 hover:text-blue-500"
-              >
-                Contact support
-              </Link>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center px-4">
+      <div className="text-center max-w-2xl">
+        {/* Animated 404 */}
+        <div className="relative">
+          <div className="text-9xl font-black text-gray-800 opacity-10">404</div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <h1 className="text-9xl font-bold text-gray-800 tracking-tighter">
+              404
+            </h1>
           </div>
         </div>
-      </main>
+        
+        {/* Content */}
+        <h2 className="text-4xl font-bold text-gray-900 mt-8">
+          Oops! Lost in Space?
+        </h2>
+        
+        <p className="text-lg text-gray-600 mt-4 max-w-md mx-auto">
+          The page you're looking for seems to have drifted off into the digital cosmos. 
+          Don't worry, we can help you find your way back home.
+        </p>
+        
+        {/* Error Message (Optional) */}
+        <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-md mx-auto">
+          <p className="text-yellow-800 text-sm">
+            <span className="font-semibold">Possible reasons:</span> The page might have been moved, deleted, or you might have typed the wrong URL.
+          </p>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+          >
+            <HomeIcon className="w-5 h-5" />
+            Back to Homepage
+          </Link>
+          
+          <button
+            onClick={() => window.history.back()}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-gray-700 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-all"
+          >
+            <ArrowLeftIcon className="w-5 h-5" />
+            Go Back
+          </button>
+        </div>
+        
+        {/* Search Suggestion */}
+        <div className="mt-12">
+          <p className="text-gray-500 text-sm">
+            Can't find what you're looking for?{' '}
+            <Link href="/contact" className="text-blue-600 hover:underline">
+              Contact our support team
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
