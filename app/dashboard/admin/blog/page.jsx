@@ -1,8 +1,8 @@
 'use client';
 
 import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import BlogPostForm from '@/components/admin/BlogPostForm';
-import BlogPostList from '@/components/admin/BlogPostList';
+import BlogPostForm from './BlogPostForm';
+import BlogPostList from './BlogPostList';
 
 const queryClient = new QueryClient();
 
