@@ -10,6 +10,8 @@ import BottomNavigation from "@/components/BottomMenu";
 import { useState } from "react";
 import GoogleAnalytics from './GoogleAnalytics';
 
+import MessengerChat from "./MessengerChat";
+
 const queryClient = new QueryClient();
 
 export default function Providers({ children }) {
@@ -21,6 +23,7 @@ export default function Providers({ children }) {
 				<QueryClientProvider client={queryClient}>
 					<Toaster />
 <GoogleAnalytics />
+<MessengerChat/>
 					<Header />
 
 					{children}
