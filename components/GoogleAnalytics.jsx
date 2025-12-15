@@ -3,7 +3,7 @@ import Script from 'next/script'
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
-export default GoogleAnalytics = () => {
+export default function  GoogleAnalytics = () => {
   return (
     <>
       <Script
