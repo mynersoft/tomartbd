@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import Header from "@/components/Header";
 import BottomNavigation from "@/components/BottomMenu";
 import { useState } from "react";
+import GoogleAnalytics from '@/components/GoogleAnalytics'
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ export default function Providers({ children }) {
 			<Provider store={store}>
 				<QueryClientProvider client={queryClient}>
 					<Toaster />
+<GoogleAnalytics />
 					<Header />
 
 					{children}
