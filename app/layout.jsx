@@ -59,7 +59,7 @@ export default function RootLayout({ children }) {
 <meta name="google-site-verification" content="OlqGBlfLEkJDmZZ3SppeQU1MDwI_CL6SEFXYSLv_DmA" />
       <body>
         <Providers>
-<MessengerChat pageId="YOUR_FACEBOOK_PAGE_ID" />
+<MessengerChat pageId="583273884879650" />
 
 {children}</Providers>
       </body>
