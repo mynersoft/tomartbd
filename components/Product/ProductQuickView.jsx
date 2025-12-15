@@ -33,7 +33,7 @@ export default function ProductQuickView({
           {/* Product Image */}
           <div className="relative aspect-square overflow-hidden rounded-xl">
             <Image
-              src={product.image}
+              src={product?.images[0]}
               alt={product.name}
               fill
               priority
@@ -52,9 +52,9 @@ export default function ProductQuickView({
               ৳ {product.price}
             </p>
 
-            {product.shortDescription && (
+            {product.description && (
               <p className="mt-4 text-sm text-gray-600">
-                {product.shortDescription}
+                {product.description}
               </p>
             )}
 
