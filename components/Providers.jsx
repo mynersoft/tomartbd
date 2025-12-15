@@ -24,7 +24,7 @@ export default function Providers({ children }) {
 					{children}
 
 					{/* Mobile only */}
-					<div className="block md:hidden">
+					<div className="block mt-8 md:hidden">
 						<BottomNavigation
 							activeTab={activeTab}
 							setActiveTab={setActiveTab}
