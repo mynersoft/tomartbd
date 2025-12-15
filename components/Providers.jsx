@@ -8,7 +8,7 @@ import { Toaster } from "react-hot-toast";
 import Header from "@/components/Header";
 import BottomNavigation from "@/components/BottomMenu";
 import { useState } from "react";
-import GoogleAnalytics from '@/components/GoogleAnalytics'
+import GoogleAnalytics from './GoogleAnalytics';
 
 const queryClient = new QueryClient();
 
