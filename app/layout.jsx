@@ -1,5 +1,6 @@
 import Providers from "../components/Providers";
 import "./globals.css";
+import MessengerChat from "@/components/MessengerChat";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -57,7 +58,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
 <meta name="google-site-verification" content="OlqGBlfLEkJDmZZ3SppeQU1MDwI_CL6SEFXYSLv_DmA" />
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+<MessengerChat pageId="YOUR_FACEBOOK_PAGE_ID" />
+
+{children}</Providers>
       </body>
     </html>
   );
