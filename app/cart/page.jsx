@@ -113,13 +113,7 @@ export default function CartPage() {
 					className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
 					Checkout
 				</Link>
-				<button
-					className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-					onClick={() =>
-						toast.success("Proceed to checkout coming soon!")
-					}>
-					Checkout
-				</button>
+				
 			</div>
 		</div>
 	);

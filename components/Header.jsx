@@ -12,7 +12,7 @@ export default function Header() {
 	const { qty } = useSelector((state) => state.cart);
 
 	const { user, isAuthenticated, isAdmin } = useLoginUser();
-	console.log(user, isAuthenticated, isAdmin);
+	
 	
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);
