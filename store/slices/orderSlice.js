@@ -1,18 +1,32 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
+/* ================= THUNK ================= */
 export const placeOrderCOD = createAsyncThunk(
-	"order/placeOrderCOD",
-	async (orderData, thunkAPI) => {
+	"order/placeCOD",
+	async (orderData, { rejectWithValue }) => {
 		try {
-			const res = await axios.post("/api/orders", orderData);
-			return res.data;
-		} catch (err) {
-			return thunkAPI.rejectWithValue(err.response.data);
+			const res = await fetch("/api/orders", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(orderData),
+			});
+
+			const data = await res.json();
+
+			if (!res.ok) {
+				throw new Error(data.message);
+			}
+
+			return data;
+		} catch (error) {
+			return rejectWithValue(error.message);
 		}
 	}
 );
 
+/* ================= SLICE ================= */
 const orderSlice = createSlice({
 	name: "order",
 	initialState: {
@@ -21,7 +35,7 @@ const orderSlice = createSlice({
 		error: null,
 	},
 	reducers: {
-		resetOrder: (state) => {
+		resetOrder(state) {
 			state.loading = false;
 			state.success = false;
 			state.error = null;
