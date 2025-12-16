@@ -46,3 +46,70 @@
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
+
+@layer base {
+  body {
+    @apply antialiased text-gray-900;
+  }
+}
+
+@layer components {
+  .prose {
+    @apply max-w-none;
+  }
+  
+  .prose h2 {
+    @apply text-3xl font-bold mt-8 mb-4 text-gray-900;
+  }
+  
+  .prose h3 {
+    @apply text-2xl font-bold mt-6 mb-3 text-gray-800;
+  }
+  
+  .prose p {
+    @apply mb-4 text-gray-700 leading-relaxed;
+  }
+  
+  .prose ul {
+    @apply mb-4 list-disc pl-6;
+  }
+  
+  .prose li {
+    @apply mb-2 text-gray-700;
+  }
+  
+  .prose pre {
+    @apply bg-gray-800 text-gray-100 p-4 rounded-lg mb-4 overflow-x-auto;
+  }
+  
+  .prose code {
+    @apply bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-mono;
+  }
+  
+  .prose pre code {
+    @apply bg-transparent text-inherit p-0;
+  }
+}
+
+@layer utilities {
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}

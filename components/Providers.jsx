@@ -8,6 +8,9 @@ import { Toaster } from "react-hot-toast";
 import Header from "@/components/Header";
 import BottomNavigation from "@/components/BottomMenu";
 import { useState } from "react";
+import GoogleAnalytics from './GoogleAnalytics';
+
+import MessengerChat from "./MessengerChat";
 
 const queryClient = new QueryClient();
 
@@ -19,12 +22,14 @@ export default function Providers({ children }) {
 			<Provider store={store}>
 				<QueryClientProvider client={queryClient}>
 					<Toaster />
+<GoogleAnalytics />
+<MessengerChat/>
 					<Header />
 
 					{children}
 
 					{/* Mobile only */}
-					<div className="block md:hidden">
+					<div className="block mt-8 md:hidden">
 						<BottomNavigation
 							activeTab={activeTab}
 							setActiveTab={setActiveTab}
