@@ -1,6 +1,6 @@
 "use client";
 
-import { useSingleBlog } from "@/hooks/useSingleBlog";
+import { useSingleBlog } from "@/hooks/useBlog";
 
 export default function BlogViewPage({ params }) {
   const { data: blog, isLoading } = useSingleBlog(params.slug);
