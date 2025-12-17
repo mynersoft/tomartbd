@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateBlog } from "@/hooks/useBlogs";
+import { useCreateBlog } from "@/hooks/useBlog";
 
 export default function CreateBlog() {
   const { mutate, isLoading } = useCreateBlog();
