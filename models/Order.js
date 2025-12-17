@@ -52,14 +52,6 @@ const orderSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
-// Auto orderId
-orderSchema.pre("save", async function (next) {
-	if (!this.orderId) {
-		const count = await this.constructor.countDocuments();
-		this.orderId = `ORD-${String(count + 1).padStart(5, "0")}`;
-	}
-	next();
-});
 
 export default mongoose.models.Order ||
 	mongoose.model("Order", orderSchema);

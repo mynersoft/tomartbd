@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 export function useProducts() {
 	const dispatch = useDispatch();
 
-
 	return useQuery({
 		queryKey: ["products"],
 		queryFn: async () => {

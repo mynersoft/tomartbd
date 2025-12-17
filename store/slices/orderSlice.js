@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import toast from "react-hot-toast";
 
 /* ================= THUNK ================= */
 export const placeOrderCOD = createAsyncThunk(
@@ -21,6 +22,7 @@ export const placeOrderCOD = createAsyncThunk(
 
 			return data;
 		} catch (error) {
+			toast.error(error.message);
 			return rejectWithValue(error.message);
 		}
 	}
@@ -33,12 +35,19 @@ const orderSlice = createSlice({
 		loading: false,
 		success: false,
 		error: null,
+		orders: [],
 	},
 	reducers: {
 		resetOrder(state) {
 			state.loading = false;
 			state.success = false;
 			state.error = null;
+		},
+		setOrders(state, action) {
+			state.orders = action.payload;
+		},
+		addOrder(state, action) {
+			state.orders.push(action.payload);
 		},
 	},
 	extraReducers: (builder) => {
@@ -57,5 +66,5 @@ const orderSlice = createSlice({
 	},
 });
 
-export const { resetOrder } = orderSlice.actions;
+export const { resetOrder, setOrders, addOrder } = orderSlice.actions;
 export default orderSlice.reducer;
