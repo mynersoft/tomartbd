@@ -68,7 +68,7 @@ export default function Header() {
 									alt={user.name || "User"}
 									className="w-8 h-8 rounded-full object-cover"
 								/>
-								<Link href={ user.role == "admin" ? "/dashboard/admin" : "dashboard/user"}>
+								<Link href={ user.role == "admin" ? "/dashboard/admin" : "/dashboard/user"}>
 									<span className=" sm:block text-gray-700 font-medium">
 										{user.name}
 									</span>
