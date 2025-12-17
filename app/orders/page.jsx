@@ -7,9 +7,12 @@ import {useOrders} from " @/hooks/useOrder";
 
 
 
+
 const OrderManagementPage = () => {
 
-const {data:, isLoading } = useOrders();
+
+const { data: orderData, isLoading, isError } = useOrders();
+
 
   // State for active tab and orders
   const [activeTab, setActiveTab] = useState('all');
@@ -113,7 +116,7 @@ const {data:, isLoading } = useOrders();
   useEffect(() => {
     // Simulate API loading
     setTimeout(() => {
-      setOrders(sampleOrders);
+      setOrders(orderData);
       setIsLoading(false);
     }, 800);
   }, []);
