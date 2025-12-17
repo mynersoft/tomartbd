@@ -17,7 +17,7 @@ const { data: orderData, isLoading, isError } = useOrders();
   // State for active tab and orders
   const [activeTab, setActiveTab] = useState('all');
   const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
 
   // Order status categories
   const orderTabs = [
@@ -34,7 +34,7 @@ const { data: orderData, isLoading, isError } = useOrders();
     // Simulate API loading
     setTimeout(() => {
       setOrders(orderData);
-      setIsLoading(false);
+      
     }, 800);
   }, []);
 
