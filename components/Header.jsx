@@ -68,12 +68,15 @@ export default function Header() {
 									alt={user.name || "User"}
 									className="w-8 h-8 rounded-full object-cover"
 								/>
-								<Link href="/dashboard/admin">
-									<span className="hidden sm:block text-gray-700 font-medium">
+								<Link href={ user.role == "admin" ? "/dashboard/admin" : "dashboard/user"}>
+									<span className=" sm:block text-gray-700 font-medium">
 										{user.name}
 									</span>
 								</Link>
 							</div>
+
+
+
 							<button
 								onClick={() => signOut({ callbackUrl: "/" })}
 								className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
