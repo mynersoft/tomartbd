@@ -5,6 +5,7 @@ import cartReducer from "./slices/cartSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import orderReducer from "./slices/orderSlice";
 
+import blogReducer from "./slices/blgSlice
 
 
 export const store = configureStore({
@@ -14,6 +15,7 @@ export const store = configureStore({
 		cart: cartReducer,
 		wishlist: wishlistReducer,
 order: orderReducer,
+blog:blogReducer
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware().concat(apiSlice.middleware),
