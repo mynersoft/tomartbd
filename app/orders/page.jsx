@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-import {useOrders} from " @/hooks/useOrder";
+import {useOrders} from "@/hooks/useOrder";
 
 
 
