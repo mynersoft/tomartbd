@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+"use client";
 
+import React, { useEffect, useState } from "react";
 import {
 	Search,
 	Filter,
@@ -9,40 +10,33 @@ import {
 	Clock,
 	Truck,
 	Package,
-	DollarSign,
-	Calendar,
-	User,
-	Phone,
-	Mail,
-	MapPin,
-	ChevronLeft,
-	ChevronRight,
 } from "lucide-react";
 
 const OrderTable = ({ data }) => {
+	// ✅ All hooks must be top-level
 	const [searchTerm, setSearchTerm] = useState("");
 	const [sortBy, setSortBy] = useState("date");
 	const [sortOrder, setSortOrder] = useState("desc");
 	const [selectedStatus, setSelectedStatus] = useState("all");
 
-	const formatDate = (dateString) => {
-		return new Date(dateString).toLocaleDateString("en-US", {
+	const [filteredOrders, setFilteredOrders] = useState([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [selectedOrder, setSelectedOrder] = useState(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+
+	// Format helpers
+	const formatDate = (dateString) =>
+		new Date(dateString).toLocaleDateString("en-US", {
 			year: "numeric",
 			month: "short",
 			day: "numeric",
 		});
-	};
-	const formatCurrency = (amount) => {
-		return new Intl.NumberFormat("en-US", {
+
+	const formatCurrency = (amount) =>
+		new Intl.NumberFormat("en-US", {
 			style: "currency",
 			currency: "USD",
 		}).format(amount);
-	};
-
-	const handleViewOrder = (order) => {
-		setSelectedOrder(order);
-		setIsModalOpen(true);
-	};
 
 	const getStatusColor = (status) => {
 		const colors = {
@@ -72,8 +66,72 @@ const OrderTable = ({ data }) => {
 		}
 	};
 
+	const handleViewOrder = (order) => {
+		setSelectedOrder(order);
+		setIsModalOpen(true);
+	};
+
+	const handleStatusUpdate = (orderId, newStatus) => {
+		// Placeholder: implement API call to update order status
+		console.log("Update order:", orderId, "to", newStatus);
+	};
+
+	// Filter + sort logic
+	useEffect(() => {
+		let result = [...data];
+
+		// Filter by search
+		if (searchTerm) {
+			result = result.filter(
+				(order) =>
+					order.id
+						?.toLowerCase()
+						.includes(searchTerm.toLowerCase()) ||
+					order.customer.name
+						.toLowerCase()
+						.includes(searchTerm.toLowerCase()) ||
+					order.customer.email
+						.toLowerCase()
+						.includes(searchTerm.toLowerCase())
+			);
+		}
+
+		// Filter by status
+		if (selectedStatus !== "all") {
+			result = result.filter((order) => order.status === selectedStatus);
+		}
+
+		// Sort
+		result.sort((a, b) => {
+			let aValue, bValue;
+			switch (sortBy) {
+				case "date":
+					aValue = new Date(a.createdAt);
+					bValue = new Date(b.createdAt);
+					break;
+				case "total":
+					aValue = a.total;
+					bValue = b.total;
+					break;
+				case "customer":
+					aValue = a.customer.name.toLowerCase();
+					bValue = b.customer.name.toLowerCase();
+					break;
+				default:
+					aValue = a.id;
+					bValue = b.id;
+			}
+			if (sortOrder === "asc") return aValue > bValue ? 1 : -1;
+			return aValue < bValue ? 1 : -1;
+		});
+
+		setFilteredOrders(result);
+		setCurrentPage(1);
+	}, [searchTerm, selectedStatus, sortBy, sortOrder, data]);
+
 	return (
 		<div className="bg-white rounded-lg shadow mb-6">
+			{/* Top controls */}
 			<div className="p-6 border-b">
 				<div className="flex flex-col md:flex-row gap-4">
 					{/* Search */}
@@ -90,7 +148,7 @@ const OrderTable = ({ data }) => {
 						</div>
 					</div>
 
-					{/* Status Filter */}
+					{/* Filters */}
 					<div className="flex gap-4">
 						<div className="relative">
 							<Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -109,7 +167,6 @@ const OrderTable = ({ data }) => {
 							</select>
 						</div>
 
-						{/* Sort */}
 						<select
 							className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 							value={sortBy}
@@ -153,20 +210,17 @@ const OrderTable = ({ data }) => {
 								Status
 							</th>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Items
-							</th>
-							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Actions
 							</th>
 						</tr>
 					</thead>
 					<tbody className="bg-white divide-y divide-gray-200">
-						{data.length > 0 &&
-							data.map((order) => (
-								<tr key={order.id} className="hover:bg-gray-50">
+						{filteredOrders.length > 0 &&
+							filteredOrders.map((order, index) => (
+								<tr key={index} className="hover:bg-gray-50">
 									<td className="px-6 py-4 whitespace-nowrap">
 										<div className="font-medium text-gray-900">
-											{order.id}
+											{order.userId}
 										</div>
 									</td>
 									<td className="px-6 py-4">
@@ -182,7 +236,7 @@ const OrderTable = ({ data }) => {
 										</div>
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-										{formatDate(order.date)}
+										{formatDate(order.createdAt)}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										<div className="font-medium text-gray-900">
@@ -203,9 +257,6 @@ const OrderTable = ({ data }) => {
 											</span>
 										</div>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-										{order.items} items
-									</td>
 									<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
 										<div className="flex gap-2">
 											<button
@@ -213,8 +264,7 @@ const OrderTable = ({ data }) => {
 													handleViewOrder(order)
 												}
 												className="text-blue-600 hover:text-blue-900 flex items-center gap-1">
-												<Eye className="w-4 h-4" />
-												View
+												<Eye className="w-4 h-4" /> View
 											</button>
 											<select
 												className="text-sm border border-gray-300 rounded px-2 py-1"
