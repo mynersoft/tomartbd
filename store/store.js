@@ -5,7 +5,7 @@ import cartReducer from "./slices/cartSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import orderReducer from "./slices/orderSlice";
 
-import blogReducer from "./slices/blgSlice
+import blogReducer from "./slices/blogSlice";
 
 
 export const store = configureStore({
