@@ -1,33 +1,24 @@
-import fs from 'fs/promises';
-import path from 'path';
+import { connectDB } from "@/lib/db";
+import Blog from "@/models/Blog";
+import { NextResponse } from "next/server";
 
-const dataFilePath = path.join(process.cwd(), 'data', 'blog-posts.json');
-
-async function readData() {
-  try {
-    const data = await fs.readFile(dataFilePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
-  }
+export async function GET(req, { params }) {
+  await connectDB();
+  const blog = await Blog.findById(params.id);
+  return NextResponse.json(blog);
 }
 
-async function writeData(data) {
-  await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2));
+export async function PUT(req, { params }) {
+  await connectDB();
+  const body = await req.json();
+  const blog = await Blog.findByIdAndUpdate(params.id, body, {
+    new: true,
+  });
+  return NextResponse.json(blog);
 }
 
-export async function DELETE(request, { params }) {
-  try {
-    const posts = await readData();
-    const filteredPosts = posts.filter(post => post.id !== params.id);
-    
-    if (filteredPosts.length === posts.length) {
-      return Response.json({ error: 'Post not found' }, { status: 404 });
-    }
-    
-    await writeData(filteredPosts);
-    return Response.json({ success: true });
-  } catch (error) {
-    return Response.json({ error: 'Failed to delete post' }, { status: 500 });
-  }
+export async function DELETE(req, { params }) {
+  await connectDB();
+  await Blog.findByIdAndDelete(params.id);
+  return NextResponse.json({ success: true });
 }
