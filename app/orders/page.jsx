@@ -3,7 +3,14 @@
 
 import React, { useState, useEffect } from 'react';
 
+import {useOrders} from " @/hooks/useOrder";
+
+
+
 const OrderManagementPage = () => {
+
+const {data:, isLoading } = useOrders();
+
   // State for active tab and orders
   const [activeTab, setActiveTab] = useState('all');
   const [orders, setOrders] = useState([]);
