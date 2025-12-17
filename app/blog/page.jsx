@@ -1,6 +1,6 @@
 "use client";
 
-import { useBlogs } from "@/hooks/useBlogs";
+import { useBlogs } from "@/hooks/useBlog";
 
 export default function BlogPage() {
   const { data, isLoading } = useBlogs();
