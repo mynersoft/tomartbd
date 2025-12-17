@@ -17,3 +17,16 @@ export const useCreateBlog = () => {
     onSuccess: () => qc.invalidateQueries(["blogs"]),
   });
 };
+
+
+
+
+//single
+export const useSingleBlog = (slug) =>
+  useQuery({
+    queryKey: ["blog", slug],
+    queryFn: async () => {
+      const { data } = await axios.get(`/api/blog/slug/${slug}`);
+      return data;
+    },
+  });
