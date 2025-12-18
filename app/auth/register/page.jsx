@@ -65,6 +65,7 @@ export default function Register() {
       return;
     }
 
+  
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -89,26 +90,13 @@ export default function Register() {
           },
         });
         
-        // Show loading toast before redirect
-        setTimeout(() => {
-          toast.loading("Redirecting to login page...", {
-            duration: 1000,
-          });
-        }, 2000);
         
         setTimeout(() => {
           router.push("/auth/login");
         }, 3000);
       } else {
-        toast.error(data.message || "Registration failed. Please try again.", {
-          icon: "❌",
-          duration: 4000,
-          style: {
-            background: '#FEE2E2',
-            color: '#991B1B',
-            border: '1px solid #FCA5A5',
-          },
-        });
+              
+        toast.error(data.error);
       }
     } catch (err) {
       toast.error("Network error. Please check your connection.", {

@@ -3,9 +3,10 @@ import bcrypt from "bcryptjs";
 import User from "@/models/User";
 import { connectDB } from "../../../../lib/db";
 
+import { signToken } from "@/lib/signToken";
+
 export async function POST(req) {
 	await connectDB();
-
 
 	const { email, password } = await req.json();
 	const cleanPassword = password.trim();
@@ -43,6 +44,7 @@ export async function POST(req) {
 		},
 	});
 
+	
 	res.cookies.set("token", token, {
 		httpOnly: true,
 		secure: true,
@@ -52,3 +54,4 @@ export async function POST(req) {
 
 	return res;
 }
+

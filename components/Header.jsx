@@ -1,19 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
-import { useCart } from "@/hooks/useCart";
-import { FaShoppingCart } from "react-icons/fa";
+import { signOut } from "next-auth/react";
+
+import { FaShoppingCart, FaUser } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import useLoginUser from "@/hooks/useAuth";
+import Image from "next/image";
+
 
 export default function Header() {
 	const { qty } = useSelector((state) => state.cart);
 
-	const { user, isAuthenticated, isAdmin } = useLoginUser();
-	
-	
+	const { user } = useLoginUser();
+
+
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);
 
@@ -60,22 +62,25 @@ export default function Header() {
 					{user ? (
 						<>
 							<div className="flex items-center space-x-2">
-								<img
-									src={
-										user ||
-										"/default-avatar.png"
-									}
-									alt={user.name || "User"}
-									className="w-8 h-8 rounded-full object-cover"
-								/>
-								<Link href={ user.role == "admin" ? "/dashboard/admin" : "/dashboard/user"}>
-									<span className=" sm:block text-gray-700 font-medium">
-										{user.name}
-									</span>
+								<Link
+									href={
+										user.role == "admin"
+											? "/dashboard/admin"
+											: "/dashboard/user"
+									}>
+									{user.image ? (
+										<Image
+											alt={user.name}
+											src={user.image}
+											height={100}
+											width={100}
+											className="rounded h-8 w-8"
+										/>
+									) : (
+										<FaUser size={20} className="mx-4" />
+									)}
 								</Link>
 							</div>
-
-
 
 							<button
 								onClick={() => signOut({ callbackUrl: "/" })}

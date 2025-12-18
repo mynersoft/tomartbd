@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import useLoginUser from "@/hooks/useAuth";
+import toast from "react-hot-toast";
 
 export default function Login() {
 	const [email, setEmail] = useState("");
@@ -13,8 +14,9 @@ export default function Login() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const router = useRouter();
+	const [loginSuccess, setLoginSuccess] = useState(false);
 
-	const { data: session, status } = useLoginUser();
+	const { data: session, status } = useSession();
 
 	const handleLogin = async (e) => {
 		e.preventDefault();
@@ -29,13 +31,12 @@ export default function Login() {
 			});
 
 			if (res?.error) {
-				setError(
-					res.error === "CredentialsSignin"
-						? "Invalid email or password"
-						: "An error occurred during login"
-				);
+				console.log(res.error);
+				
+				toast.error(res.error)
+
 			} else if (res?.ok) {
-				// Success - useEffect will handle the redirect
+				setLoginSuccess(true);
 			}
 		} catch (err) {
 			setError("An unexpected error occurred");
@@ -46,14 +47,16 @@ export default function Login() {
 
 	// Redirect after session loads
 	useEffect(() => {
-		if (session?.user) {
+		if (loginSuccess && session?.user) {
 			if (session.user.role === "admin") {
 				router.push("/dashboard/admin");
+			} else if (session.user.role === "seller") {
+				router.push("/dashboard/user");
 			} else {
-				router.push("/dashboard");
+				router.push("/dashboard/user");
 			}
 		}
-	}, [session, router]);
+	}, [loginSuccess, session]);
 
 	// Show loading state while checking session
 	if (status === "loading") {
