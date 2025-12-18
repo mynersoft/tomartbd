@@ -21,7 +21,7 @@ import {
 
 
 import { useOrders } from "@/hooks/useOrder";
-import OrderTable from '../../../../components/Dashboard/OrderTable';
+import OrderTable from '../../../../components/Order/OrderTable';
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);

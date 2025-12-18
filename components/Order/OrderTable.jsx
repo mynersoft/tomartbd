@@ -195,7 +195,7 @@ const OrderTable = ({ data }) => {
 					<thead className="bg-gray-50">
 						<tr>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Order ID
+								Invoice
 							</th>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Customer
@@ -220,7 +220,7 @@ const OrderTable = ({ data }) => {
 								<tr key={index} className="hover:bg-gray-50">
 									<td className="px-6 py-4 whitespace-nowrap">
 										<div className="font-medium text-gray-900">
-											{order.userId}
+											{order.invoice}
 										</div>
 									</td>
 									<td className="px-6 py-4">

@@ -4,15 +4,36 @@ import { useDispatch, useSelector } from "react-redux";
 import { placeOrderCOD } from "@/store/slices/orderSlice";
 import { clearCart } from "@/store/slices/cartSlice";
 import { useEffect, useState } from "react";
+import Invoice from "@/components/Order/Invoice";
 
 export default function CheckoutPage() {
 	const dispatch = useDispatch();
 	const cart = useSelector((state) => state.cart.items);
 	const { loading, success } = useSelector((state) => state.order);
 
-	const [address, setAddress] = useState("");
-	const [city, setCity] = useState("");
-	const [phone, setPhone] = useState("");
+	const [orderData, setOrderData] = useState({
+		address: "",
+		city: "",
+		phone: "",
+		totalAmount: 0,
+		products: cart.map((item) => ({
+			productId: item.productId,
+			name: item.name,
+			quantity: item.quantity,
+			price: item.price,
+		})),
+	});
+
+	const { address, city, phone } = orderData;
+	console.log(orderData);
+
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		setOrderData((prev) => ({
+			...prev,
+			[name]: value,
+		}));
+	};
 
 	const totalAmount = cart.reduce(
 		(total, item) => total + item.price * item.quantity,
@@ -20,37 +41,34 @@ export default function CheckoutPage() {
 	);
 
 	const handlePlaceOrder = () => {
-		dispatch(
-			placeOrderCOD({
-				products: cart.map((item) => ({
-					productId: item.productId,
-					name: item.name,
-					quantity: item.quantity,
-					price: item.price,
-				})),
-				totalAmount,
-				address,
-				city,
-				phone,
-			})
-		);
+		dispatch(placeOrderCOD(orderData));
 	};
 
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);
 
 	useEffect(() => {
+		setOrderData((prev) => ({
+			...prev, // keep existing fields
+			totalAmount: totalAmount, // add/update totalAmount
+		}));
+	}, [setOrderData, totalAmount]);
+
+	useEffect(() => {
 		if (success) {
 			dispatch(clearCart());
-			// Optional: Reset form after success
-			setAddress("");
-			setCity("");
-			setPhone("");
+			setOrderData({
+				address: "",
+				city: "",
+				phone: "",
+				totalAmount: 0,
+			});
 		}
-	}, [success, dispatch]);
+	}, [success, dispatch, setOrderData]);
 
 	return (
 		<div className="max-w-3xl mx-auto p-6">
+			{/* <Invoice /> */}
 			<h1 className="text-2xl font-bold mb-6">Checkout</h1>
 
 			{/* Address */}
@@ -58,7 +76,8 @@ export default function CheckoutPage() {
 				className="w-full border p-2 mb-3 rounded"
 				placeholder="Address"
 				value={address}
-				onChange={(e) => setAddress(e.target.value)}
+				name="address"
+				onChange={handleChange}
 			/>
 
 			{/* City */}
@@ -66,7 +85,8 @@ export default function CheckoutPage() {
 				className="w-full border p-2 mb-3 rounded"
 				placeholder="City"
 				value={city}
-				onChange={(e) => setCity(e.target.value)}
+				name="city"
+				onChange={handleChange}
 			/>
 
 			{/* Phone */}
@@ -74,7 +94,8 @@ export default function CheckoutPage() {
 				className="w-full border p-2 mb-4 rounded"
 				placeholder="Phone"
 				value={phone}
-				onChange={(e) => setPhone(e.target.value)}
+				name="phone"
+				onChange={handleChange}
 			/>
 
 			{/* Place Order Button */}

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Order from "@/models/Order";
 import mongoose from "mongoose";
+import { generateInvoiceID } from "../../../helper/generateInvoiceID";
 
 export async function GET() {
 	await connectDB();
@@ -31,42 +32,7 @@ export async function POST(req) {
 
 		await connectDB();
 
-		// const data = {
-		// 	orderId: "ORD-0000111",
-		// 	customer: {
-		// 		name: "John Doe",
-		// 		email: "johndoe@example.com",
-		// 		phone: "0123456789",
-		// 	},
-		// 	total: 250,
-		// 	status: "pending",
-		// 	payment: {
-		// 		method: "cash_on_delivery",
-		// 		status: "pending",
-		// 	},
-		// 	shipping: {
-		// 		address: "123 Main Street",
-		// 		city: "Dhaka",
-		// 		phone: "0123456789",
-		// 	},
-		// 	orderItems: [
-		// 		{
-		// 			productId: "64a1234567890abcdef12345",
-		// 			name: "Product 1",
-		// 			quantity: 2,
-		// 			price: 50,
-		// 		},
-		// 		{
-		// 			productId: "64a1234567890abcdef67890",
-		// 			name: "Product 2",
-		// 			quantity: 3,
-		// 			price: 50,
-		// 		},
-		// 	],
-		// 	userId: "693573a2de7b43ad7ee5dcb7",
-		// 	createdAt: "2025-12-17T06:30:00.000Z",
-		// 	updatedAt: "2025-12-17T06:30:00.000Z",
-		// };
+		const invoiceId = generateInvoiceID();
 
 		const order = await Order.create({
 			customer: {
@@ -74,6 +40,7 @@ export async function POST(req) {
 				email: session.user.email,
 				phone: body.phone,
 			},
+			invoice: invoiceId,
 			total: body.totalAmount,
 			payment: { method: "cash_on_delivery" },
 			shipping: {

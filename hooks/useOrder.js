@@ -11,8 +11,8 @@ export function useOrders() {
 		queryKey: ["orders"],
 		queryFn: async () => {
 			const res = await axios.get("/api/orders");
-			dispatch(setOrders(res.data));
-			return res.data;
+			dispatch(setOrders(res.data)); // Save to Redux for global access
+			return res.data; // React Query cache
 		},
 		onError: (error) => {
 			toast.error(`Failed to fetch Orders: ${error.message}`);
