@@ -34,6 +34,7 @@ export async function POST(req) {
 
 		const invoiceId = generateInvoiceID();
 
+
 		const order = await Order.create({
 			customer: {
 				name: session.user.name,

@@ -37,11 +37,18 @@ const orderSlice = createSlice({
 		error: null,
 		orders: [],
 	},
+
 	reducers: {
 		resetOrder(state) {
 			state.loading = false;
 			state.success = false;
 			state.error = null;
+		},
+		removeOrder: (state, action) => {
+			// Remove order by id
+			state.orders = state.orders.filter(
+				(order) => order._id !== action.payload
+			);
 		},
 		setOrders(state, action) {
 			state.orders = action.payload;
@@ -66,5 +73,5 @@ const orderSlice = createSlice({
 	},
 });
 
-export const { resetOrder, setOrders, addOrder } = orderSlice.actions;
+export const { resetOrder, setOrders, addOrder, removeOrder } = orderSlice.actions;
 export default orderSlice.reducer;

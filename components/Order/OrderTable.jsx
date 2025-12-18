@@ -11,6 +11,7 @@ import {
 	Truck,
 	Package,
 } from "lucide-react";
+import { useDeleteOrder } from "@/hooks/useOrder";
 
 const OrderTable = ({ data }) => {
 	// ✅ All hooks must be top-level
@@ -24,6 +25,7 @@ const OrderTable = ({ data }) => {
 	const [selectedOrder, setSelectedOrder] = useState(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
+	const deleteOrderMutation = useDeleteOrder();
 	// Format helpers
 	const formatDate = (dateString) =>
 		new Date(dateString).toLocaleDateString("en-US", {
@@ -75,6 +77,17 @@ const OrderTable = ({ data }) => {
 		// Placeholder: implement API call to update order status
 		console.log("Update order:", orderId, "to", newStatus);
 	};
+
+	
+
+
+
+	const handleDelete = (id) => {
+		if (confirm("Are you sure you want to delete this order?")) {
+			deleteOrderMutation.mutate(id);
+		}
+	};
+
 
 	// Filter + sort logic
 	useEffect(() => {
@@ -212,6 +225,9 @@ const OrderTable = ({ data }) => {
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Actions
 							</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Delete
+							</th>
 						</tr>
 					</thead>
 					<tbody className="bg-white divide-y divide-gray-200">
@@ -221,6 +237,7 @@ const OrderTable = ({ data }) => {
 									<td className="px-6 py-4 whitespace-nowrap">
 										<div className="font-medium text-gray-900">
 											{order.invoice}
+											
 										</div>
 									</td>
 									<td className="px-6 py-4">
@@ -292,6 +309,14 @@ const OrderTable = ({ data }) => {
 												</option>
 											</select>
 										</div>
+									</td>
+									<td>
+										<button
+											onClick={() =>
+												handleDelete(order._id)
+											}>
+											Delete
+										</button>
 									</td>
 								</tr>
 							))}
