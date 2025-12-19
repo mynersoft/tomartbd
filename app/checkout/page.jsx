@@ -115,7 +115,7 @@ export default function CheckoutPage() {
         ...orderData,
         payment: {
           method: "COD",
-          status: "pending",
+          status: "unpaid",
         },
       });
       return;
