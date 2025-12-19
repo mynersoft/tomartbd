@@ -1,6 +1,8 @@
 import { connectDB } from "@/lib/db";
 import Order from "@/models/Order";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { authOptions } from "@/lib/auth";
 
 export async function PATCH(req, { params }) {
 	await connectDB();
@@ -15,15 +17,21 @@ export async function PATCH(req, { params }) {
 	return Response.json(order);
 }
 
-
-
-
-
-export async function DELETE(req, context) {
+export async function DELETE(req, { params }) {
 	try {
-		// Destructure params correctly
-		 const { params } = context;
-		const id = params?.id;
+		const session = await getServerSession(authOptions);
+
+		if (!session) {
+			return NextResponse.json(
+				{ success: false, message: "Unauthorized" },
+				{ status: 401 }
+			);
+		}
+		const url = new URL(req.url);
+		const pathname = url.pathname;
+		const parts = pathname.split("/");
+		const id = parts[parts.length - 1];
+
 
 		if (!id) {
 			return NextResponse.json(
@@ -34,20 +42,45 @@ export async function DELETE(req, context) {
 
 		await connectDB();
 
-		const deletedOrder = await Order.findByIdAndDelete(id);
+		const order = await Order.findById(id);
 
-		if (!deletedOrder) {
+		if (!order) {
 			return NextResponse.json(
 				{ success: false, message: "Order not found" },
 				{ status: 404 }
 			);
 		}
 
+		
+		const role = session.user.role;
+		const userId = session.user.id;
+		console.log(order, "==============================================");
+		
+
+		// // 🔐 Authorization Logic
+		// if (
+		// 	role !== "admin" &&
+		// 	order.user.toString() !== userId &&
+		// 	order.seller?.toString() !== userId
+		// ) {
+		// 	return NextResponse.json(
+		// 		{
+		// 			success: false,
+		// 			message: "Forbidden: Not allowed to delete this order",
+		// 		},
+		// 		{ status: 403 }
+		// 	);
+		// }
+
+		await Order.findByIdAndDelete(id);
+
 		return NextResponse.json({
 			success: true,
 			message: "Order deleted successfully",
 		});
 	} catch (error) {
+		console.error("DELETE ERROR:", error);
+
 		return NextResponse.json(
 			{ success: false, message: error.message },
 			{ status: 500 }

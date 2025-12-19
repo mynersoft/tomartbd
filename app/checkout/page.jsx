@@ -5,11 +5,19 @@ import { placeOrderCOD } from "@/store/slices/orderSlice";
 import { clearCart } from "@/store/slices/cartSlice";
 import { useEffect, useState } from "react";
 import Invoice from "@/components/Order/Invoice";
+import { useAddOrder } from "@/hooks/useOrder.js";
+import { useRouter } from "next/navigation";
 
 export default function CheckoutPage() {
+	const router = useRouter();
+	
+		
+
 	const dispatch = useDispatch();
 	const cart = useSelector((state) => state.cart.items);
 	const { loading, success } = useSelector((state) => state.order);
+	const [invoice, setInvoice] = useState(null);
+	const mutation = useAddOrder();
 
 	const [orderData, setOrderData] = useState({
 		address: "",
@@ -25,7 +33,7 @@ export default function CheckoutPage() {
 	});
 
 	const { address, city, phone } = orderData;
-	console.log(orderData);
+	
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -40,9 +48,21 @@ export default function CheckoutPage() {
 		0
 	);
 
+	// const handlePlaceOrder = () => {
+
+	// 	dispatch(placeOrderCOD(orderData));
+
+	// };
+
 	const handlePlaceOrder = () => {
-		dispatch(placeOrderCOD(orderData));
+		mutation.mutate(orderData, {
+			onSuccess: (newOrder) => {
+				  router.push(`/checkout/success?orderId=${newOrder._id}`);
+			},
+		});
 	};
+
+
 
 	const [mounted, setMounted] = useState(false);
 	useEffect(() => setMounted(true), []);

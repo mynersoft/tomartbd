@@ -3,10 +3,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import { setUser, clearUser } from "@/store/slices/userSlice";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
 
 export function useUsers() {
 	return useQuery({
-		queryKey: ["users"], // ❌ old way was just first argument
+		queryKey: ["users"],
 		queryFn: async () => {
 			const res = await axios.get("/api/users");
 			return res.data;
@@ -15,13 +18,18 @@ export function useUsers() {
 	});
 }
 
-
-
-
-
-
 export default function useLoginUser() {
 	const { data: session, status } = useSession();
+	const dispatch = useDispatch();
+
+	useEffect(() => {
+		if (session?.user) {
+			dispatch(setUser(session.user));
+		} else {
+			dispatch(clearUser());
+		}
+	}, [session, dispatch]);
+
 	return {
 		user: session?.user || null,
 		isLoading: status === "loading",
@@ -29,9 +37,6 @@ export default function useLoginUser() {
 		isAdmin: session?.user?.role === "admin",
 	};
 }
-
-
-
 
 export function useDeleteUser() {
 	const queryClient = useQueryClient();

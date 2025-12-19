@@ -6,11 +6,47 @@ import Order from "@/models/Order";
 import mongoose from "mongoose";
 import { generateInvoiceID } from "../../../helper/generateInvoiceID";
 
-export async function GET() {
-	await connectDB();
-	const orders = await Order.find().sort({ createdAt: -1 });
-	return NextResponse.json(orders);
+
+
+
+
+export async function GET(req) {
+	try {
+		const session = await getServerSession(authOptions);
+
+		if (!session) {
+			return NextResponse.json(
+				{ success: false, message: "Unauthorized" },
+				{ status: 401 }
+			);
+		}
+
+		await connectDB();
+
+		let orders;
+
+		if (session.user.role === "admin") {
+			// Admin can see all orders
+			orders = await Order.find().sort({ createdAt: -1 });
+		} else {
+			// User can see only their own orders
+			orders = await Order.find({ userId: session.user.id }).sort({
+				createdAt: -1,
+			});
+		}
+
+		return NextResponse.json({ success: true, orders });
+	} catch (error) {
+		console.error("GET ORDERS ERROR:", error);
+		return NextResponse.json(
+			{ success: false, message: error.message },
+			{ status: 500 }
+		);
+	}
 }
+
+
+
 
 export async function POST(req) {
 	try {

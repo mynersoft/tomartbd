@@ -1,96 +1,104 @@
-"use client";
-
 import React from "react";
-import {
-	PDFDownloadLink,
-	Document,
-	Page,
-	Text,
-	View,
-	StyleSheet,
-} from "@react-pdf/renderer";
 
-// Styles for PDF
-const styles = StyleSheet.create({
-	page: { padding: 30, fontSize: 12 },
-	section: { marginBottom: 10 },
-	header: { fontSize: 18, marginBottom: 10, textAlign: "center" },
-	tableRow: {
-		flexDirection: "row",
-		borderBottomWidth: 1,
-		borderBottomColor: "#ccc",
-		paddingVertical: 5,
-	},
-	tableCol: { flex: 1 },
-	tableHeader: { fontWeight: "bold" },
-});
+const Invoice = ({ order }) => {
+	const formatCurrency = (amount) =>
+		new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD",
+		}).format(amount);
 
-// Invoice PDF document
-const InvoicePDF = ({ order }) => (
+	const formatDate = (date) =>
+		new Date(date).toLocaleDateString("en-US", {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+		});
 
-	<Document>
-
-
-		<Page style={styles.page}>
-			<Text style={styles.header}>Invoice</Text>
-
-			<View style={styles.section}>
-				<Text>Order ID: {order.id}</Text>
-				<Text>Customer: {order.customer.name}</Text>
-				<Text>Email: {order.customer.email}</Text>
-				<Text>
-					Date: {new Date(order.createdAt).toLocaleDateString()}
-				</Text>
-				<Text>Status: {order.status}</Text>
-			</View>
-
-			<View style={[styles.section, { marginTop: 10 }]}>
-				<Text style={styles.tableHeader}>Items</Text>
-				{order.items && order.items.length > 0 ? (
-					order.items.map((item, idx) => (
-						<View key={idx} style={styles.tableRow}>
-							<Text style={styles.tableCol}>{item}</Text>
-							<Text style={styles.tableCol}>
-								Qty: {order.itemsQty?.[idx] || 1}
-							</Text>
-							<Text style={styles.tableCol}>
-								Price: $
-								{order.itemsPrice?.[idx]?.toFixed(2) || "0.00"}
-							</Text>
-						</View>
-					))
-				) : (
-					<Text>No items</Text>
-				)}
-			</View>
-
-			<View style={styles.section}>
-				<Text style={{ fontWeight: "bold", marginTop: 10 }}>
-					Total: ${order.total.toFixed(2)}
-				</Text>
-			</View>
-
-			<Text
-				style={{
-					marginTop: 20,
-					fontSize: 10,
-					textAlign: "center",
-					color: "#999",
-				}}>
-				Thank you for your order!
-			</Text>
-		</Page>
-	</Document>
-);
-
-
-export default function InvoiceButton({ order }) {
 	return (
-		<PDFDownloadLink
-			document={<InvoicePDF order={order} />}
-			fileName={`invoice-${order._id}.pdf`}
-			className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-			{({ loading }) => (loading ? "Generating..." : "Download Invoice")}
-		</PDFDownloadLink>
+		<div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
+			{/* Header */}
+			<div className="flex justify-between items-center mb-6">
+				<h1 className="text-2xl font-bold">Invoice</h1>
+				<div className="text-right">
+					<p className="font-semibold">Invoice #: {order.invoice}</p>
+					<p>Date: {formatDate(order.createdAt)}</p>
+				</div>
+			</div>
+
+			{/* Customer Info */}
+			<div className="mb-6 border-b pb-4">
+				<h2 className="text-lg font-semibold mb-2">Customer Details</h2>
+				<p>Name: {order.customer.name}</p>
+				<p>Email: {order.customer.email}</p>
+				<p>Phone: {order.customer.phone}</p>
+				<p>
+					Shipping Address: {order.shipping.address},{" "}
+					{order.shipping.city || ""}
+				</p>
+			</div>
+
+			{/* Order Items */}
+			<div className="mb-6">
+				<h2 className="text-lg font-semibold mb-2">Order Items</h2>
+				<table className="w-full border border-gray-300 rounded">
+					<thead className="bg-gray-100">
+						<tr>
+							<th className="border px-4 py-2 text-left">Item</th>
+							<th className="border px-4 py-2">Qty</th>
+							<th className="border px-4 py-2">Price</th>
+							<th className="border px-4 py-2">Total</th>
+						</tr>
+					</thead>
+					<tbody>
+						{order.orderItems.map((item) => (
+							<tr key={item._id} className="hover:bg-gray-50">
+								<td className="border px-4 py-2">
+									{item.name}
+								</td>
+								<td className="border px-4 py-2 text-center">
+									{item.quantity}
+								</td>
+								<td className="border px-4 py-2 text-right">
+									{formatCurrency(item.price)}
+								</td>
+								<td className="border px-4 py-2 text-right">
+									{formatCurrency(item.price * item.quantity)}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
+			{/* Total Amount */}
+			<div className="flex justify-end">
+				<div className="w-1/3">
+					<div className="flex justify-between border-b py-1">
+						<span className="font-semibold">Subtotal:</span>
+						<span>{formatCurrency(order.total)}</span>
+					</div>
+					{/* Optional taxes/shipping */}
+					{/* <div className="flex justify-between py-1">
+            <span className="font-semibold">Tax:</span>
+            <span>$0.00</span>
+          </div>
+          <div className="flex justify-between py-1">
+            <span className="font-semibold">Shipping:</span>
+            <span>$0.00</span>
+          </div> */}
+					<div className="flex justify-between py-2 text-lg font-bold">
+						<span>Total:</span>
+						<span>{formatCurrency(order.total)}</span>
+					</div>
+				</div>
+			</div>
+
+			{/* Footer */}
+			<div className="mt-6 text-center text-gray-500">
+				Thank you for your order!
+			</div>
+		</div>
 	);
-}
+};
+
+export default Invoice;

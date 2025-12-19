@@ -6,6 +6,10 @@ const orderSchema = new mongoose.Schema(
 			type: String,
 			unique: true,
 		},
+		userId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+		},
 		customer: {
 			name: { type: String, required: true },
 			email: { type: String, required: true },
@@ -17,7 +21,13 @@ const orderSchema = new mongoose.Schema(
 		},
 		status: {
 			type: String,
-			enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+			enum: [
+				"pending",
+				"processing",
+				"shipped",
+				"delivered",
+				"cancelled",
+			],
 			default: "pending",
 		},
 		payment: {
@@ -44,10 +54,6 @@ const orderSchema = new mongoose.Schema(
 				price: Number,
 			},
 		],
-		userId: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "User",
-		},
 	},
 	{ timestamps: true }
 );

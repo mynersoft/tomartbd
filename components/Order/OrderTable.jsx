@@ -12,20 +12,23 @@ import {
 	Package,
 } from "lucide-react";
 import { useDeleteOrder } from "@/hooks/useOrder";
+import { useSelector } from "react-redux";
 
 const OrderTable = ({ data }) => {
-	// ✅ All hooks must be top-level
+	const user = useSelector((state) => state.user.user);
+
+	// ✅ State
 	const [searchTerm, setSearchTerm] = useState("");
 	const [sortBy, setSortBy] = useState("date");
 	const [sortOrder, setSortOrder] = useState("desc");
 	const [selectedStatus, setSelectedStatus] = useState("all");
-
 	const [filteredOrders, setFilteredOrders] = useState([]);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [selectedOrder, setSelectedOrder] = useState(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const deleteOrderMutation = useDeleteOrder();
+
 	// Format helpers
 	const formatDate = (dateString) =>
 		new Date(dateString).toLocaleDateString("en-US", {
@@ -74,13 +77,8 @@ const OrderTable = ({ data }) => {
 	};
 
 	const handleStatusUpdate = (orderId, newStatus) => {
-		// Placeholder: implement API call to update order status
 		console.log("Update order:", orderId, "to", newStatus);
 	};
-
-	
-
-
 
 	const handleDelete = (id) => {
 		if (confirm("Are you sure you want to delete this order?")) {
@@ -88,16 +86,19 @@ const OrderTable = ({ data }) => {
 		}
 	};
 
-
-	// Filter + sort logic
+	// -------------------------------
+	// Filter + Sort Logic (Safe)
+	// -------------------------------
 	useEffect(() => {
-		let result = [...data];
+		// Ensure data is always an array
+		let ordersArray = Array.isArray(data) ? data : data?.orders || [];
+		let result = [...ordersArray];
 
 		// Filter by search
 		if (searchTerm) {
 			result = result.filter(
 				(order) =>
-					order.id
+					order._id
 						?.toLowerCase()
 						.includes(searchTerm.toLowerCase()) ||
 					order.customer.name
@@ -131,8 +132,8 @@ const OrderTable = ({ data }) => {
 					bValue = b.customer.name.toLowerCase();
 					break;
 				default:
-					aValue = a.id;
-					bValue = b.id;
+					aValue = a._id;
+					bValue = b._id;
 			}
 			if (sortOrder === "asc") return aValue > bValue ? 1 : -1;
 			return aValue < bValue ? 1 : -1;
@@ -142,6 +143,9 @@ const OrderTable = ({ data }) => {
 		setCurrentPage(1);
 	}, [searchTerm, selectedStatus, sortBy, sortOrder, data]);
 
+	// -------------------------------
+	// UI
+	// -------------------------------
 	return (
 		<div className="bg-white rounded-lg shadow mb-6">
 			{/* Top controls */}
@@ -231,13 +235,12 @@ const OrderTable = ({ data }) => {
 						</tr>
 					</thead>
 					<tbody className="bg-white divide-y divide-gray-200">
-						{filteredOrders.length > 0 &&
+						{filteredOrders.length > 0 ? (
 							filteredOrders.map((order, index) => (
 								<tr key={index} className="hover:bg-gray-50">
 									<td className="px-6 py-4 whitespace-nowrap">
 										<div className="font-medium text-gray-900">
 											{order.invoice}
-											
 										</div>
 									</td>
 									<td className="px-6 py-4">
@@ -283,34 +286,39 @@ const OrderTable = ({ data }) => {
 												className="text-blue-600 hover:text-blue-900 flex items-center gap-1">
 												<Eye className="w-4 h-4" /> View
 											</button>
-											<select
-												className="text-sm border border-gray-300 rounded px-2 py-1"
-												value={order.status}
-												onChange={(e) =>
-													handleStatusUpdate(
-														order.id,
-														e.target.value
-													)
-												}>
-												<option value="pending">
-													Pending
-												</option>
-												<option value="processing">
-													Processing
-												</option>
-												<option value="shipped">
-													Shipped
-												</option>
-												<option value="delivered">
-													Delivered
-												</option>
-												<option value="cancelled">
-													Cancelled
-												</option>
-											</select>
+
+											{user.role === "user" ? (
+												""
+											) : (
+												<select
+													className="text-sm border border-gray-300 rounded px-2 py-1"
+													value={order.status}
+													onChange={(e) =>
+														handleStatusUpdate(
+															order._id,
+															e.target.value
+														)
+													}>
+													<option value="pending">
+														Pending
+													</option>
+													<option value="processing">
+														Processing
+													</option>
+													<option value="shipped">
+														Shipped
+													</option>
+													<option value="delivered">
+														Delivered
+													</option>
+													<option value="cancelled">
+														Cancelled
+													</option>
+												</select>
+											)}
 										</div>
 									</td>
-									<td>
+									<td className="px-6 py-4 whitespace-nowrap">
 										<button
 											onClick={() =>
 												handleDelete(order._id)
@@ -319,7 +327,16 @@ const OrderTable = ({ data }) => {
 										</button>
 									</td>
 								</tr>
-							))}
+							))
+						) : (
+							<tr>
+								<td
+									colSpan="7"
+									className="px-6 py-4 text-center text-gray-500">
+									No orders found.
+								</td>
+							</tr>
+						)}
 					</tbody>
 				</table>
 			</div>
