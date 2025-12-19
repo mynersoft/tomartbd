@@ -5,7 +5,7 @@ Add Cart page UI + checkout flow (Stripe or cash on delivery)
 Add Wishlist page and syncing to user account when logged in
 
 Replace image inputs with Cloudinary upload flow
-
+hddh
 
 
 Push notifications
