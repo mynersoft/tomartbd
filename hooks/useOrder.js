@@ -108,23 +108,36 @@ export const useUpdateOrderStatus = () => {
 	});
 };
 
+
+
+
+
+
+
+
+
+
+
 export const useDeleteOrder = () => {
-	const qc = useQueryClient();
-	const dispatch = useDispatch();
-	return useMutation({
-		mutationFn: async (id) => {
-			const res = await axios.delete(`/api/orders/${id}`);
-			return res.data;
-		},
-		onSuccess: (_data, id) => {
-			// Invalidate react-query
-			qc.invalidateQueries(["orders"]);
-			// Update redux slice
-			dispatch(removeOrder(id));
-			toast.success("Order deleted successfully");
-		},
-		onError: (err) => {
-			toast.error(`Failed to delete order: ${err.message}`);
-		},
-	});
+  const qc = useQueryClient();
+  const dispatch = useDispatch();
+
+  return useMutation({
+    mutationFn: async (id) => {
+      // Send id in the body
+      const res = await axios.delete("/api/orders", { data: { id } });
+      return res.data;
+    },
+    onSuccess: (_data, id) => {
+      // Invalidate react-query cache
+      qc.invalidateQueries(["orders"]);
+      // Update redux slice
+      dispatch(removeOrder(id));
+      toast.success("Order deleted successfully");
+    },
+    onError: (err) => {
+      toast.error(`Failed to delete order: ${err.response?.data?.message || err.message}`);
+    },
+  });
 };
+	
