@@ -16,6 +16,7 @@ export default function AddProductPage() {
       toast.error("Please fill all fields!");
       return;
     }
+//wh
 
     setLoading(true);
 
