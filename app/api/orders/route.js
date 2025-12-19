@@ -79,7 +79,7 @@ export async function POST(req) {
 			},
 			invoice: invoiceId,
 			total: body.totalAmount,
-			payment: { method: "cash_on_delivery" },
+			payment: { method: "COD",status:" unpaid" },
 			shipping: {
 				address: body.address,
 				city: body.city,
