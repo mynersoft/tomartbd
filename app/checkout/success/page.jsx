@@ -23,7 +23,7 @@ function InvoiceContent() {
 export default function InvoicePage() {
   return (
     <Suspense fallback={<p>Loading order...</p>}>
-      <Invoice />
+      <InvoiceContent/>
     </Suspense>
   );
 }
