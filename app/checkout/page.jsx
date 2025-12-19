@@ -24,6 +24,9 @@ export default function CheckoutPage() {
 		city: "",
 		phone: "",
 		totalAmount: 0,
+payment:{
+mathod: "COD",
+},
 		products: cart.map((item) => ({
 			productId: item.productId,
 			name: item.name,
