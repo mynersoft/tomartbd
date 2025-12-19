@@ -1,150 +1,213 @@
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
-import { placeOrderCOD } from "@/store/slices/orderSlice";
 import { clearCart } from "@/store/slices/cartSlice";
 import { useEffect, useState } from "react";
-import Invoice from "@/components/Order/Invoice";
-import { useAddOrder } from "@/hooks/useOrder.js";
+import { useAddOrder } from "@/hooks/useOrder";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function CheckoutPage() {
-	const router = useRouter();
-	
-		
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart.items);
+  const mutation = useAddOrder();
 
-	const dispatch = useDispatch();
-	const cart = useSelector((state) => state.cart.items);
-	const { loading, success } = useSelector((state) => state.order);
-	const [invoice, setInvoice] = useState(null);
-	const mutation = useAddOrder();
+  const [processing, setProcessing] = useState(false);
 
-	const [orderData, setOrderData] = useState({
-		address: "",
-		city: "",
-		phone: "",
-		totalAmount: 0,
-payment:{
-mathod: "COD",
-},
-		products: cart.map((item) => ({
-			productId: item.productId,
-			name: item.name,
-			quantity: item.quantity,
-			price: item.price,
-		})),
-	});
+  const [orderData, setOrderData] = useState({
+    address: "",
+    city: "",
+    phone: "",
+    totalAmount: 0,
+    payment: {
+      method: "COD",
+      status: "pending",
+      transactionId: null,
+    },
+    products: [],
+  });
 
-	const { address, city, phone } = orderData;
-	
+  /* ---------------- PRODUCTS ---------------- */
+  useEffect(() => {
+    setOrderData((prev) => ({
+      ...prev,
+      products: cart.map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    }));
+  }, [cart]);
 
-	const handleChange = (e) => {
-		const { name, value } = e.target;
-		setOrderData((prev) => ({
-			...prev,
-			[name]: value,
-		}));
-	};
+  /* ---------------- TOTAL ---------------- */
+  const totalAmount = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
-	const totalAmount = cart.reduce(
-		(total, item) => total + item.price * item.quantity,
-		0
-	);
+  useEffect(() => {
+    setOrderData((prev) => ({
+      ...prev,
+      totalAmount,
+    }));
+  }, [totalAmount]);
 
-	const handlePlaceOrder = () => {
-		mutation.mutate(orderData, {
-			onSuccess: (newOrder) => {
-				  router.push(`/checkout/success?orderId=${newOrder._id}`);
-			},
-		});
-	};
+  /* ---------------- INPUT ---------------- */
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setOrderData((prev) => ({ ...prev, [name]: value }));
+  };
 
+  const handlePaymentChange = (method) => {
+    setOrderData((prev) => ({
+      ...prev,
+      payment: { ...prev.payment, method },
+    }));
+  };
 
+  /* =====================================================
+     MOCK PAYMENT GATEWAY (Stripe-like)
+     ===================================================== */
+  const openPaymentGateway = async () => {
+    setProcessing(true);
+    toast.loading("Redirecting to payment...", { id: "pay" });
 
-	const [mounted, setMounted] = useState(false);
-	useEffect(() => setMounted(true), []);
+    // simulate gateway delay
+    await new Promise((res) => setTimeout(res, 2000));
 
-	useEffect(() => {
-		setOrderData((prev) => ({
-			...prev, // keep existing fields
-			totalAmount: totalAmount, // add/update totalAmount
-		}));
-	}, [setOrderData, totalAmount]);
+    // simulate success
+    const fakeTransactionId = "TXN_" + Date.now();
 
-	useEffect(() => {
-		if (success) {
-			dispatch(clearCart());
-			setOrderData({
-				address: "",
-				city: "",
-				phone: "",
-				totalAmount: 0,
-			});
-		}
-	}, [success, dispatch, setOrderData]);
+    toast.success("Payment Successful", { id: "pay" });
 
-	return (
-		<div className="max-w-3xl mx-auto p-6">
-			{/* <Invoice /> */}
-			<h1 className="text-2xl font-bold mb-6">Checkout</h1>
+    return {
+      success: true,
+      transactionId: fakeTransactionId,
+    };
+  };
 
-			{/* Address */}
-			<input
-				className="w-full border p-2 mb-3 rounded"
-				placeholder="Address"
-				value={address}
-				name="address"
-				onChange={handleChange}
-			/>
+  /* ---------------- PLACE ORDER ---------------- */
+  const placeOrder = (finalOrderData) => {
+    mutation.mutate(finalOrderData, {
+      onSuccess: (newOrder) => {
+        dispatch(clearCart());
+        router.push(`/checkout/success?orderId=${newOrder._id}`);
+      },
+      onError: () => {
+        toast.error("Order failed");
+        setProcessing(false);
+      },
+    });
+  };
 
-			{/* City */}
-			<input
-				className="w-full border p-2 mb-3 rounded"
-				placeholder="City"
-				value={city}
-				name="city"
-				onChange={handleChange}
-			/>
+  /* ---------------- CONFIRM ---------------- */
+  const handleConfirmOrder = async () => {
+    if (!orderData.address || !orderData.city || !orderData.phone) {
+      toast.error("Fill all fields");
+      return;
+    }
 
-			{/* Phone */}
-			<input
-				className="w-full border p-2 mb-4 rounded"
-				placeholder="Phone"
-				value={phone}
-				name="phone"
-				onChange={handleChange}
-			/>
+    // ✅ COD
+    if (orderData.payment.method === "COD") {
+      placeOrder({
+        ...orderData,
+        payment: {
+          method: "COD",
+          status: "pending",
+        },
+      });
+      return;
+    }
 
-			{/* Place Order Button */}
-			<button
-				onClick={handlePlaceOrder}
-				className="w-full bg-black text-white py-3 rounded hover:bg-gray-800 transition">
-				{loading ? "Placing Order..." : "Confirm Order (COD)"}
-			</button>
+    // ✅ ONLINE PAYMENT
+    const paymentResult = await openPaymentGateway();
 
-			{/* Success Message */}
-			{success && (
-				<p className="text-green-600 mt-4 text-center">
-					Order placed successfully!
-				</p>
-			)}
+    if (paymentResult.success) {
+      placeOrder({
+        ...orderData,
+        payment: {
+          method: orderData.payment.method,
+          status: "paid",
+          transactionId: paymentResult.transactionId,
+        },
+      });
+    } else {
+      toast.error("Payment failed");
+      setProcessing(false);
+    }
+  };
 
-			{/* Optional: Display cart summary */}
-			<div className="mt-6 border-t pt-4">
-				<h2 className="text-lg font-semibold mb-2">Order Summary</h2>
-				{cart.map((item, index) => (
-					<div key={index} className="flex justify-between mb-1">
-						<span>
-							{item.name} x {item.quantity}
-						</span>
-						<span>${item.price * item.quantity}</span>
-					</div>
-				))}
-				<div className="flex justify-between font-bold mt-2">
-					<span>Total</span>
-					<span>${totalAmount}</span>
-				</div>
-			</div>
-		</div>
-	);
+  /* ================= UI ================= */
+  return (
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Checkout</h1>
+
+      <input
+        className="w-full border p-2 mb-3 rounded"
+        placeholder="Address"
+        name="address"
+        value={orderData.address}
+        onChange={handleChange}
+      />
+
+      <input
+        className="w-full border p-2 mb-3 rounded"
+        placeholder="City"
+        name="city"
+        value={orderData.city}
+        onChange={handleChange}
+      />
+
+      <input
+        className="w-full border p-2 mb-4 rounded"
+        placeholder="Phone"
+        name="phone"
+        value={orderData.phone}
+        onChange={handleChange}
+      />
+
+      {/* PAYMENT */}
+      <div className="mb-5">
+        <h2 className="font-semibold mb-2">Payment Method</h2>
+
+        {["COD", "bKash", "Nagad", "Rocket"].map((method) => (
+          <label key={method} className="flex items-center gap-2 mb-2">
+            <input
+              type="radio"
+              checked={orderData.payment.method === method}
+              onChange={() => handlePaymentChange(method)}
+            />
+            {method}
+          </label>
+        ))}
+      </div>
+
+      <button
+        disabled={processing}
+        onClick={handleConfirmOrder}
+        className="w-full bg-black text-white py-3 rounded"
+      >
+        {processing
+          ? "Processing..."
+          : `Confirm Order (${orderData.payment.method})`}
+      </button>
+
+      {/* SUMMARY */}
+      <div className="mt-6 border-t pt-4">
+        <h2 className="font-semibold mb-2">Order Summary</h2>
+        {cart.map((item, i) => (
+          <div key={i} className="flex justify-between">
+            <span>{item.name} × {item.quantity}</span>
+            <span>৳{item.price * item.quantity}</span>
+          </div>
+        ))}
+        <div className="flex justify-between font-bold mt-2">
+          <span>Total</span>
+          <span>৳{totalAmount}</span>
+        </div>
+      </div>
+    </div>
+  );
 }
