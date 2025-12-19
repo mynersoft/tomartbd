@@ -22,7 +22,7 @@ export default function CheckoutPage() {
     totalAmount: 0,
     payment: {
       method: "COD",
-      status: "pending",
+      status: "unpaid",
       transactionId: null,
     },
     products: [],
