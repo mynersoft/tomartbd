@@ -68,7 +68,7 @@ export default function CheckoutPage() {
   };
 
   /* =====================================================
-     MOCK PAYMENT GATEWAY (Stripe-like)
+     MOCK PAYMENT GATEWAY (bKash / Nagad / Rocket style)
      ===================================================== */
   const openPaymentGateway = async () => {
     setProcessing(true);
@@ -77,10 +77,10 @@ export default function CheckoutPage() {
     // simulate gateway delay
     await new Promise((res) => setTimeout(res, 2000));
 
-    // simulate success
+    // simulate success (later replace with real SDK)
     const fakeTransactionId = "TXN_" + Date.now();
 
-    toast.success("Payment Successful", { id: "pay" });
+    toast.success("Payment successful", { id: "pay" });
 
     return {
       success: true,
@@ -96,20 +96,20 @@ export default function CheckoutPage() {
         router.push(`/checkout/success?orderId=${newOrder._id}`);
       },
       onError: () => {
-        toast.error("Order failed");
+        toast.error("Order failed. Please try again");
         setProcessing(false);
       },
     });
   };
 
-  /* ---------------- CONFIRM ---------------- */
+  /* ---------------- CONFIRM ORDER ---------------- */
   const handleConfirmOrder = async () => {
     if (!orderData.address || !orderData.city || !orderData.phone) {
-      toast.error("Fill all fields");
+      toast.error("Please fill all required fields");
       return;
     }
 
-    // ✅ COD
+    // ✅ CASH ON DELIVERY
     if (orderData.payment.method === "COD") {
       placeOrder({
         ...orderData,
@@ -121,7 +121,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    // ✅ ONLINE PAYMENT
+    // ✅ ONLINE PAYMENT (bKash / Nagad / Rocket)
     const paymentResult = await openPaymentGateway();
 
     if (paymentResult.success) {
@@ -134,7 +134,7 @@ export default function CheckoutPage() {
         },
       });
     } else {
-      toast.error("Payment failed");
+      toast.error("Payment failed. Try again");
       setProcessing(false);
     }
   };
@@ -168,7 +168,7 @@ export default function CheckoutPage() {
         onChange={handleChange}
       />
 
-      {/* PAYMENT */}
+      {/* PAYMENT METHOD */}
       <div className="mb-5">
         <h2 className="font-semibold mb-2">Payment Method</h2>
 
@@ -187,19 +187,21 @@ export default function CheckoutPage() {
       <button
         disabled={processing}
         onClick={handleConfirmOrder}
-        className="w-full bg-black text-white py-3 rounded"
+        className="w-full bg-black text-white py-3 rounded disabled:opacity-60"
       >
         {processing
           ? "Processing..."
           : `Confirm Order (${orderData.payment.method})`}
       </button>
 
-      {/* SUMMARY */}
+      {/* ORDER SUMMARY */}
       <div className="mt-6 border-t pt-4">
         <h2 className="font-semibold mb-2">Order Summary</h2>
         {cart.map((item, i) => (
           <div key={i} className="flex justify-between">
-            <span>{item.name} × {item.quantity}</span>
+            <span>
+              {item.name} × {item.quantity}
+            </span>
             <span>৳{item.price * item.quantity}</span>
           </div>
         ))}
