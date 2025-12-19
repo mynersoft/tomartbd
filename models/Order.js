@@ -31,9 +31,12 @@ const orderSchema = new mongoose.Schema(
 			default: "pending",
 		},
 		payment: {
+status: ["unpaid", "paid"],
+transactionId: {type:String},
 			method: {
 				type: String,
 				enum: ["COD", "bKash"," Nogod","Rocket"],
+
 				default: "COD",
 			},
 			status: {
