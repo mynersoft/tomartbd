@@ -51,12 +51,6 @@ mathod: "COD",
 		0
 	);
 
-	// const handlePlaceOrder = () => {
-
-	// 	dispatch(placeOrderCOD(orderData));
-
-	// };
-
 	const handlePlaceOrder = () => {
 		mutation.mutate(orderData, {
 			onSuccess: (newOrder) => {
