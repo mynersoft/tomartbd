@@ -1,7 +1,11 @@
 import { Clock, DollarSign, Package, Truck } from "lucide-react";
 import React from "react";
+import { useSelector } from "react-redux";
 
-const StatsCard = ({ orders }) => {
+const StatsCard = ({ orders }) => { 
+	const user = useSelector((state) => state.user.user);
+	console.log(user);
+	
 	const formatCurrency = (amount) => {
 		return new Intl.NumberFormat("en-US", {
 			style: "currency",
@@ -76,25 +80,29 @@ const StatsCard = ({ orders }) => {
 				</div>
 			</div>
 
-			<div className="bg-white rounded-lg shadow p-6">
-				<div className="flex items-center justify-between">
-					<div>
-						<p className="text-sm text-gray-600">Revenue</p>
-						<p className="text-2xl font-bold">
-							{formatCurrency(
-								orders.length > 0 &&
-									orders.reduce(
-										(sum, order) => sum + order.total,
-										0
-									)
-							)}
-						</p>
-					</div>
-					<div className="p-3 bg-green-50 rounded-lg">
-						<DollarSign className="w-6 h-6 text-green-600" />
+			{user.role === "user" ? (
+				<div className="bg-white rounded-lg shadow p-6">
+					<div className="flex items-center justify-between">
+						<div>
+							<p className="text-sm text-gray-600">Revenue</p>
+							<p className="text-2xl font-bold">
+								{formatCurrency(
+									orders.length > 0 &&
+										orders.reduce(
+											(sum, order) => sum + order.total,
+											0
+										)
+								)}
+							</p>
+						</div>
+						<div className="p-3 bg-green-50 rounded-lg">
+							<DollarSign className="w-6 h-6 text-green-600" />
+						</div>
 					</div>
 				</div>
-			</div>
+			) : (
+				""
+			)}
 		</div>
 	);
 };
