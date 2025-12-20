@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
-import { connectDB } from "@/lib/connectDB";
+import { authOptions } from "@/lib/auth";
+import { connectDB } from "@/lib/db";
 import Order from "@/models/Order";
 import mongoose from "mongoose";
+import { withErrorHandler } from "@/lib/withErrorHandler";
+import { ApiError } from "@/lib/ApiError";
 
 export async function PATCH(req, { params }) {
   try {
