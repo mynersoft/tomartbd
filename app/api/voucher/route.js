@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import Voucher from "@/lib/models/Voucher";
+import Voucher from "@/models/Voucher";
 import { connectDB } from "@/lib/db";
-import { ApiError, handleApiError } from "@/lib/api-error";
+import { ApiError, handleApiError } from "@/lib/ApiError";
 
 export async function POST(req) {
   try {

@@ -6,7 +6,7 @@ import Order from "@/models/Order";
 import mongoose from "mongoose";
 import { generateInvoiceID } from "../../../helper/generateInvoiceID";
 import { withErrorHandler } from "@/lib/withErrorHandler";
-import { ApiError } from "@/lib/apiError";
+import { ApiError } from "@/lib/ApiError";
 
 export async function GET(req) {
 	try {

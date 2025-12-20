@@ -3,6 +3,7 @@ import { apiSlice } from "./slices/apiSlice";
 import productReducer from "./slices/productSlice";
 import cartReducer from "./slices/cartSlice";
 import wishlistReducer from "./slices/wishlistSlice";
+import voucherReducer from "./slices/voucherSlice";
 import orderReducer from "./slices/orderSlice";
 import userReducer from "./slices/userSlice";
 import blogReducer from "./slices/blogSlice";
@@ -15,6 +16,7 @@ export const store = configureStore({
 		wishlist: wishlistReducer,
 		user: userReducer,
 		order: orderReducer,
+		voucher: voucherReducer,
 		blog: blogReducer,
 	},
 	middleware: (getDefaultMiddleware) =>
