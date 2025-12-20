@@ -5,6 +5,8 @@ import { connectDB } from "@/lib/db";
 import Order from "@/models/Order";
 import mongoose from "mongoose";
 import { generateInvoiceID } from "../../../helper/generateInvoiceID";
+import { withErrorHandler } from "@/lib/withErrorHandler";
+import { ApiError } from "@/lib/ApiError";
 
 
 
@@ -48,59 +50,61 @@ export async function GET(req) {
 
 
 
-export async function POST(req) {
-	try {
-		const session = await getServerSession(authOptions);
-		if (!session) {
-			return NextResponse.json(
-				{ message: "Unauthorized" },
-				{ status: 401 }
-			);
-		}
-
-		const body = await req.json();
-		if (!body.address || !body.phone) {
-			return NextResponse.json(
-				{ message: "Missing fields" },
-				{ status: 400 }
-			);
-		}
-
-		await connectDB();
-
-		const invoiceId = generateInvoiceID();
-
-
-		const order = await Order.create({
-			customer: {
-				name: session.user.name,
-				email: session.user.email,
-				phone: body.phone,
-			},
-			invoice: invoiceId,
-			total: body.totalAmount,
-			payment: { method: "COD",status:" unpaid" },
-			shipping: {
-				address: body.address,
-				city: body.city,
-				phone: body.phone,
-			},
-			orderItems: body.products,
-			userId: new mongoose.Types.ObjectId(session.user.id),
-		});
-
-		return NextResponse.json({ success: true, order });
-	} catch (error) {
-		console.error("ORDER ERROR:", error);
-		return NextResponse.json({ message: "Server error" }, { status: 500 });
-	}
-}
 
 
 
 
 
+export const POST = withErrorHandler(async (req) => {
+  // 🔐 Auth check
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    throw new ApiError("Unauthorized", 401);
+  }
 
+  // 📦 Request body
+  const body = await req.json();
+  const { address, phone, city, products, totalAmount } = body;
 
+  if (!address || !phone || !products || !totalAmount) {
+    throw new ApiError("Missing required fields", 400);
+  }
 
+  // 🔌 Connect DB
+  await connectDB();
 
+  // 🧾 Invoice
+  const invoiceId = generateInvoiceID();
+
+  // 🛒 Create Order
+  const order = await Order.create({
+    customer: {
+      name: session.user.name,
+      email: session.user.email,
+      phone,
+    },
+    invoice: invoiceId,
+    total: totalAmount,
+    payment: {
+      method: "COD",
+      status: "unpaid",
+    },
+    shipping: {
+      address,
+      city,
+      phone,
+    },
+    orderItems: products,
+    userId: new mongoose.Types.ObjectId(session.user.id),
+  });
+
+  // ✅ Success response
+  return NextResponse.json(
+    {
+      success: true,
+      message: "Order created successfully",
+      order,
+    },
+    { status: 201 }
+  );
+});
