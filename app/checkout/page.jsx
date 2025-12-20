@@ -4,16 +4,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearCart } from "@/store/slices/cartSlice";
 import { useEffect, useState } from "react";
 import { useAddOrder } from "@/hooks/useOrder";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart.items);
   const mutation = useAddOrder();
 
   const [processing, setProcessing] = useState(false);
+  const [bkashToken, setBkashToken] = useState(null);
 
   const [orderData, setOrderData] = useState({
     address: "",
@@ -67,28 +69,7 @@ export default function CheckoutPage() {
     }));
   };
 
-  /* =====================================================
-     MOCK PAYMENT GATEWAY (bKash / Nagad / Rocket style)
-     ===================================================== */
-  const openPaymentGateway = async () => {
-    setProcessing(true);
-    toast.loading("Redirecting to payment...", { id: "pay" });
-
-    // simulate gateway delay
-    await new Promise((res) => setTimeout(res, 2000));
-
-    // simulate success (later replace with real SDK)
-    const fakeTransactionId = "TXN_" + Date.now();
-
-    toast.success("Payment successful", { id: "pay" });
-
-    return {
-      success: true,
-      transactionId: fakeTransactionId,
-    };
-  };
-
-  /* ---------------- PLACE ORDER ---------------- */
+  /* ================= PLACE ORDER ================= */
   const placeOrder = (finalOrderData) => {
     mutation.mutate(finalOrderData, {
       onSuccess: (newOrder) => {
@@ -96,47 +77,98 @@ export default function CheckoutPage() {
         router.push(`/checkout/success?orderId=${newOrder._id}`);
       },
       onError: () => {
-        toast.error("Order failed. Please try again");
+        toast.error("Order failed");
         setProcessing(false);
       },
     });
   };
 
-  /* ---------------- CONFIRM ORDER ---------------- */
+  /* ================= BKASH CREATE ================= */
+  const startBkashPayment = async () => {
+    setProcessing(true);
+    toast.loading("Redirecting to bKash...", { id: "bkash" });
+
+    const res = await fetch("/api/bkash/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: totalAmount,
+        orderId: "ORD_" + Date.now(),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.bkashURL && data.paymentID) {
+      sessionStorage.setItem("bkash_paymentID", data.paymentID);
+      sessionStorage.setItem("bkash_token", data.id_token);
+      window.location.href = data.bkashURL;
+    } else {
+      toast.error("bKash initialization failed", { id: "bkash" });
+      setProcessing(false);
+    }
+  };
+
+  /* ================= BKASH EXECUTE (CALLBACK) ================= */
+  useEffect(() => {
+    const paymentID = searchParams.get("paymentID");
+
+    if (!paymentID) return;
+
+    const executeBkash = async () => {
+      toast.loading("Confirming payment...", { id: "bkash-exec" });
+
+      const token = sessionStorage.getItem("bkash_token");
+
+      const res = await fetch("/api/bkash/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentID, token }),
+      });
+
+      const data = await res.json();
+
+      if (data.statusCode === "0000") {
+        toast.success("Payment successful", { id: "bkash-exec" });
+
+        placeOrder({
+          ...orderData,
+          payment: {
+            method: "bKash",
+            status: "paid",
+            transactionId: data.trxID,
+          },
+        });
+      } else {
+        toast.error("Payment failed", { id: "bkash-exec" });
+        setProcessing(false);
+      }
+    };
+
+    executeBkash();
+  }, [searchParams]);
+
+  /* ================= CONFIRM ORDER ================= */
   const handleConfirmOrder = async () => {
     if (!orderData.address || !orderData.city || !orderData.phone) {
       toast.error("Please fill all required fields");
       return;
     }
 
-    // ✅ CASH ON DELIVERY
     if (orderData.payment.method === "COD") {
       placeOrder({
         ...orderData,
-        payment: {
-          method: "COD",
-          status: "unpaid",
-        },
+        payment: { method: "COD", status: "unpaid" },
       });
       return;
     }
 
-    // ✅ ONLINE PAYMENT (bKash / Nagad / Rocket)
-    const paymentResult = await openPaymentGateway();
-
-    if (paymentResult.success) {
-      placeOrder({
-        ...orderData,
-        payment: {
-          method: orderData.payment.method,
-          status: "paid",
-          transactionId: paymentResult.transactionId,
-        },
-      });
-    } else {
-      toast.error("Payment failed. Try again");
-      setProcessing(false);
+    if (orderData.payment.method === "bKash") {
+      startBkashPayment();
+      return;
     }
+
+    toast.error("Payment method not supported yet");
   };
 
   /* ================= UI ================= */
@@ -172,7 +204,7 @@ export default function CheckoutPage() {
       <div className="mb-5">
         <h2 className="font-semibold mb-2">Payment Method</h2>
 
-        {["COD", "bKash", "Nagad", "Rocket"].map((method) => (
+        {["COD", "bKash"].map((method) => (
           <label key={method} className="flex items-center gap-2 mb-2">
             <input
               type="radio"
