@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 const StatsCard = ({ orders }) => { 
 	const user = useSelector((state) => state.user.user);
-	console.log(user);
+
 	
 	const formatCurrency = (amount) => {
 		return new Intl.NumberFormat("en-US", {
@@ -80,7 +80,7 @@ const StatsCard = ({ orders }) => {
 				</div>
 			</div>
 
-			{user.role === "user" ? (
+			{user &&  user.role === "user" ? (
 				<div className="bg-white rounded-lg shadow p-6">
 					<div className="flex items-center justify-between">
 						<div>

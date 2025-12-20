@@ -6,11 +6,7 @@ import Order from "@/models/Order";
 import mongoose from "mongoose";
 import { generateInvoiceID } from "../../../helper/generateInvoiceID";
 import { withErrorHandler } from "@/lib/withErrorHandler";
-import { ApiError } from "@/lib/ApiError";
-
-
-
-
+import { ApiError } from "@/lib/apiError";
 
 export async function GET(req) {
 	try {
@@ -47,64 +43,56 @@ export async function GET(req) {
 	}
 }
 
-
-
-
-
-
-
-
-
 export const POST = withErrorHandler(async (req) => {
-  // 🔐 Auth check
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    throw new ApiError("Unauthorized", 401);
-  }
+	// 🔐 Auth check
+	const session = await getServerSession(authOptions);
+	if (!session) {
+		throw new ApiError("Unauthorized", 401);
+	}
 
-  // 📦 Request body
-  const body = await req.json();
-  const { address, phone, city, products, totalAmount } = body;
+	// 📦 Request body
+	const body = await req.json();
+	const { address, phone, city, products, totalAmount } = body;
 
-  if (!address || !phone || !products || !totalAmount) {
-    throw new ApiError("Missing required fields", 400);
-  }
+	if (!address || !phone || !products || !totalAmount) {
+		throw new ApiError("Missing required fields", 400);
+	}
 
-  // 🔌 Connect DB
-  await connectDB();
+	// 🔌 Connect DB
+	await connectDB();
 
-  // 🧾 Invoice
-  const invoiceId = generateInvoiceID();
+	// 🧾 Invoice
+	const invoiceId = generateInvoiceID();
 
-  // 🛒 Create Order
-  const order = await Order.create({
-    customer: {
-      name: session.user.name,
-      email: session.user.email,
-      phone,
-    },
-    invoice: invoiceId,
-    total: totalAmount,
-    payment: {
-      method: "COD",
-      status: "unpaid",
-    },
-    shipping: {
-      address,
-      city,
-      phone,
-    },
-    orderItems: products,
-    userId: new mongoose.Types.ObjectId(session.user.id),
-  });
+	// 🛒 Create Order
+	const order = await Order.create({
+		customer: {
+			name: session.user.name,
+			email: session.user.email,
+			phone,
+		},
+		invoice: invoiceId,
+		total: totalAmount,
+		payment: {
+			method: "COD",
+			status: "unpaid",
+		},
+		shipping: {
+			address,
+			city,
+			phone,
+		},
+		orderItems: products,
+		userId: new mongoose.Types.ObjectId(session.user.id),
+	});
 
-  // ✅ Success response
-  return NextResponse.json(
-    {
-      success: true,
-      message: "Order created successfully",
-      order,
-    },
-    { status: 201 }
-  );
+	// ✅ Success response
+	return NextResponse.json(
+		{
+			success: true,
+			message: "Order created successfully",
+			order,
+		},
+		{ status: 201 }
+	);
 });
