@@ -2,7 +2,9 @@
 import Link from "next/link";
 import ProductTable from "../../../../components/Dashboard/ProductTable";
 
-import {useState} from "React"
+import { useState } from "react";
+import AddProductModal from "@/components/AddProductModal";
+
 
 export default function AdminProductsPage() {
 {
