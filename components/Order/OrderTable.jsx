@@ -76,6 +76,22 @@ const OrderTable = ({ data }) => {
 		setIsModalOpen(true);
 	};
 
+
+
+const handleCancelOrder = (orderId) = {
+const res = await fetch(`/api/order/cancel/${orderId}`, {
+  method: "PATCH",
+});
+
+const data = await res.json();
+
+if (!res.ok) {
+  toast.error(data.message);
+  return;
+}
+
+toast.success("Order cancelled");}
+
 	const handleStatusUpdate = (orderId, newStatus) => {
 		console.log("Update order:", orderId, "to", newStatus);
 	};
@@ -286,6 +302,12 @@ const OrderTable = ({ data }) => {
 												className="text-blue-600 hover:text-blue-900 flex items-center gap-1">
 												<Eye className="w-4 h-4" /> View
 											</button>
+
+
+<button onclick = {() =>
+													handleCancelOrder(order._id)
+												}>Cancel</button>
+
 
 											{user.role === "user" ? (
 												""
