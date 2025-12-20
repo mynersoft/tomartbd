@@ -25,16 +25,16 @@ export async function DELETE(req, { params }) {
 
     if (!id) {
       return NextResponse.json(
-        { success: false, message: "Invalid order ID" },
+        { success: false, message: "Invalid product ID" },
         { status: 400 }
       );
     }
 
     await connectDB();
 
-    const order = await Product.findById(id);
+    const product = await Product.findById(id);
 
-    if (!order) {
+    if (!product) {
       return NextResponse.json(
         { success: false, message: "Order not found" },
         { status: 404 }
@@ -55,7 +55,7 @@ export async function DELETE(req, { params }) {
 
     return NextResponse.json({
       success: true,
-      message: "Order deleted successfully",
+      message: "Product deleted successfully",
     });
   } catch (error) {
     console.error("DELETE ERROR:", error);
