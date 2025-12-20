@@ -30,6 +30,10 @@ const orderSchema = new mongoose.Schema(
 			],
 			default: "pending",
 		},
+
+cancelledAt: {
+  type: Date,
+},
 		payment: {
 status: ["unpaid", "paid"],
 transactionId: {type:String},
