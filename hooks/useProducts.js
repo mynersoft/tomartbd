@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { setProducts, addProduct } from "@/store/slices/productSlice";
+import { setProducts, addProduct, removeProduct } from "@/store/slices/productSlice";
 import toast from "react-hot-toast";
 
 // ------------------------

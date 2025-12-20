@@ -1,43 +1,68 @@
 import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
-import mongoose from "mongoose";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import { authOptions } from "@/lib/auth";
+
+
+
 
 export async function DELETE(req, { params }) {
-	try {
-		await connectDB();
+  try {
+    const session = await getServerSession(authOptions);
 
-		const { id } = params; // <- DO NOT overwrite this
-		console.log("Product ID from params:", id);
+    if (!session) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
-		if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-			return new Response(
-				JSON.stringify({ success: false, error: "Invalid product ID" }),
-				{ status: 400, headers: { "Content-Type": "application/json" } }
-			);
-		}
+    const url = new URL(req.url);
+    const pathname = url.pathname;
+    const parts = pathname.split("/");
+    const id = parts[parts.length - 1];
 
-		const product = await Product.findByIdAndDelete(id);
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Invalid product ID" },
+        { status: 400 }
+      );
+    }
 
-		if (!product) {
-			return new Response(
-				JSON.stringify({ success: false, error: "Product not found" }),
-				{ status: 404, headers: { "Content-Type": "application/json" } }
-			);
-		}
+    await connectDB();
 
-		return new Response(
-			JSON.stringify({
-				success: true,
-				message: "Product deleted",
-				product,
-			}),
-			{ status: 200, headers: { "Content-Type": "application/json" } }
-		);
-	} catch (err) {
-		console.error("DELETE PRODUCT ERROR:", err);
-		return new Response(
-			JSON.stringify({ success: false, error: err.message }),
-			{ status: 500, headers: { "Content-Type": "application/json" } }
-		);
-	}
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, message: "Order not found" },
+        { status: 404 }
+      );
+    } 
+
+    if (session.user.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Forbidden: Admin access required",
+        },
+        { status: 403 }
+      );
+    }
+
+    await Product.findByIdAndDelete(id);
+
+    return NextResponse.json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+  } catch (error) {
+    console.error("DELETE ERROR:", error);
+
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500 }
+    );
+  }
 }

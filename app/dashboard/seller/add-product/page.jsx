@@ -29,7 +29,7 @@ export default function AddProductPage() {
       if (!res.ok) throw new Error("Failed to add product");
 
       toast.success("Product added successfully!");
-      router.push("/seller/products"); // Redirect to products list
+      router.push("/dashboard/seller/products"); // Redirect to products list
     } catch (err) {
       toast.error(err.message || "Something went wrong!");
     } finally {

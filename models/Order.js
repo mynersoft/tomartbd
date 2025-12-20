@@ -30,11 +30,18 @@ const orderSchema = new mongoose.Schema(
 			],
 			default: "pending",
 		},
+
+cancelledAt: {
+  type: Date,
+},
 		payment: {
+status: ["unpaid", "paid"],
+transactionId: {type:String},
 			method: {
 				type: String,
-				enum: ["cash_on_delivery"],
-				required: true,
+				enum: ["COD", "bKash"," Nogod","Rocket"],
+
+				default: "COD",
 			},
 			status: {
 				type: String,

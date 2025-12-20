@@ -1,6 +1,7 @@
 "use client";
 
 import { useProducts, useDeleteProduct } from "@/hooks/useProducts";
+import toast from "react-hot-toast";
 
 export default function ProductTable() {
 	const { data: products, isLoading, isError } = useProducts();
@@ -9,12 +10,20 @@ export default function ProductTable() {
 	if (isLoading) return <p>Loading products...</p>;
 	if (isError) return <p>Failed to load products</p>;
 
-	const handleDelete = (id) => {
-		if (window.confirm("Are you sure you want to delete this product?")) {
-			deleteMutation.mutate(id);
-		}
-	};
+	
 
+const handleDelete = (id) => {
+  if (!window.confirm("Are you sure you want to delete this product?")) return;
+
+  deleteMutation.mutate(id, {
+    onSuccess: () => {
+      toast.success("Product deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(error?.message || "Failed to delete product");
+    },
+  });
+};
 
 	
 	return (
