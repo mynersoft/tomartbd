@@ -78,19 +78,28 @@ const OrderTable = ({ data }) => {
 
 
 
-const handleCancelOrder = (orderId) = {
-const res = await fetch(`/api/order/cancel/${orderId}`, {
-  method: "PATCH",
-});
 
-const data = await res.json();
+const handleCancelOrder = async (orderId) => {
+  try {
+    const res = await fetch(`/api/order/cancel/${orderId}`, {
+      method: "PATCH",
+    });
 
-if (!res.ok) {
-  toast.error(data.message);
-  return;
-}
+    const data = await res.json();
 
-toast.success("Order cancelled");}
+    if (!res.ok) {
+      toast.error(data.message || "Order cancel failed");
+      return;
+    }
+
+    toast.success("Order cancelled successfully");
+    // চাইলে এখানে refetch / router.refresh() দিতে পারো
+  } catch (error) {
+    toast.error("Something went wrong");
+  }
+};
+
+
 
 	const handleStatusUpdate = (orderId, newStatus) => {
 		console.log("Update order:", orderId, "to", newStatus);
