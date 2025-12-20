@@ -54,24 +54,17 @@ export async function DELETE(req, { params }) {
 		
 		const role = session.user.role;
 		const userId = session.user.id;
-		console.log(order, "==============================================");
 		
 
-		// // 🔐 Authorization Logic
-		// if (
-		// 	role !== "admin" &&
-		// 	order.user.toString() !== userId &&
-		// 	order.seller?.toString() !== userId
-		// ) {
-		// 	return NextResponse.json(
-		// 		{
-		// 			success: false,
-		// 			message: "Forbidden: Not allowed to delete this order",
-		// 		},
-		// 		{ status: 403 }
-		// 	);
-		// }
-
+		if (session.user.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Forbidden: Admin access required",
+        },
+        { status: 403 }
+      );
+    }
 		await Order.findByIdAndDelete(id);
 
 		return NextResponse.json({
