@@ -1,6 +1,11 @@
 import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
-import mongoose from "mongoose";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import { authOptions } from "@/lib/auth";
+
+
+
 
 export async function DELETE(req, { params }) {
   try {
@@ -27,14 +32,14 @@ export async function DELETE(req, { params }) {
 
     await connectDB();
 
-    const order = await Order.findById(id);
+    const order = await Product.findById(id);
 
     if (!order) {
       return NextResponse.json(
         { success: false, message: "Order not found" },
         { status: 404 }
       );
-    } // ✅ FIXED: missing brace added
+    } 
 
     if (session.user.role !== "admin") {
       return NextResponse.json(
@@ -46,7 +51,7 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    await Order.findByIdAndDelete(id);
+    await Product.findByIdAndDelete(id);
 
     return NextResponse.json({
       success: true,
