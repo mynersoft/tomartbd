@@ -49,12 +49,7 @@ export async function DELETE(req, { params }) {
 				{ success: false, message: "Order not found" },
 				{ status: 404 }
 			);
-		}
 
-		
-		const role = session.user.role;
-		const userId = session.user.id;
-		
 
 		if (session.user.role !== "admin") {
       return NextResponse.json(
