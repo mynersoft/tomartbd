@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 import AdminLayout from "../../components/Dashboard/AdminLayout";
 import UserLayout from "../../components/Dashboard/UserLayout";
@@ -17,30 +18,35 @@ export default function DashboardLayout({ children }) {
   const isSeller = pathname.startsWith("/dashboard/seller");
 
   useEffect(() => {
-    // Not logged in
+    // ❌ Not logged in
     if (status === "unauthenticated") {
-      router.replace("/login");
+      toast.error("Please login to continue");
+      router.replace("/auth/login");
       return;
     }
 
+    // ❌ Logged in but wrong role
     if (status === "authenticated") {
       const role = session?.user?.role;
 
       if (isAdmin && role !== "admin") {
-        router.replace("/unauthorized");
+        toast.error("Unauthorized access");
+        router.replace("/auth/login");
       }
 
       if (isUser && role !== "user") {
-        router.replace("/unauthorized");
+        toast.error("Unauthorized access");
+        router.replace("/auth/login");
       }
 
       if (isSeller && role !== "seller") {
-        router.replace("/unauthorized");
+        toast.error("Unauthorized access");
+        router.replace("/auth/login");
       }
     }
   }, [status, pathname, session, router]);
 
-  // Loading state
+  // ⏳ Loading state
   if (status === "loading") {
     return <div className="p-6">Checking access...</div>;
   }
