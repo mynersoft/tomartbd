@@ -1,7 +1,7 @@
 "use client";
 
 import { useSelector } from "react-redux";
-import ProductSection from "@/components/home/ProductSection";
+import ProductSection from "@/components/Home/ProductSection";
 
 export default function Home() {
 const products = useSelector((state) => state.product.items);
