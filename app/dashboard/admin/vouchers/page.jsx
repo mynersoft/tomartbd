@@ -29,6 +29,13 @@ import {
 } from "lucide-react";
 
 export default function VoucherManagement() {
+
+useVoucher();
+
+const{vouchers} = useSelwctor(state => state.voucher);
+
+console.log(vouchers);
+
 	const [searchQuery, setSearchQuery] = useState("");
 	const [activeTab, setActiveTab] = useState("all");
 	const [selectedVouchers, setSelectedVouchers] = useState([]);
