@@ -2,7 +2,7 @@
 
 import { useSelector } from "react-redux";
 import ProductSection from "@/components/Home/ProductSection";
-import ProductSectionSkeleton from "@/components/Skeletons/ProductSectionSkeleton";
+import ProductCardSkeleton from "@/components/Skeletons/ProductCardSkeleton";
 
 export default function Home() {
   const { items: products = [], loading } = useSelector(
