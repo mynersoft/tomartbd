@@ -1,11 +1,31 @@
-export default function Home() {
-	return (
-		<div>
-			<main className="max-w-6xl mx-auto p-6">
-				<h2 className="text-2xl font-bold mb-4">Featured Products</h2>
+"use client";
 
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-			</main>
-		</div>
+import { useSelector } from "react-redux";
+import ProductSection from "@/components/home/ProductSection";
+
+export default function Home() {
+const products = useSelector((state) => state.product.items);
+
+  const featuredProducts = products.filter(
+    (p) => p.isFeatured === true
+  );
+
+  const bestSellingProducts = products.filter(
+    (p) => p.isBestSelling === true
+  );
+	return (
+	<main className="container mx-auto px-4">
+      {/* ⭐ Featured */}
+      <ProductSection
+        title="Featured Products"
+        products={featuredProducts}
+      />
+
+      {/* 🔥 Best Selling */}
+      <ProductSection
+        title="Best Selling Products"
+        products={bestSellingProducts}
+      />
+    </main>
 	);
 }
