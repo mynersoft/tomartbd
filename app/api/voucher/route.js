@@ -3,8 +3,31 @@ import Voucher from "@/models/Voucher";
 import { connectDB } from "@/lib/db";
 import { ApiError, handleApiError } from "@/lib/ApiError";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth/authOptions";
+
+
+import { checkAuthRole } from "@/lib/checkAuthRole";
+
+  
+
+
 export async function POST(req) {
   try {
+
+const { isAdmin } = await checkAuthRole();
+
+
+if (!isAdmin) {
+    return NextResponse.json(
+      { success: false, message: "Forbidden: Admin only" },
+      { status: 403 }
+    );
+  }
+
+
+
+
     await connectDB();
     const body = await req.json();
 
