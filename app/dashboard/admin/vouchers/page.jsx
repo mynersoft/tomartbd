@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useSelector} from "react";
+import { useState} from "react";
+import { useSelector } from "react-redux";
 import { useAddVoucher, useVoucher } from "@/hooks/useVoucher";
 import {
 	Search,
@@ -32,7 +33,7 @@ export default function VoucherManagement() {
 
 useVoucher();
 
-const{vouchers} = useSelector(state => state.voucher);
+const { vouchers } = useSelector((state) => state.voucher);
 
 console.log(vouchers);
 
