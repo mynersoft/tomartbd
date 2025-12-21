@@ -32,7 +32,7 @@ export default function VoucherManagement() {
 
 useVoucher();
 
-const{vouchers} = useSelwctor(state => state.voucher);
+const{vouchers} = useSelector(state => state.voucher);
 
 console.log(vouchers);
 
