@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAddVoucher } from "@/hooks/useVoucher";
+import { useAddVoucher, useVoucher } from "@/hooks/useVoucher";
 import {
 	Search,
 	Plus,
