@@ -2,30 +2,47 @@
 
 import { useSelector } from "react-redux";
 import ProductSection from "@/components/Home/ProductSection";
+import ProductSectionSkeleton from "@/components/Skeletons/ProductSectionSkeleton";
 
 export default function Home() {
-const products = useSelector((state) => state.product.items);
-
-  const featuredProducts = products.filter(
-    (p) => p.isFeatured === true
+  const { items: products = [], loading } = useSelector(
+    (state) => state.product
   );
 
-  const bestSellingProducts = products.filter(
-    (p) => p.isBestSelling === true
-  );
-	return (
-	<main className="container mx-auto px-4">
-      {/* ⭐ Featured */}
-      <ProductSection
-        title="Featured Products"
-        products={featuredProducts}
-      />
+  const featuredProducts = products.filter((p) => p.isFeatured);
+  const bestSellingProducts = products.filter((p) => p.isBestSelling);
 
-      {/* 🔥 Best Selling */}
-      <ProductSection
-        title="Best Selling Products"
-        products={bestSellingProducts}
-      />
+  if (loading) {
+    return (
+      <main className="container mx-auto px-4">
+        <ProductSectionSkeleton title="Featured Products" />
+        <ProductSectionSkeleton title="Best Selling Products" />
+      </main>
+    );
+  }
+
+  return (
+    <main className="container mx-auto px-4">
+      {featuredProducts.length > 0 && (
+        <ProductSection
+          title="Featured Products"
+          products={featuredProducts}
+        />
+      )}
+
+      {bestSellingProducts.length > 0 && (
+        <ProductSection
+          title="Best Selling Products"
+          products={bestSellingProducts}
+        />
+      )}
+
+      {featuredProducts.length === 0 &&
+        bestSellingProducts.length === 0 && (
+          <p className="text-center text-gray-500 py-10">
+            No products available
+          </p>
+        )}
     </main>
-	);
+  );
 }
