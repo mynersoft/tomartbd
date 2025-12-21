@@ -37,12 +37,19 @@ export default function Home() {
         />
       )}
 
+
+
+<ProductCard products = {products} />
+
+
       {featuredProducts.length === 0 &&
         bestSellingProducts.length === 0 && (
           <p className="text-center text-gray-500 py-10">
             No products available
           </p>
         )}
+
+
     </main>
   );
 }
