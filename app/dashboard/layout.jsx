@@ -1,8 +1,8 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 import AdminLayout from "../../components/Dashboard/AdminLayout";
@@ -13,15 +13,30 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
   const { data: session, status } = useSession();
 
+  // prevent multiple logout calls
+  const hasLoggedOut = useRef(false);
+
   const isAdmin = pathname.startsWith("/dashboard/admin");
   const isUser = pathname.startsWith("/dashboard/user");
   const isSeller = pathname.startsWith("/dashboard/seller");
 
   useEffect(() => {
+    const forceLogout = async (message) => {
+      if (hasLoggedOut.current) return;
+      hasLoggedOut.current = true;
+
+      toast.error(message);
+
+      await signOut({
+        redirect: false, // IMPORTANT
+      });
+
+      router.replace("/auth/login");
+    };
+
     // ❌ Not logged in
     if (status === "unauthenticated") {
-      toast.error("Please login to continue");
-      router.replace("/auth/login");
+      forceLogout("Please login to continue");
       return;
     }
 
@@ -30,18 +45,15 @@ export default function DashboardLayout({ children }) {
       const role = session?.user?.role;
 
       if (isAdmin && role !== "admin") {
-        toast.error("Unauthorized access");
-        router.replace("/auth/login");
+        forceLogout("Unauthorized access");
       }
 
       if (isUser && role !== "user") {
-        toast.error("Unauthorized access");
-        router.replace("/auth/login");
+        forceLogout("Unauthorized access");
       }
 
       if (isSeller && role !== "seller") {
-        toast.error("Unauthorized access");
-        router.replace("/auth/login");
+        forceLogout("Unauthorized access");
       }
     }
   }, [status, pathname, session, router]);
