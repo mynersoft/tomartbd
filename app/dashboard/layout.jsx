@@ -12,66 +12,63 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, status } = useSession();
-
-  // prevent multiple logout calls
   const hasLoggedOut = useRef(false);
 
-  const isAdmin = pathname.startsWith("/dashboard/admin");
-  const isUser = pathname.startsWith("/dashboard/user");
-  const isSeller = pathname.startsWith("/dashboard/seller");
+  // 🔐 ROLE PATH CHECK (covers /dashboard/admin/*)
+  const isAdminRoute = pathname.startsWith("/dashboard/admin");
+  const isUserRoute = pathname.startsWith("/dashboard/user");
+  const isSellerRoute = pathname.startsWith("/dashboard/seller");
+
+  const forceLogout = async (message) => {
+    if (hasLoggedOut.current) return;
+    hasLoggedOut.current = true;
+
+    toast.error(message);
+
+    await signOut({ redirect: false });
+    router.replace("/auth/login");
+  };
 
   useEffect(() => {
-    const forceLogout = async (message) => {
-      if (hasLoggedOut.current) return;
-      hasLoggedOut.current = true;
-
-      toast.error(message);
-
-      await signOut({
-        redirect: false, // IMPORTANT
-      });
-
-      router.replace("/auth/login");
-    };
-
-    // ❌ Not logged in
+    // ❌ Not authenticated
     if (status === "unauthenticated") {
       forceLogout("Please login to continue");
       return;
     }
 
-    // ❌ Logged in but wrong role
+    // ❌ Wrong role
     if (status === "authenticated") {
       const role = session?.user?.role;
 
-      if (isAdmin && role !== "admin") {
-        forceLogout("Unauthorized access");
+      if (isAdminRoute && role !== "admin") {
+        forceLogout("Admin access only");
       }
 
-      if (isUser && role !== "user") {
-        forceLogout("Unauthorized access");
+      if (isUserRoute && role !== "user") {
+        forceLogout("User access only");
       }
 
-      if (isSeller && role !== "seller") {
-        forceLogout("Unauthorized access");
+      if (isSellerRoute && role !== "seller") {
+        forceLogout("Seller access only");
       }
     }
-  }, [status, pathname, session, router]);
+  }, [status, pathname, session]);
 
-  // ⏳ Loading state
+  // ⏳ Loading
   if (status === "loading") {
     return <div className="p-6">Checking access...</div>;
   }
 
-  if (isAdmin) {
+  // 🎨 Layout Switch
+  if (isAdminRoute) {
     return <AdminLayout>{children}</AdminLayout>;
   }
 
-  if (isUser) {
+  if (isUserRoute) {
     return <UserLayout>{children}</UserLayout>;
   }
 
-  if (isSeller) {
+  if (isSellerRoute) {
     return <div>Seller Layout {children}</div>;
   }
 
