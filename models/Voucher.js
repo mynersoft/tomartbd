@@ -17,7 +17,7 @@ const VoucherSchema = new mongoose.Schema(
 
     discountType: {
       type: String,
-      enum: ["percentage", "fixed"],
+      enum: ["percentage", "fixed"," free-shipping"],
       default: "percentage",
     },
 
@@ -33,7 +33,7 @@ const VoucherSchema = new mongoose.Schema(
 
     usageLimit: {
       type: Number,
-      default: null, // unlimited
+      default: null, 
     },
 
     customerLimit: {
