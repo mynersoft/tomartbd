@@ -17,7 +17,7 @@ const VoucherSchema = new mongoose.Schema(
 
     discountType: {
       type: String,
-      enum: ["percentage", "fixed"," free-shipping"],
+      enum: ["percentage", "fixed","free-shipping"],
       default: "percentage",
     },
 
