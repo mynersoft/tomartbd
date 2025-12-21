@@ -1,6 +1,6 @@
 "use client";
 
-import ProductCard from "@/components/Product/ProductCard/";
+import ProductCard from "@/components/Product/ProductCard";
 
 export default function ProductSection({ title, products }) {
   if (!products || products.length === 0) return null;
