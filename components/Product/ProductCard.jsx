@@ -10,11 +10,10 @@ import ProductQuickView from "./ProductQuickView";
 export default function ProductCard({ product }) {
   const dispatch = useDispatch();
   const wishlist = useSelector((state) => state.wishlist.items);
-
   const isWishlisted = wishlist.some((item) => item._id === product._id);
   const [open, setOpen] = useState(false);
 
-  // ✅ Calculate discount price
+  // ✅ Discount price
   const calculateDiscountPrice = () => {
     if (product.discount && product.discount > 0) {
       return (product.price * (100 - product.discount)) / 100;
@@ -22,23 +21,10 @@ export default function ProductCard({ product }) {
     return product.price;
   };
 
-  // ✅ Format price with commas
-  const formatPrice = (price) => {
-    return price.toFixed(2);
-  };
+  const formatPrice = (price) => Number(price).toFixed(2);
 
   const discountPrice = calculateDiscountPrice();
   const hasDiscount = product.discount && product.discount > 0;
-
-  // ✅ Open quick view
-  const handleQuickView = () => {
-    setOpen(true);
-  };
-
-  // ✅ Close quick view
-  const handleCloseQuickView = () => {
-    setOpen(false);
-  };
 
   const handleToggle = () => {
     dispatch(toggleWishlist(product));
@@ -54,11 +40,11 @@ export default function ProductCard({ product }) {
 
   return (
     <>
-      {/* ✅ Render modal only when open */}
+      {/* Quick View Modal */}
       {open && (
         <ProductQuickView
           product={product}
-          onClose={handleCloseQuickView}
+          onClose={() => setOpen(false)}
           onAddToCart={() => {
             handleAddToCart();
             setOpen(false);
@@ -66,31 +52,32 @@ export default function ProductCard({ product }) {
         />
       )}
 
-      <div className="bg-white shadow rounded overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-200 group">
+      <div className="bg-white shadow rounded overflow-hidden flex flex-col hover:shadow-lg transition group">
         {/* Image */}
-        <div className="h-48 w-full bg-gray-100 flex items-center justify-center relative">
+        <div className="h-48 bg-gray-100 relative flex items-center justify-center">
           {product.images?.length > 0 ? (
             <img
               src={product.images[0]}
               alt={product.name}
-              className="object-contain h-full w-full p-2 group-hover:scale-105 transition-transform duration-300"
+              className="h-full w-full object-contain p-2 group-hover:scale-105 transition"
             />
           ) : (
             <span className="text-gray-400">No Image</span>
           )}
 
-          {/* Discount Badge */}
+          {/* Discount */}
           {hasDiscount && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold">
+            <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
               -{product.discount}%
-            </div>
+            </span>
           )}
 
+          {/* Wishlist */}
           <button
             onClick={handleToggle}
-            className={`absolute top-2 right-2 p-1 rounded-full shadow transition ${
-              isWishlisted 
-                ? "bg-red-500 text-white" 
+            className={`absolute top-2 right-2 p-1 rounded-full shadow ${
+              isWishlisted
+                ? "bg-red-500 text-white"
                 : "bg-white hover:bg-red-100"
             }`}
           >
@@ -100,59 +87,51 @@ export default function ProductCard({ product }) {
 
         {/* Content */}
         <div className="p-4 flex flex-col flex-1">
-          <h3 className="font-semibold text-lg line-clamp-2 mb-1">
+          <h3 className="font-semibold text-lg line-clamp-2">
             {product.name}
           </h3>
 
           {product.brand && (
-            <p className="text-gray-500 text-sm mb-2">{product.brand}</p>
+            <p className="text-sm text-gray-500">{product.brand}</p>
           )}
 
-          {/* Price Section */}
-          <div className="mb-3">
+          {/* Price */}
+          <div className="mt-2 mb-3">
             {hasDiscount ? (
               <div className="flex items-center gap-2">
-                <span className="font-bold text-xl text-red-600">
+                <span className="text-red-600 font-bold text-xl">
                   {formatPrice(discountPrice)} ৳
                 </span>
-                <span className="text-gray-400 line-through text-sm">
+                <span className="line-through text-gray-400 text-sm">
                   {formatPrice(product.price)} ৳
-                </span>
-                <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-semibold">
-                  Save {product.discount}%
                 </span>
               </div>
             ) : (
-              <span className="font-bold text-xl text-blue-600">
+              <span className="text-blue-600 font-bold text-xl">
                 {formatPrice(product.price)} ৳
               </span>
             )}
           </div>
 
-          {/* Additional product info (optional) */}
+          {/* Rating */}
           {product.rating && (
-            <div className="flex items-center mb-3">
-              <div className="flex text-yellow-400">
-                {"★".repeat(Math.floor(product.rating))}
-                {"☆".repeat(5 - Math.floor(product.rating))}
-              </div>
-              <span className="text-sm text-gray-500 ml-2">
-                ({product.rating})
-              </span>
+            <div className="text-yellow-400 text-sm mb-2">
+              {"★".repeat(Math.floor(product.rating))}
+              {"☆".repeat(5 - Math.floor(product.rating))}
             </div>
           )}
 
+          {/* Actions */}
           <div className="mt-auto flex gap-2">
             <button
-              onClick={handleQuickView}
-              className="flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded hover:bg-gray-200 transition border border-gray-300"
+              onClick={() => setOpen(true)}
+              className="flex-1 bg-gray-100 border px-3 py-2 rounded hover:bg-gray-200"
             >
               Quick View
             </button>
-
             <button
               onClick={handleAddToCart}
-              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition font-medium"
+              className="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700"
             >
               Add to Cart
             </button>
