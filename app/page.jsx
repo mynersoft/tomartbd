@@ -10,8 +10,9 @@ export const metadata = generateMetadata({
 export default function HomePage() {
   return (
     <>
+      {/* H1 for SEO */}
       <header className="sr-only">
-        <h1>TomartBD Online Shopping Platform</h1>
+        <h1>Buy Quality Products Online from TomartBD</h1>
       </header>
 
       <HomeClient />
