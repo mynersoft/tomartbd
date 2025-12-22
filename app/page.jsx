@@ -41,7 +41,7 @@ export default function Home() {
 
 
 
-<ProductCard products = {products} />
+<ProductGrid products={products} />
 
 
       {featuredProducts.length === 0 &&
