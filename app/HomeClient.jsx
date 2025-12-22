@@ -2,7 +2,7 @@
 
 import { useSelector } from "react-redux";
 import ProductSection from "@/components/Home/ProductSection";
-import ProductSectionSkeleton from "@/components/Skeletons/ProductCard";
+import ProductCardSkeleton from "@/components/Skeletons/ProductCardSkeleton";
 import ProductGrid from "@/components/Product/ProductGrid";
 
 export default function HomeClient() {
@@ -16,8 +16,8 @@ export default function HomeClient() {
   if (loading) {
     return (
       <main className="container mx-auto px-4">
-        <ProductSectionSkeleton title="Featured Products" />
-        <ProductSectionSkeleton title="Best Selling Products" />
+        <ProductCardSkeleton title="Featured Products" />
+        <ProductCardSkeleton title="Best Selling Products" />
       </main>
     );
   }
