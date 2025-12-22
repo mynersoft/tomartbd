@@ -8,24 +8,25 @@ import toast from "react-hot-toast";
 // Fetch products hook
 // ------------------------
 export function useProducts() {
-	const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-	return useQuery({
-		queryKey: ["products"],
-		queryFn: async () => {
-      const res = await axios.get("/api/products");     
-			dispatch(setProducts(res.data)); // store in Redux
-			return res.data;
-		},
-		onError: (error) => {
-			toast.error(`Failed to fetch products: ${error.message}`);
-		},
-		onSuccess: () => {
-			toast.success("Products fetched successfully");
-		},
-	});
+  return useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const res = await axios.get("/api/products");
+      dispatch(setProducts(res.data)); // store in Redux
+      return res.data;
+    },
+    onError: (error) => {
+      toast.error(`Failed to fetch products: ${error.message}`);
+    },
+    onSuccess: () => {
+      toast.success("Products fetched successfully");
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
 }
-
 // ------------------------
 // Add product hook
 
