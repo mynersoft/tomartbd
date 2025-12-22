@@ -8,22 +8,27 @@ import { Toaster } from "react-hot-toast";
 import Header from "@/components/Header";
 import BottomNavigation from "@/components/BottomMenu";
 import { useState } from "react";
-import GoogleAnalytics from './GoogleAnalytics';
-
+import GoogleAnalytics from "./GoogleAnalytics";
+import { useBlogs } from "@/hooks/useBlog";
 import MessengerChat from "./MessengerChat";
+import InitData from "./InitData";
+
 
 const queryClient = new QueryClient();
 
+
 export default function Providers({ children }) {
 	const [activeTab, setActiveTab] = useState("Home");
+
 
 	return (
 		<SessionProvider>
 			<Provider store={store}>
 				<QueryClientProvider client={queryClient}>
+					<InitData />
 					<Toaster />
-<GoogleAnalytics />
-<MessengerChat/>
+					<GoogleAnalytics />
+					<MessengerChat />
 					<Header />
 
 					{children}

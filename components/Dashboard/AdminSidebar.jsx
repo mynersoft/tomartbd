@@ -11,6 +11,7 @@ export default function AdminSidebar({ open, setOpen, isMobile }) {
     { name: "Products", href: "/dashboard/admin/products", icon: "🛍️" },
     { name: "Orders", href: "/dashboard/admin/orders", icon: "📦" },
     { name: "Users", href: "/dashboard/admin/users", icon: "👥" },
+    { name: "Blog", href: "/dashboard/admin/blog", icon: "📝" },
     { name: "Vouchers", href: "/dashboard/admin/vouchers", icon: "🎫" },
     { name: "Reports", href: "/dashboard/admin/reports", icon: "📈" },
     { name: "Live Orders", href: "/dashboard/admin/live-orders", icon: "⚡" },

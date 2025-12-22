@@ -15,3 +15,14 @@ WhatsApp integration
 
 api- react query
 state - react redux
+
+
+ How to use modal --------------
+		<Modal
+					isOpen={isOpen}
+					onClose={close}
+					title="Basic Modal"
+					size="md">
+					Content
+				</Modal>
+
