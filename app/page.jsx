@@ -3,6 +3,7 @@
 import { useSelector } from "react-redux";
 import ProductSection from "@/components/Home/ProductSection";
 import ProductCardSkeleton from "@/components/Skeletons/ProductCardSkeleton";
+import ProductGrid from "@/components/Product/ProductGrid";
 
 import ProductCard from "@/components/Product/ProductCard";
 
