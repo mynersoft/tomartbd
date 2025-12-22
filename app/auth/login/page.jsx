@@ -10,14 +10,11 @@ import {
   AlertCircle, 
   Lock, 
   Mail, 
-  User, 
   Shield, 
   ArrowRight, 
   CheckCircle,
-  Smartphone,
   ShoppingBag,
   Sparkles,
-  Key,
   LogIn,
   Star,
   Award,
@@ -82,122 +79,123 @@ export default function Login() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <div className="w-16 h-16 border-4 border-primary-200 rounded-full"></div>
-            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-16 h-16 border-4 border-primary-100 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
-          <p className="text-gray-700 font-medium">Checking authentication...</p>
+          <p className="text-gray-600 font-medium">Checking authentication...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-accent-50/10 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-6 lg:gap-8">
-        {/* Left Side - Brand & Features */}
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-8 lg:gap-12">
+        {/* Left Side - Brand & Features (Light Version) */}
         <div className="lg:w-1/2">
-          <div className="bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 rounded-3xl shadow-2xl p-6 lg:p-8 xl:p-10 h-full relative overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `radial-gradient(${window.innerWidth < 768 ? 'circle at 30% 20%' : 'circle at 20% 30%'}, #fff 1px, transparent 1px)`,
-                backgroundSize: '40px 40px'
-              }} />
-            </div>
-
+          <div className="bg-gradient-to-br from-primary-50 via-white to-accent-50/20 rounded-3xl shadow-lg p-8 lg:p-10 h-full border border-gray-100">
             {/* Brand Logo */}
-            <div className="mb-8 lg:mb-10 relative z-10">
+            <div className="mb-10 relative z-10">
               <Link href="/" className="inline-flex items-center gap-3 group">
                 <div className="relative">
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
-                    <ShoppingBag className="h-5 w-5 lg:h-6 lg:w-6 text-primary-700" />
+                  <div className="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                    <ShoppingBag className="h-6 w-6 text-white" />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 lg:w-5 lg:h-5 bg-accent-500 rounded-full border-2 border-primary-800 shadow" />
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-accent-500 rounded-full border-2 border-white shadow-sm" />
                 </div>
                 <div>
-                  <span className="text-2xl lg:text-3xl font-bold text-white">Tomart</span>
-                  <span className="text-2xl lg:text-3xl font-bold text-accent-300">BD</span>
-                  <p className="text-primary-200 text-xs lg:text-sm mt-1">Premium E-commerce</p>
+                  <span className="text-3xl font-bold text-primary-700">Tomart</span>
+                  <span className="text-3xl font-bold text-accent-600">BD</span>
+                  <p className="text-primary-600 text-sm mt-1">Premium E-commerce</p>
                 </div>
               </Link>
             </div>
 
             {/* Welcome Text */}
-            <div className="mb-10 lg:mb-12 relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full mb-4">
-                <Star className="h-4 w-4 text-accent-300" />
-                <span className="text-accent-300 text-sm font-medium">Welcome Back!</span>
+            <div className="mb-10 relative z-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 rounded-full mb-6">
+                <Star className="h-4 w-4 text-primary-600" />
+                <span className="text-primary-700 text-sm font-medium">Welcome Back!</span>
               </div>
-              <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
-                Your Shopping Experience <span className="text-accent-300">Awaits</span>
+              <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                Your Shopping <span className="text-primary-600">Experience</span><br />
+                <span className="text-accent-600">Awaits</span>
               </h1>
-              <p className="text-primary-200 text-base lg:text-lg leading-relaxed">
+              <p className="text-gray-600 text-lg leading-relaxed">
                 Access personalized recommendations, exclusive deals, and seamless shopping.
               </p>
             </div>
 
             {/* Features Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 mb-10 lg:mb-12 relative z-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10 relative z-10">
               {[
                 { 
                   icon: <Award className="h-5 w-5" />, 
                   title: "Exclusive Deals", 
                   desc: "Member-only discounts up to 50%",
-                  bg: "bg-accent-500/10"
+                  bg: "bg-accent-50",
+                  border: "border-accent-100"
                 },
                 { 
                   icon: <Truck className="h-5 w-5" />, 
                   title: "Free Shipping", 
                   desc: "On orders over ৳2000",
-                  bg: "bg-white/10"
+                  bg: "bg-primary-50",
+                  border: "border-primary-100"
                 },
                 { 
                   icon: <Shield className="h-5 w-5" />, 
                   title: "Secure Payment", 
                   desc: "100% safe transactions",
-                  bg: "bg-white/10"
+                  bg: "bg-primary-50",
+                  border: "border-primary-100"
                 },
                 { 
                   icon: <Sparkles className="h-5 w-5" />, 
                   title: "Premium Support", 
                   desc: "24/7 customer service",
-                  bg: "bg-accent-500/10"
+                  bg: "bg-accent-50",
+                  border: "border-accent-100"
                 },
               ].map((feature, index) => (
                 <div 
                   key={index} 
-                  className={`${feature.bg} backdrop-blur-sm rounded-xl p-4 lg:p-5 border border-white/10 hover:border-accent-500/30 transition-colors`}
+                  className={`${feature.bg} ${feature.border} rounded-xl p-5 border hover:border-primary-300 transition-colors`}
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 bg-white/10 rounded-lg">
-                      <div className="text-accent-300">{feature.icon}</div>
+                    <div className={`p-2 ${
+                      feature.bg.includes('accent') ? 'bg-accent-100' : 'bg-primary-100'
+                    } rounded-lg`}>
+                      <div className={feature.bg.includes('accent') ? 'text-accent-600' : 'text-primary-600'}>
+                        {feature.icon}
+                      </div>
                     </div>
-                    <h3 className="font-bold text-white">{feature.title}</h3>
+                    <h3 className="font-bold text-gray-900">{feature.title}</h3>
                   </div>
-                  <p className="text-primary-200 text-sm leading-relaxed">{feature.desc}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">{feature.desc}</p>
                 </div>
               ))}
             </div>
 
             {/* Stats */}
             <div className="relative z-10">
-              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+              <div className="flex items-center justify-between p-5 bg-white rounded-xl border border-gray-200 shadow-sm">
                 <div className="text-center">
-                  <div className="text-2xl lg:text-3xl font-bold text-white mb-1">50K+</div>
-                  <div className="text-primary-200 text-xs lg:text-sm">Customers</div>
+                  <div className="text-2xl font-bold text-primary-700 mb-1">50K+</div>
+                  <div className="text-gray-600 text-sm">Customers</div>
                 </div>
-                <div className="h-8 w-px bg-white/20" />
+                <div className="h-8 w-px bg-gray-200" />
                 <div className="text-center">
-                  <div className="text-2xl lg:text-3xl font-bold text-white mb-1">4.8</div>
-                  <div className="text-primary-200 text-xs lg:text-sm">Rating</div>
+                  <div className="text-2xl font-bold text-primary-700 mb-1">4.8</div>
+                  <div className="text-gray-600 text-sm">Rating</div>
                 </div>
-                <div className="h-8 w-px bg-white/20" />
+                <div className="h-8 w-px bg-gray-200" />
                 <div className="text-center">
-                  <div className="text-2xl lg:text-3xl font-bold text-white mb-1">98%</div>
-                  <div className="text-primary-200 text-xs lg:text-sm">Satisfaction</div>
+                  <div className="text-2xl font-bold text-primary-700 mb-1">98%</div>
+                  <div className="text-gray-600 text-sm">Satisfaction</div>
                 </div>
               </div>
             </div>
@@ -206,15 +204,15 @@ export default function Login() {
 
         {/* Right Side - Login Form */}
         <div className="lg:w-1/2 flex items-center">
-          <div className="bg-white rounded-3xl shadow-xl p-6 lg:p-8 xl:p-10 w-full">
+          <div className="bg-white rounded-3xl shadow-lg p-8 lg:p-10 w-full border border-gray-100">
             {/* Form Header */}
-            <div className="text-center mb-8 lg:mb-10">
-              <div className="inline-flex items-center justify-center w-14 h-14 lg:w-16 lg:h-16 bg-primary-50 rounded-2xl mb-4 shadow-inner">
-                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-lg flex items-center justify-center shadow">
-                  <LogIn className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-50 rounded-2xl mb-4 shadow-inner">
+                <div className="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center shadow">
+                  <LogIn className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
                 Sign In to Continue
               </h2>
               <p className="text-gray-600">
@@ -269,7 +267,7 @@ export default function Login() {
                     className={`w-full px-4 py-3.5 pl-12 border rounded-xl transition-all duration-200 outline-none text-gray-900 placeholder-gray-500 ${
                       focusedField === 'email'
                         ? 'border-primary-500 ring-2 ring-primary-100 bg-white'
-                        : 'border-gray-300 hover:border-primary-400 bg-gray-50/50'
+                        : 'border-gray-300 hover:border-primary-300 bg-gray-50/50'
                     } ${isLoading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     placeholder="Enter your email"
                     required
@@ -313,7 +311,7 @@ export default function Login() {
                     className={`w-full px-4 py-3.5 pl-12 pr-12 border rounded-xl transition-all duration-200 outline-none text-gray-900 placeholder-gray-500 ${
                       focusedField === 'password'
                         ? 'border-primary-500 ring-2 ring-primary-100 bg-white'
-                        : 'border-gray-300 hover:border-primary-400 bg-gray-50/50'
+                        : 'border-gray-300 hover:border-primary-300 bg-gray-50/50'
                     } ${isLoading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     placeholder="Enter your password"
                     required
@@ -381,7 +379,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full cursor-pointer bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:shadow-none group"
+                className="w-full cursor-pointer bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:shadow-none group"
               >
                 {isLoading ? (
                   <>
@@ -410,7 +408,7 @@ export default function Login() {
                 type="button"
                 onClick={() => signIn("google", { callbackUrl: "/dashboard/user" })}
                 disabled={isLoading}
-                className="p-3 border border-gray-300 rounded-xl hover:border-primary-400 hover:bg-primary-50 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
+                className="p-3 border border-gray-300 rounded-xl hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -422,7 +420,7 @@ export default function Login() {
                 type="button"
                 onClick={() => signIn("github", { callbackUrl: "/dashboard/user" })}
                 disabled={isLoading}
-                className="p-3 border border-gray-300 rounded-xl hover:border-primary-400 hover:bg-primary-50 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
+                className="p-3 border border-gray-300 rounded-xl hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
@@ -438,7 +436,7 @@ export default function Login() {
               </p>
               <Link
                 href="/auth/register"
-                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-800 font-semibold group text-lg"
+                className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-800 font-semibold group text-lg hover:underline"
               >
                 <span>Create your account</span>
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
@@ -446,13 +444,13 @@ export default function Login() {
             </div>
 
             {/* Security Badge */}
-            <div className="mt-8 p-4 bg-primary-50 rounded-xl border border-primary-200">
+            <div className="mt-8 p-4 bg-primary-50 rounded-xl border border-primary-100">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary-100 rounded-lg">
-                  <Shield className="h-5 w-5 text-primary-700" />
+                  <Shield className="h-5 w-5 text-primary-600" />
                 </div>
                 <div>
-                  <p className="font-semibold text-primary-900">Secure & Trusted</p>
+                  <p className="font-semibold text-primary-800">Secure & Trusted</p>
                   <p className="text-sm text-primary-700">
                     All login data is encrypted with 256-bit SSL protection
                   </p>
