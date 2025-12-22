@@ -12,7 +12,7 @@ export default function HomePage() {
     <>
       {/* H1 for SEO */}
       <header className="sr-only">
-        <h1>Buy Quality Products Online from TomartBD</h1>
+        <h1>Buy Quality Products Online from TomartBD,  Stay connected</h1>
       </header>
 
       <HomeClient />
