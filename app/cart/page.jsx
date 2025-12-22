@@ -43,7 +43,7 @@ export default function CartPage() {
             Looks like you haven't added any items to your cart yet. Start shopping to discover amazing products!
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
             <ShoppingBag size={20} />
