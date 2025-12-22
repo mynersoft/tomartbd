@@ -2,7 +2,7 @@
 
 import { useSelector } from "react-redux";
 import ProductSection from "@/components/Home/ProductSection";
-import ProductSectionSkeleton from "@/components/Skeletons/ProductSectionSkeleton";
+import ProductSectionSkeleton from "@/components/Skeletons/ProductCard";
 import ProductGrid from "@/components/Product/ProductGrid";
 
 export default function HomeClient() {
