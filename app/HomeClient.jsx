@@ -7,7 +7,7 @@ import ProductCardSkeleton from "@/components/Skeletons/ProductCardSkeleton";
 import ProductGrid from "@/components/Product/ProductGrid";
 
 export default function HomeClient() {
-  const { items: products = [] } = useSelector((state) => state.product);
+  const { products } = useSelector((state) => state.product);
   const { isLoading } = useProducts(); // fetch products automatically
 
   const featuredProducts = products.filter((p) => p.isFeatured);
