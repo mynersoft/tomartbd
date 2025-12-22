@@ -1,58 +1,38 @@
-"use client";
+import HomeClient from "./HomeClient";
 
-import { useSelector } from "react-redux";
-import ProductSection from "@/components/Home/ProductSection";
-import ProductCardSkeleton from "@/components/Skeletons/ProductCardSkeleton";
-import ProductGrid from "@/components/Product/ProductGrid";
+export const metadata = {
+  title: "TomartBD | Buy Quality Products Online",
+  description:
+    "TomartBD offers quality products at the best price. Shop featured and best-selling items with fast delivery.",
+  keywords: [
+    "online shop",
+"tomartbd",
+    "best selling products",
+    "featured products",
+"best products",
+    "ecommerce Bangladesh",
+  ],
+  openGraph: {
+    title: "Tomartbd – Best Online Shop",
+    description:
+      "Shop featured and best-selling products online from tomartbd.",
+    url: "https://mahirprostore.com",
+    siteName: "TomartBD",
+    type: "website",
+  },
+  alternates: {
+    canonical: "https://mahirprostore.com",
+  },
+};
 
-import ProductCard from "@/components/Product/ProductCard";
-
-export default function Home() {
-  const { items: products = [], loading } = useSelector(
-    (state) => state.product
-  );
-
-  const featuredProducts = products.filter((p) => p.isFeatured);
-  const bestSellingProducts = products.filter((p) => p.isBestSelling);
-
-  if (loading) {
-    return (
-      <main className="container mx-auto px-4">
-        <ProductSectionSkeleton title="Featured Products" />
-        <ProductSectionSkeleton title="Best Selling Products" />
-      </main>
-    );
-  }
-
+export default function HomePage() {
   return (
-    <main className="container mx-auto px-4">
-      {featuredProducts.length > 0 && (
-        <ProductSection
-          title="Featured Products"
-          products={featuredProducts}
-        />
-      )}
+    <>
+      <header className="sr-only">
+        <h1>TomartBD Online Shopping Platform</h1>
+      </header>
 
-      {bestSellingProducts.length > 0 && (
-        <ProductSection
-          title="Best Selling Products"
-          products={bestSellingProducts}
-        />
-      )}
-
-
-
-<ProductGrid products={products} />
-
-
-      {featuredProducts.length === 0 &&
-        bestSellingProducts.length === 0 && (
-          <p className="text-center text-gray-500 py-10">
-            No products available
-          </p>
-        )}
-
-
-    </main>
+      <HomeClient />
+    </>
   );
 }
