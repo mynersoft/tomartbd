@@ -78,7 +78,7 @@ export default function BlogPostList({ posts }) {
                   <div className="text-sm text-gray-500 line-clamp-1">{post.excerpt}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">{post.author}</div>
+                  <div className="text-sm text-gray-900">{post.author?.name}</div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex flex-wrap gap-1">
