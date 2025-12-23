@@ -17,11 +17,9 @@ import {
 
 import useLoginUser from "@/hooks/useAuth";
 import {
-  addToCart,
   incrementQty,
   decrementQty,
   removeFromCart,
-  clearCart
 } from "@/store/slices/cartSlice";
 
 export default function Header() {
@@ -32,9 +30,7 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => setMounted(true), []);
 
   const totalPrice = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -67,7 +63,10 @@ export default function Header() {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
             <h2 className="text-lg font-semibold">Shopping Cart</h2>
-            <button onClick={() => setIsCartOpen(false)} aria-label="Close cart">
+            <button
+              onClick={() => setIsCartOpen(false)}
+              aria-label="Close cart"
+            >
               <X size={22} />
             </button>
           </div>
@@ -92,9 +91,7 @@ export default function Header() {
                     <p className="font-medium text-sm line-clamp-2">
                       {item.name}
                     </p>
-                    <p className="text-sm text-gray-500">
-                      ৳{item.price}
-                    </p>
+                    <p className="text-sm text-gray-500">৳{item.price}</p>
 
                     {/* Quantity */}
                     <div className="flex items-center gap-2 mt-2">
