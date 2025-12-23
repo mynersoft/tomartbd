@@ -2,7 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
 
 // Fetch cart for a user
 export function useCart(userId) {
@@ -17,24 +19,16 @@ export function useCart(userId) {
 	});
 }
 
-
-
-
-
-
 // Helper to get cart from localStorage for guests
 function getGuestCart() {
-  if (typeof window === "undefined") return [];
-  return JSON.parse(localStorage.getItem("guestCart") || "[]");
+	if (typeof window === "undefined") return [];
+	return JSON.parse(localStorage.getItem("guestCart") || "[]");
 }
 
 function setGuestCart(cart) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("guestCart", JSON.stringify(cart));
+	if (typeof window === "undefined") return;
+	localStorage.setItem("guestCart", JSON.stringify(cart));
 }
-
-
-
 
 // Add product to cart
 export function useAddToCart() {
@@ -79,9 +73,6 @@ export function useAddToCart() {
 	});
 }
 
-
-
-
 export function useRemoveFromCart() {
 	const queryClient = useQueryClient();
 
@@ -111,3 +102,45 @@ export function useRemoveFromCart() {
 	});
 }
 
+// Hook to initialize cart on app load
+export const useInitializeCart = (userId) => {
+	const dispatch = useDispatch();
+	useEffect(() => {
+		const initializeCart = async () => {
+			try {
+				const guestCart = getGuestCart();
+				console.log(guestCart);
+				let mergedCart = [];
+
+				if (userId) {
+					try {
+						// Get backend cart
+						const res = await axios.get(
+							`/api/cart?userId=${userId}`
+						);
+						const backendCart = res.data.cart || [];
+
+						// Merge locally
+						mergedCart = mergeLocally(backendCart, guestCart);
+
+						// Clear localStorage
+						localStorage.setItem("mergedCart");
+					} catch (error) {
+						console.warn("Using guest cart due to backend error");
+						mergedCart = guestCart;
+					}
+				} else if (userId) {
+				} else {
+					// Guest user
+					mergedCart = guestCart;
+				}
+
+				dispatch(setCartFromBackend(mergedCart));
+			} catch (error) {
+				console.error("Cart init error:", error);
+			}
+		};
+
+		initializeCart();
+	}, [userId, dispatch]);
+};

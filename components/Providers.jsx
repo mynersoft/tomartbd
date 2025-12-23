@@ -9,7 +9,6 @@ import Header from "@/components/Header";
 import BottomNavigation from "@/components/BottomMenu";
 import { useState } from "react";
 import GoogleAnalytics from "./GoogleAnalytics";
-import { useBlogs } from "@/hooks/useBlog";
 import MessengerChat from "./MessengerChat";
 import InitData from "./InitData";
 
