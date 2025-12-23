@@ -132,11 +132,7 @@ const handleCancelOrder = async (orderId) => {
 };
 
 
-
-	const handleStatusUpdate = (orderId, newStatus) => {
-		console.log("Update order:", orderId, "to", newStatus);
-	};
-
+	
 	const handleDelete = (id) => {
 		if (confirm("Are you sure you want to delete this order?")) {
 			deleteOrderMutation.mutate(id);
