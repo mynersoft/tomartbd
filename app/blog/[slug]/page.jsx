@@ -32,27 +32,27 @@ import { toast } from "react-hot-toast";
 import { format } from "date-fns";
 
 // Dynamically import heavy components
-const BlogSidebar = dynamic(() => import("@/components/blog/BlogSidebar"), {
+const BlogSidebar = dynamic(() => import("@/components/Blog/BlogSidebar"), {
   loading: () => <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />
 });
 
-const ShareButtons = dynamic(() => import("@/components/blog/ShareButtons"), {
+const ShareButtons = dynamic(() => import("@/components/Blog/ShareButtons"), {
   loading: () => <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
 });
 
-const TableOfContents = dynamic(() => import("@/components/blog/TableOfContents"), {
+const TableOfContents = dynamic(() => import("@/components/Blog/TableOfContents"), {
   loading: () => <div className="h-32 bg-gray-100 rounded-xl animate-pulse" />
 });
 
-const BlogComments = dynamic(() => import("@/components/blog/BlogComments"), {
+const BlogComments = dynamic(() => import("@/components/Blog/BlogComments"), {
   loading: () => <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />
 });
 
-const RelatedPosts = dynamic(() => import("@/components/blog/RelatedPosts"), {
+const RelatedPosts = dynamic(() => import("@/components/Blog/RelatedPosts"), {
   loading: () => <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />
 });
 
-const ReadingProgress = dynamic(() => import("@/components/blog/ReadingProgress"), {
+const ReadingProgress = dynamic(() => import("@/components/Blog/ReadingProgress"), {
   ssr: false
 });
 
@@ -61,7 +61,7 @@ export async function generateMetadata({ params }) {
   const { slug } = params;
   
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog/slug/${slug}`, {
+    const response = await fetch(`/api/blog/slug/${slug}`, {
       next: { revalidate: 3600 } // Revalidate every hour
     });
     
