@@ -16,9 +16,9 @@ export default function CartPage() {
   };
 
   const handleQuantityChange = (productId, newQty) => {
-    if (newQty < 1) return;
-    dispatch(updateQuantity({ productId, quantity: newQty }));
-  };
+  if (newQty < 1) return;
+  dispatch(updateQuantity({ productId, quantity: newQty }));
+};
 
   const totalPrice = items.reduce(
     (acc, item) =>
