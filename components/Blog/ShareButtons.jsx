@@ -9,7 +9,7 @@ import {
   Link as LinkIcon, 
   Mail, 
   MessageCircle,
-  Whatsapp,
+  
   Clipboard,
   CheckCircle
 } from "lucide-react";
@@ -72,7 +72,7 @@ export default function ShareButtons({ title, url, excerpt }) {
     },
     { 
       key: 'whatsapp', 
-      icon: Whatsapp, 
+      icon: Mail, 
       color: 'bg-green-500 hover:bg-green-600',
       label: 'WhatsApp',
       hoverColor: 'text-green-500'
