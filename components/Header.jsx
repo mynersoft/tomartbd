@@ -17,10 +17,12 @@ import {
 
 import useLoginUser from "@/hooks/useAuth";
 import {
+  addToCart,
   incrementQty,
   decrementQty,
   removeFromCart,
-} from "@/redux/cartSlice";
+  clearCart
+} from "@/store/slices/cartSlice";
 
 export default function Header() {
   const dispatch = useDispatch();
