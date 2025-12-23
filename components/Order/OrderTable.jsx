@@ -29,6 +29,38 @@ const OrderTable = ({ data }) => {
 
 	const deleteOrderMutation = useDeleteOrder();
 
+
+
+
+
+
+
+const handleStatusUpdate = async (orderId, newStatus) => {
+  try {
+    const res = await fetch("/api/admin/updateOrderStatus", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId, status: newStatus }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data.message || "Failed to update status");
+      return;
+    }
+
+    toast.success("Order status updated successfully");
+    // Optionally refresh data here
+    // router.refresh() or refetch your orders
+  } catch (error) {
+    toast.error("Something went wrong");
+  }
+};
+
+
+
+
+
 	// Format helpers
 	const formatDate = (dateString) =>
 		new Date(dateString).toLocaleDateString("en-US", {
