@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  Search,
   ShoppingCart,
   User,
   Heart,
@@ -16,6 +14,7 @@ import {
   Minus,
   Trash2,
 } from "lucide-react";
+
 import useLoginUser from "@/hooks/useAuth";
 import {
   incrementQty,
@@ -35,8 +34,8 @@ export default function Header() {
     setMounted(true);
   }, []);
 
-  const totalPrice = items?.reduce(
-    (sum, item) => sum + item.price * item.qty,
+  const totalPrice = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
 
@@ -45,8 +44,11 @@ export default function Header() {
       {/* ================= CART DRAWER ================= */}
       <div
         className={`fixed inset-0 z-50 transition-opacity duration-300 ${
-          isCartOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          isCartOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
+        aria-hidden={!isCartOpen}
       >
         {/* Overlay */}
         <div
@@ -55,7 +57,7 @@ export default function Header() {
         />
 
         {/* Drawer */}
-        <div
+        <aside
           className={`absolute top-0 right-0 h-full w-[380px] bg-white shadow-xl transform transition-transform duration-300 ${
             isCartOpen ? "translate-x-0" : "translate-x-full"
           }`}
@@ -63,17 +65,17 @@ export default function Header() {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
             <h2 className="text-lg font-semibold">Shopping Cart</h2>
-            <button onClick={() => setIsCartOpen(false)}>
+            <button onClick={() => setIsCartOpen(false)} aria-label="Close cart">
               <X size={22} />
             </button>
           </div>
 
           {/* Items */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {items?.length > 0 ? (
+            {items.length > 0 ? (
               items.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id}
                   className="flex gap-3 border rounded-lg p-3"
                 >
                   <Image
@@ -85,7 +87,9 @@ export default function Header() {
                   />
 
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{item.name}</p>
+                    <p className="font-medium text-sm line-clamp-2">
+                      {item.name}
+                    </p>
                     <p className="text-sm text-gray-500">
                       ৳{item.price}
                     </p>
@@ -93,17 +97,21 @@ export default function Header() {
                     {/* Quantity */}
                     <div className="flex items-center gap-2 mt-2">
                       <button
-                        onClick={() => dispatch(decrementQty(item.id))}
-                        className="p-1 border rounded"
+                        onClick={() => dispatch(decrementQty(item._id))}
+                        className="p-1 border rounded hover:bg-gray-100"
+                        aria-label="Decrease quantity"
                       >
                         <Minus size={14} />
                       </button>
+
                       <span className="w-6 text-center text-sm">
-                        {item.qty}
+                        {item.quantity}
                       </span>
+
                       <button
-                        onClick={() => dispatch(incrementQty(item.id))}
-                        className="p-1 border rounded"
+                        onClick={() => dispatch(incrementQty(item._id))}
+                        className="p-1 border rounded hover:bg-gray-100"
+                        aria-label="Increase quantity"
                       >
                         <Plus size={14} />
                       </button>
@@ -112,8 +120,9 @@ export default function Header() {
 
                   {/* Remove */}
                   <button
-                    onClick={() => dispatch(removeFromCart(item.id))}
+                    onClick={() => dispatch(removeFromCart(item._id))}
                     className="text-red-500 hover:text-red-600"
+                    aria-label="Remove item"
                   >
                     <Trash2 size={18} />
                   </button>
@@ -127,7 +136,7 @@ export default function Header() {
           </div>
 
           {/* Footer */}
-          {items?.length > 0 && (
+          {items.length > 0 && (
             <div className="border-t p-4 space-y-3">
               <div className="flex justify-between font-semibold">
                 <span>Total</span>
@@ -145,29 +154,39 @@ export default function Header() {
               <Link
                 href="/cart"
                 onClick={() => setIsCartOpen(false)}
-                className="block w-full text-center border py-3 rounded-lg"
+                className="block w-full text-center border py-3 rounded-lg hover:bg-gray-50"
               >
                 View Cart
               </Link>
             </div>
           )}
-        </div>
+        </aside>
       </div>
 
       {/* ================= HEADER ================= */}
       <header className="sticky top-0 z-40 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-[#004488]">
+        <nav className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="text-2xl font-bold text-[#004488]"
+            aria-label="TomartBD Home"
+          >
             Tomart<span className="text-[#C0A460]">BD</span>
           </Link>
 
+          {/* Right */}
           <div className="flex items-center gap-6">
-            <Link href="/wishlist">
+            <Link href="/wishlist" aria-label="Wishlist">
               <Heart size={22} />
             </Link>
 
-            {/* CART ICON */}
-            <button onClick={() => setIsCartOpen(true)} className="relative">
+            {/* Cart */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative"
+              aria-label="Open cart"
+            >
               <ShoppingCart size={22} />
               {mounted && qty > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#C0A460] text-white w-5 h-5 rounded-full text-xs flex items-center justify-center">
@@ -176,13 +195,20 @@ export default function Header() {
               )}
             </button>
 
-            <Link href={user ? "/dashboard/user" : "/auth/login"}>
+            {/* User */}
+            <Link
+              href={user ? "/dashboard/user" : "/auth/login"}
+              aria-label="User account"
+            >
               <User size={22} />
             </Link>
 
-            <Menu size={22} />
+            {/* Mobile menu */}
+            <button aria-label="Menu">
+              <Menu size={22} />
+            </button>
           </div>
-        </div>
+        </nav>
       </header>
     </>
   );
