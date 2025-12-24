@@ -1,6 +1,6 @@
 // components/WhatsappChatModal.js
 import { useState } from "react";
-import { X, Send, Whatsapp } from "lucide-react";
+import { X, Send, MessageCircle } from "lucide-react";
 
 export default function WhatsappChatModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +24,7 @@ export default function WhatsappChatModal() {
         onClick={() => setIsOpen(true)}
         className="fixed bottom-5 right-5 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg flex items-center justify-center transition-transform transform hover:scale-110 z-50"
       >
-        <Whatsapp className="h-6 w-6" />
+        <MessageCircle className="h-6 w-6" />
       </button>
 
       {/* Chat Modal */}
