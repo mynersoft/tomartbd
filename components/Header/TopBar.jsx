@@ -24,6 +24,14 @@ const TopBar = () => {
 						<Package size={14} />
 						<span>Easy Returns</span>
 					</div>
+<Link href="/notifications" className="relative hidden md:block">
+                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                  <span className="text-lg">🔔</span>
+                </div>
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  3
+                </span>
+              </Link>
 				</div>
 			</div>
 		</div>
