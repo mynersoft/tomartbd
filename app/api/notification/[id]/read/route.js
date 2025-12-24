@@ -2,18 +2,24 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Notification from '@/models/Notification';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+
 
 export async function PATCH(request, { params }) {
   try {
-    await connectDB();
-    const { id } = params;
+    const session = await getServerSession(authOptions);
 
-    if (!id) {
+    if (!session || !session.user?.id) {
       return NextResponse.json(
-        { error: 'Notification ID required' },
-        { status: 400 }
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
       );
     }
+
+    const userId = session.user.id; //
+const id = userId;
 
     const notification = await Notification.findByIdAndUpdate(
       id,
