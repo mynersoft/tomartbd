@@ -1,6 +1,6 @@
 // app/api/notifications/route.js
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/database';
+import { connectDB } from '@/lib/db';
 import Notification from '@/models/Notification';
 
 // GET notifications for user
