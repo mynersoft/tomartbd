@@ -6,8 +6,8 @@ import Notification from '@/models/Notification';
 export async function POST(request) {
   try {
     await connectDB();
-    const { userId } = await request.json();
-
+const userId = "";
+   
     if (!userId) {
       return NextResponse.json(
         { error: 'User ID required' },
