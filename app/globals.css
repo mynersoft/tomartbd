@@ -33,6 +33,67 @@
   }
 }
 
+
+
+
+/* Product page specific styles */
+.product-gallery-image {
+  transition: transform 0.3s ease;
+}
+
+.product-gallery-image:hover {
+  transform: scale(1.05);
+}
+
+.rating-star {
+  position: relative;
+  display: inline-block;
+}
+
+.rating-star-filled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.tab-content-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.tab-content-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.sticky-cart-bar {
+  backdrop-filter: blur(10px);
+}
+
+/* Custom scrollbar for thumbnails */
+.thumbnail-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.thumbnail-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.thumbnail-scroll::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.thumbnail-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+
+
+
 @layer components {
   .btn-primary {
     @apply bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0;
