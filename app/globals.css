@@ -9,7 +9,63 @@
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-in-out;
 }
-/* Add these styles to your CSS file */
+
+
+
+
+
+
+@layer base {
+  :root {
+    --primary: #2563eb;
+    --secondary: #7c3aed;
+    --accent: #f59e0b;
+    --background: #ffffff;
+    --foreground: #111827;
+  }
+
+  .dark {
+    --primary: #3b82f6;
+    --secondary: #8b5cf6;
+    --accent: #fbbf24;
+    --background: #111827;
+    --foreground: #f9fafb;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-blue-500 rounded-full hover:bg-blue-600;
+}
+
+
+/*----------------------- Add these styles to your CSS file */
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
