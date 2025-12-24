@@ -11,6 +11,7 @@ import { useState } from "react";
 import GoogleAnalytics from "./GoogleAnalytics";
 import MessengerChat from "./MessengerChat";
 import InitData from "./InitData";
+import Footer from "./Footer";
 
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ export default function Providers({ children }) {
 
 					{children}
 
+<Footer/>
 					{/* Mobile only */}
 					<div className="block mt-8 md:hidden">
 						<BottomNavigation
