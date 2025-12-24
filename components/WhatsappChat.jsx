@@ -7,7 +7,7 @@ export default function WhatsappChatModal() {
   const [message, setMessage] = useState("");
 
   // Replace with your WhatsApp number
-  const phoneNumber = "1234567890";
+  const phoneNumber = "01868944080";
 
   const handleSend = () => {
     if (!message.trim()) return;
