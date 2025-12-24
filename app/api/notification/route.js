@@ -2,14 +2,22 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Notification from '@/models/Notification';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // GET notifications for user
 export async function GET(request) {
   try {
-    await connectDB();
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const session = await getServerSession(authOptions);
 
+    if (!session || !session.user?.id) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id; //
     if (!userId) {
       return NextResponse.json(
         { error: 'User ID required' },
