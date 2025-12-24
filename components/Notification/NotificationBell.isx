@@ -1,4 +1,4 @@
-// components/notifications/NotificationBell.jsx
+// components/notifications/NotificationBell.jsx - Updated
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import { Bell, X, Check } from 'lucide-react';
@@ -8,7 +8,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  
+  // You need to get userId from auth context
+  const { userId } = useAuth(); // You need to implement this
+  
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(userId);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -82,7 +86,10 @@ const NotificationBell = () => {
                 <div className="flex items-center gap-2">
                   {unreadCount > 0 && (
                     <button
-                      onClick={markAllAsRead}
+                      onClick={() => {
+                        markAllAsRead();
+                        setIsOpen(false);
+                      }}
                       className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                     >
                       <Check className="w-4 h-4 inline mr-1" />
@@ -117,7 +124,7 @@ const NotificationBell = () => {
                     key={notification.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition ${
+                    className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer ${
                       !notification.read ? 'bg-blue-50' : ''
                     }`}
                     onClick={() => markAsRead(notification.id)}
@@ -172,6 +179,7 @@ const NotificationBell = () => {
               <a
                 href="/notifications"
                 className="block text-center text-blue-600 hover:text-blue-700 font-medium py-2 rounded-lg hover:bg-blue-50 transition"
+                onClick={() => setIsOpen(false)}
               >
                 View all notifications
               </a>
