@@ -148,8 +148,7 @@ export default function SearchClient() {
               </div>
             )}
           </form>
-
-          
+        </div>
 
         {/* Results Section */}
         <div className="mt-8">
@@ -175,7 +174,6 @@ export default function SearchClient() {
                     </>
                   )}
                 </h2>
-                
               </div>
 
               {results.length > 0 ? (
