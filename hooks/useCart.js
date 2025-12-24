@@ -1,5 +1,6 @@
 "use client";
 
+import { addToCart } from "@/store/slices/cartSlice";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useEffect } from "react";
@@ -135,7 +136,7 @@ export const useInitializeCart = (userId) => {
 					mergedCart = guestCart;
 				}
 
-				dispatch(setCartFromBackend(mergedCart));
+				dispatch(addToCart(mergedCart));
 			} catch (error) {
 				console.error("Cart init error:", error);
 			}

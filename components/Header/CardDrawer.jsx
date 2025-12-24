@@ -1,8 +1,8 @@
-import { Minus, Plus, Shield, ShoppingCart, Trash2, X } from "lucide-react";
-import Image from "next/image";
-import { removeFromCart, updateQuantity } from "@/store/slices/cartSlice";
-import { useDispatch } from "react-redux";
-import Link from "next/link";
+import { Minus, Plus, Shield, ShoppingCart, Trash2, X } from 'lucide-react';
+import Image from 'next/image';
+import { removeFromCart, updateQuantity } from '@/store/slices/cartSlice';
+import { useDispatch } from 'react-redux';
+import Link from 'next/link';
 
 const CardDrawer = ({ items, isCartOpen, cartRef, qty, setIsCartOpen }) => {
 	const dispatch = useDispatch();
@@ -17,23 +17,24 @@ const CardDrawer = ({ items, isCartOpen, cartRef, qty, setIsCartOpen }) => {
 	};
 	const handleCheckout = () => {
 		setIsCartOpen(false);
-		router.push("/checkout");
+		router.push('/checkout');
 	};
 
 	const handleQuickOrder = (item) => {
 		dispatch({
-			type: "cart/addToCart",
+			type: 'cart/addToCart',
 			payload: { ...item, quantity: 1 },
 		});
 		setIsCartOpen(false);
-		router.push("/checkout");
+		router.push('/checkout');
 	};
+	
 	return (
 		<div
 			className={`fixed inset-0 z-50 transition-opacity duration-300 ${
 				isCartOpen
-					? "opacity-100 pointer-events-auto"
-					: "opacity-0 pointer-events-none"
+					? 'opacity-100 pointer-events-auto'
+					: 'opacity-0 pointer-events-none'
 			}`}
 			aria-hidden={!isCartOpen}>
 			<div
@@ -44,7 +45,7 @@ const CardDrawer = ({ items, isCartOpen, cartRef, qty, setIsCartOpen }) => {
 			<aside
 				ref={cartRef}
 				className={`absolute top-0 right-0 h-full w-full md:w-[420px] bg-white shadow-xl transform transition-transform duration-300 ${
-					isCartOpen ? "translate-x-0" : "translate-x-full"
+					isCartOpen ? 'translate-x-0' : 'translate-x-full'
 				}`}>
 				<div className="flex flex-col h-full">
 					{/* Header */}
@@ -63,13 +64,19 @@ const CardDrawer = ({ items, isCartOpen, cartRef, qty, setIsCartOpen }) => {
 					{/* Items */}
 					<div className="flex-1 overflow-y-auto p-4 space-y-3">
 						{items.length > 0 ? (
-							items.map((item) => (
+							items.map((item, index) => (
 								<div
-									key={item._id}
+									key={index}
 									className="flex gap-3 border rounded-lg p-3 hover:shadow-sm transition-shadow">
 									<Image
-										src={item.images[0]}
-										alt={item.name}
+										src={
+											item &&
+											Array.isArray(item.images) &&
+											item.images.length > 0
+												? item.images[0]
+												: '/placeholder.jpg'
+										}
+										alt={item?.name || 'Product'}
 										width={80}
 										height={80}
 										className="rounded-lg object-cover"
@@ -177,7 +184,7 @@ const CardDrawer = ({ items, isCartOpen, cartRef, qty, setIsCartOpen }) => {
 										Shipping
 									</span>
 									<span className="text-green-600">
-										{totalPrice > 2000 ? "FREE" : "৳80"}
+										{totalPrice > 2000 ? 'FREE' : '৳80'}
 									</span>
 								</div>
 								<div className="flex justify-between text-lg font-bold pt-2 border-t">
