@@ -105,7 +105,7 @@ export default function SearchClient() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Search by name, brand, category, or tags..."
+                placeholder="Search by name..."
                 className="w-full pl-12 pr-24 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-200 shadow-sm hover:shadow-md"
                 autoFocus
               />
@@ -149,19 +149,7 @@ export default function SearchClient() {
             )}
           </form>
 
-          {/* Search Tips */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
-            <h3 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              Search Tips
-            </h3>
-            <ul className="text-sm text-blue-700 grid grid-cols-1 md:grid-cols-3 gap-2">
-              <li>• Use keywords like "shoes", "electronics"</li>
-              <li>• Include brand names for better results</li>
-              <li>• Try category names like "clothing"</li>
-            </ul>
-          </div>
-        </div>
+          
 
         {/* Results Section */}
         <div className="mt-8">
@@ -187,11 +175,7 @@ export default function SearchClient() {
                     </>
                   )}
                 </h2>
-                {results.length > 0 && (
-                  <span className="text-sm text-gray-500">
-                    Click any product to view details
-                  </span>
-                )}
+                
               </div>
 
               {results.length > 0 ? (
