@@ -14,6 +14,17 @@ import InitData from "./InitData";
 import Footer from "./Footer";
 
 
+
+
+
+
+import WhatsappChat from './WhatsappChat';
+
+
+
+
+
+
 const queryClient = new QueryClient();
 
 
@@ -32,6 +43,8 @@ export default function Providers({ children }) {
 					<Header />
 
 					{children}
+
+ <WhatsappChat />
 
 <Footer/>
 					{/* Mobile only */}
