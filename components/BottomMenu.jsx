@@ -51,7 +51,7 @@ const BottomNavigation = ({ activeTab, setActiveTab }) => {
 	];
 
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 bg-pink-500 text-white z-100 shadow-lg">
+		<nav className="fixed bottom-0 left-0 right-0 bg-pink-500 text-white z-50 shadow-lg">
 			<div className="max-w-md mx-auto">
 				<div className="flex justify-around items-center py-2">
 					{navItems.map((item) => {
