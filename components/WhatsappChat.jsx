@@ -69,12 +69,12 @@ export default function WhatsappChatModal() {
       <button
         onClick={handleOpen}
         aria-label="Chat on WhatsApp"
-        className="fixed bottom-6 right-6 bg-[#25D366] hover:bg-[#128C7E] text-white p-4 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50 group"
+        className="fixed bottom-12 right-6 bg-[#25D366] hover:bg-[#128C7E] text-white p-4 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50 group"
         style={{
           boxShadow: '0 8px 25px rgba(37, 211, 102, 0.3)'
         }}
       >
-        <MessageCircle className="h-6 w-6" />
+        <MessageCircle className="h-3 w-3" />
         {/* Pulsing animation */}
         <span className="absolute -top-1 -right-1 flex h-3 w-3">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#25D366] opacity-75"></span>
@@ -100,10 +100,10 @@ export default function WhatsappChatModal() {
             {/* WhatsApp-style header */}
             <div className="bg-[#075E54] text-white p-4 flex items-center gap-3">
               <div className="relative">
-                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                  <MessageCircle className="h-5 w-5" />
+                <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
+                  <MessageCircle className="h-3 w-3" />
                 </div>
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#25D366] rounded-full border-2 border-[#075E54]"></span>
+                <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-[#25D366] rounded-full border-2 border-[#075E54]"></span>
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold">WhatsApp Support</h3>
