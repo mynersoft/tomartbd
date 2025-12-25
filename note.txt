@@ -1,9 +1,21 @@
+user login - store data in local storage, redux store
 
-Add Cart page UI + checkout flow (Stripe or cash on delivery)
+login success - admin dashboard / before page redirect like shop/product  
 
-Add Wishlist page and syncing to user account when logged in
+register and redirect login page
 
-Replace image inputs with Cloudinary upload flow
+add to cart - checkout (calculate tax,  cost, discout, voucher, total,  customer info )- success (send mail, whatsapp,  messenger) - invoice view
+
+payment - fail - order placed as bkash unpaid
+
+dashboard - user cancel order when unshipped
+
+vishlist - add to cart - checkout
+
+search - 2 or 3 word match product name - list show
+
+
+
 
 
 
