@@ -69,7 +69,7 @@ export default function WhatsappChatModal() {
       <button
         onClick={handleOpen}
         aria-label="Chat on WhatsApp"
-        className="fixed bottom-18 right-6 bg-[#25D366] hover:bg-[#128C7E] text-white p-4 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-50 group"
+        className="fixed bottom-18 right-6 bg-[#25D366] hover:bg-[#128C7E] text-white p-4 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-100 group"
         style={{
           boxShadow: '0 8px 25px rgba(37, 211, 102, 0.3)'
         }}
