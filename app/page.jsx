@@ -3,9 +3,9 @@ import { generateMetadata } from "@/lib/seo";
 import  HeroBanner  from "@/components/Home/HeroBanner";
 
 export const metadata = generateMetadata({
-  title: "Buy Quality Products Online",
+  title: "Buy Quality Products Online On Tomart BD",
   path: "/",
-  keywords: ["best products", "featured products", "best selling products"],
+  keywords: ["best products", " tomart bd", "featured products", "best selling products"],
 });
 
 export default function HomePage() {
