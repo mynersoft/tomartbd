@@ -85,28 +85,28 @@ const ReturnPolicyPage = () => {
 
   const returnProcess = [
     {
-      step: ১,
+      step: "১",
       title: 'অনলাইনে রিটার্ন আবেদন করুন',
       description: 'আমার অর্ডার সেকশন থেকে রিটার্নের জন্য আবেদন করুন',
       time: '২৪ ঘণ্টার মধ্যে',
       icon: <FaUndo />
     },
     {
-      step: ২,
+      step:" ২",
       title: 'পিকআপ সময় নিশ্চিত করুন',
       description: 'আমাদের প্রতিনিধি পণ্য সংগ্রহের সময়সূচী জানাবেন',
       time: '১-২ কার্যদিবস',
       icon: <FaTruck />
     },
     {
-      step: ৩,
+      step:" ৩",
       title: 'পণ্য পরিদর্শন',
       description: 'গুণগতমান এবং শর্ত যাচাই করা হবে',
       time: '২-৩ কার্যদিবস',
       icon: <FaBoxOpen />
     },
     {
-      step: ৪,
+      step:" ৪",
       title: 'রিফান্ড/প্রতিস্থাপন',
       description: 'রিফান্ড অনুমোদিত হলে টাকা ফেরত দেওয়া হবে',
       time: '৫-১০ কার্যদিবস',
