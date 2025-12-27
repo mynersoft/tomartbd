@@ -2,14 +2,20 @@ import mongoose from "mongoose";
 
 const AnswerSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    userRole: {
-      type: String,
-      enum: ["customer", "seller", "admin"],
-      default: "customer",
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
-    answer: { type: String, required: true },
-    isBestAnswer: { type: Boolean, default: false },
+
+    answer: {
+      type: String,
+      required: true,
+    },
+
+    isBestAnswer: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
@@ -29,7 +35,10 @@ const QuestionSchema = new mongoose.Schema(
       required: true,
     },
 
-    question: { type: String, required: true },
+    question: {
+      type: String,
+      required: true,
+    },
 
     status: {
       type: String,
@@ -38,8 +47,6 @@ const QuestionSchema = new mongoose.Schema(
     },
 
     answers: [AnswerSchema],
-
-    views: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
