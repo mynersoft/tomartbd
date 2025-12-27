@@ -28,18 +28,18 @@ import {
 	Tag,
 } from 'lucide-react';
 import Link from 'next/link';
+import Variants from '../../../components/SingleProduct/Variants';
 
 export default function ProductSinglePage() {
 	const dispatch = useDispatch();
 	const router = useRouter();
 	const { slug } = useParams();
-const [showReviewForm, setShowReviewForm] = useState(false);
+	const [showReviewForm, setShowReviewForm] = useState(false);
 
 	const products = useSelector((state) => state.product.products);
 	const wishlist = useSelector((state) => state.wishlist.items);
 	const [selectedImage, setSelectedImage] = useState(0);
 	const [quantity, setQuantity] = useState(1);
-	const [selectedVariant, setSelectedVariant] = useState(null);
 	const [activeTab, setActiveTab] = useState('description');
 	const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -182,7 +182,7 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+		<div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50">
 			{/* Enhanced Breadcrumb */}
 			<div className="bg-white shadow-sm">
 				<div className="container mx-auto px-4 py-4">
@@ -221,6 +221,7 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 							{/* Main Image Container */}
 							<div className="relative border-2 border-gray-100 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-white">
 								<div className="aspect-square flex items-center justify-center p-8">
+								
 									<img
 										src={productData.images[selectedImage]}
 										alt={product.name}
@@ -231,11 +232,11 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 									{/* Badges */}
 									<div className="absolute top-4 left-4 flex flex-col gap-2">
 										{product.discount && (
-											<span className="bg-gradient-to-r from-red-500 to-pink-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+											<span className="bg-linear-to-r from-red-500 to-pink-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
 												-{product.discount}% OFF
 											</span>
 										)}
-										<span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+										<span className="bg-linear-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
 											🔥 Best Seller
 										</span>
 									</div>
@@ -313,7 +314,7 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 										Rating
 									</div>
 								</div>
-								<div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl text-center">
+								<div className="bg-linear-to-br from-purple-50 to-purple-100 p-4 rounded-xl text-center">
 									<Clock className="w-8 h-8 text-purple-600 mx-auto mb-2" />
 									<div className="text-2xl font-bold text-gray-800">
 										24h
@@ -396,15 +397,11 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 											reviews)
 										</span>
 									</div>
-									<div className="flex items-center gap-2 text-gray-600">
-										<MessageSquare className="w-5 h-5" />
-										<span>1.5K+ Reviews</span>
-									</div>
 								</div>
 							</div>
 
 							{/* Price Section */}
-							<div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-100">
+							<div className="bg-linear-to-r from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-100">
 								<div className="space-y-4">
 									<div className="flex items-baseline gap-4">
 										<span className="text-4xl font-bold text-gray-900">
@@ -416,7 +413,7 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 													৳
 													{formatPrice(product.price)}
 												</span>
-												<span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold">
+												<span className="bg-linear-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold">
 													Save {product.discount}%
 												</span>
 											</div>
@@ -438,57 +435,7 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 								</div>
 							</div>
 
-							{/* Variants Selection */}
-							<div className="space-y-4">
-								<h3 className="text-lg font-bold text-gray-900">
-									Select Variant:
-								</h3>
-								<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-									{productData.variants.map((variant) => (
-										<button
-											key={variant.id}
-											onClick={() =>
-												setSelectedVariant(variant)
-											}
-											className={`p-4 rounded-xl border-2 transition-all ${
-												selectedVariant?.id ===
-												variant.id
-													? 'border-blue-500 bg-blue-50 ring-2 ring-blue-100'
-													: 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-											}`}>
-											<div className="flex items-center justify-between mb-2">
-												<span className="font-semibold text-gray-900">
-													{variant.name}
-												</span>
-												<div
-													className="w-6 h-6 rounded-full border"
-													style={{
-														backgroundColor:
-															variant.color,
-													}}
-												/>
-											</div>
-											<div className="flex items-center justify-between text-sm">
-												<span className="text-green-600 font-semibold">
-													৳
-													{formatPrice(
-														discountPrice +
-															variant.id * 5000
-													)}
-												</span>
-												<span
-													className={`px-2 py-1 rounded text-xs ${
-														variant.stock > 10
-															? 'bg-green-100 text-green-700'
-															: 'bg-orange-100 text-orange-700'
-													}`}>
-													{variant.stock} left
-												</span>
-											</div>
-										</button>
-									))}
-								</div>
-							</div>
+							<Variants productData={productData} />
 
 							{/* Quantity & Actions */}
 							<div className="space-y-6">
@@ -589,7 +536,7 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 						<div className="flex overflow-x-auto">
 							{[
 								'description',
-'questions',
+								'questions',
 								'specifications',
 								'reviews',
 							].map((tab) => (
@@ -607,17 +554,14 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 						</div>
 
 						<div className="p-8">
-
-{activeTab === 'questions' && (
-  <div className="space-y-6">
-    <ProductQuestions 
-      productId={product._id}
-      productName={product.name}
-    />
-  </div>
-)}
-
-
+							{activeTab === 'questions' && (
+								<div className="space-y-6">
+									<ProductQuestions
+										productId={product._id}
+										productName={product.name}
+									/>
+								</div>
+							)}
 
 							{activeTab === 'description' && (
 								<div className="space-y-6">
@@ -643,31 +587,23 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 								</div>
 							)}
 
-
-
-{activeTab === 'reviews' && (
-  <div className="space-y-6">
-    
-<ReviewForm
-  isOpen={showReviewForm}
-  onClose={() => setShowReviewForm(false)}
-  productId={product._id}
-  productName={product.name}
-  orderId="12345" // Pass actual order ID if available
-  customerName="John Doe" // Pass customer name if logged in
-  onReviewSubmit={(review) => {
-    // Handle the submitted review
-    console.log('New review:', review);
-    // You can update your reviews state here
-  }}
-
-/>
-  </div>
-)}
-
-
-
-
+							{activeTab === 'reviews' && (
+								<div className="space-y-6">
+									<ReviewForm
+										isOpen={showReviewForm}
+										onClose={() => setShowReviewForm(false)}
+										productId={product._id}
+										productName={product.name}
+										orderId="12345" // Pass actual order ID if available
+										customerName="John Doe" // Pass customer name if logged in
+										onReviewSubmit={(review) => {
+											// Handle the submitted review
+											console.log('New review:', review);
+											// You can update your reviews state here
+										}}
+									/>
+								</div>
+							)}
 
 							{activeTab === 'specifications' && (
 								<div className="space-y-6">
@@ -675,41 +611,25 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 										Specifications
 									</h3>
 
-
-
-
-
-<button
-  onClick={() => setShowReviewForm(true)}
-  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
->
-  <MessageSquare className="w-5 h-5" />
-  Write a Review
-</button><ReviewForm
-  isOpen={showReviewForm}
-  onClose={() => setShowReviewForm(false)}
-  productId={product._id}
-  productName={product.name}
-  orderId="12345" // Pass actual order ID if available
-  customerName="John Doe" // Pass customer name if logged in
-  onReviewSubmit={(review) => {
-    // Handle the submitted review
-    console.log('New review:', review);
-    // You can update your reviews state here
-  }}
-
-/>
-
-
-
-
-
-
-
-
-
-
-
+									<button
+										onClick={() => setShowReviewForm(true)}
+										className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl">
+										<MessageSquare className="w-5 h-5" />
+										Write a Review
+									</button>
+									<ReviewForm
+										isOpen={showReviewForm}
+										onClose={() => setShowReviewForm(false)}
+										productId={product._id}
+										productName={product.name}
+										orderId="12345" // Pass actual order ID if available
+										customerName="John Doe" // Pass customer name if logged in
+										onReviewSubmit={(review) => {
+											// Handle the submitted review
+											console.log('New review:', review);
+											// You can update your reviews state here
+										}}
+									/>
 
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 										{productData.specifications.map(
