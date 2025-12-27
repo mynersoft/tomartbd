@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useRouter } from 'next/navigation';
 import { addToCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
+import ReviewForm from '@/components/ReviewForm';
 import { toast } from 'react-hot-toast';
 import {
 	Star,
@@ -31,6 +32,7 @@ export default function ProductSinglePage() {
 	const dispatch = useDispatch();
 	const router = useRouter();
 	const { slug } = useParams();
+const [showReviewForm, setShowReviewForm] = useState(false);
 
 	const products = useSelector((state) => state.product.products);
 	const wishlist = useSelector((state) => state.wishlist.items);
@@ -632,6 +634,38 @@ export default function ProductSinglePage() {
 									<h3 className="text-2xl font-bold text-gray-900">
 										Specifications
 									</h3>
+
+
+
+
+
+<button
+  onClick={() => setShowReviewForm(true)}
+  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
+>
+  <MessageSquare className="w-5 h-5" />
+  Write a Review
+</button><ReviewForm
+  isOpen={showReviewForm}
+  onClose={() => setShowReviewForm(false)}
+  productId={product._id}
+  productName={product.name}
+  orderId="12345" // Pass actual order ID if available
+  customerName="John Doe" // Pass customer name if logged in
+  onReviewSubmit={(review) => {
+    // Handle the submitted review
+    console.log('New review:', review);
+    // You can update your reviews state here
+  }}
+/>
+
+
+
+
+
+
+
+
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 										{productData.specifications.map(
 											(spec, index) => (
