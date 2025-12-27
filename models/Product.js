@@ -2,40 +2,97 @@ import mongoose from "mongoose";
 
 const ProductSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    slug: { type: String, unique: true },
-    price: { type: Number, required: true },
+    name: {
+      type: String,
+      required: true,
+      index: true,
+    },
+
+    slug: {
+      type: String,
+      unique: true,
+      required: true,
+      index: true,
+    },
+
+    price: {
+      type: Number,
+      required: true,
+    },
+
     brand: String,
     category: String,
-    stock: { type: Number, default: 0 }, // default stock
-    description: String,
-    images: [String],
 
-    // ✅ Product type enum
+    stock: {
+      type: Number,
+      default: 0,
+    },
+
+    description: String,
+
+    images: [
+      {
+        type: String,
+      },
+    ],
+
+    // ✅ Product type
     type: {
       type: String,
       enum: ["featured", "new", "best-selling", "regular"],
       default: "regular",
     },
 
-    // ✅ Rating
-    rating: { type: Number, default: 0 }, // average rating
-    reviewsCount: { type: Number, default: 0 }, // number of reviews
+    // ✅ Rating (cached value)
+    rating: {
+      type: Number,
+      default: 0,
+    },
 
-    // ✅ Flags for special display
-    isActive: { type: Boolean, default: true }, // active / inactive
-    isOnSale: { type: Boolean, default: false },
-    salePrice: { type: Number }, // optional sale price
+    // ✅ Relations (IMPORTANT FIX)
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
+      },
+    ],
 
-    // ✅ SEO-friendly fields
-    metaTitle: { type: String },
-    metaDescription: { type: String },
+    questions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Question",
+      },
+    ],
+
+    // ✅ Flags
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
+    isOnSale: {
+      type: Boolean,
+      default: false,
+    },
+
+    salePrice: {
+      type: Number,
+    },
+
+    // ✅ SEO
+    metaTitle: String,
+    metaDescription: String,
     keywords: [String],
 
-    // ✅ Optional for inventory tracking
-    sku: { type: String, unique: true, sparse: true },
+    // ✅ Inventory
+    sku: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Product || mongoose.model("Product", ProductSchema);
+export default mongoose.models.Product ||
+  mongoose.model("Product", ProductSchema);
