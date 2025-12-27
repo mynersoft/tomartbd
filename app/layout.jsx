@@ -62,7 +62,6 @@ export default function RootLayout({ children }) {
 			<body>
 				<Providers>
 					<MessengerChat pageId="583273884879650" />
-
 					{children}
 				</Providers>
 

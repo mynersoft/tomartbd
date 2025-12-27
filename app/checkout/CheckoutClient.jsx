@@ -19,7 +19,6 @@ import {
 	ArrowLeft,
 	ShoppingBag,
 } from 'lucide-react';
-import Image from 'next/image';
 import { shippingCost, tax } from '../../utils/shippingCost';
 import useLoginUser from '@/hooks/useAuth';
 
@@ -47,6 +46,8 @@ export default function CheckoutClient() {
 		},
 		products: [],
 	});
+
+
 
 	/* ================= PRODUCTS ================= */
 	useEffect(() => {
@@ -212,6 +213,16 @@ export default function CheckoutClient() {
 
 		toast.error('Payment method not supported');
 	};
+
+	useEffect(() => {
+		setOrderData((prev) => ({
+			...prev,
+			phone: user.phone || "",
+
+		}));
+	}, [user]);
+
+
 
 	if (!cart) {
 		return <div>Not found</div>;
@@ -436,6 +447,8 @@ export default function CheckoutClient() {
 													item.images?.[0] ||
 													'/default-image.png'
 												}
+
+												
 												alt={item.name}
 												className="w-full h-full object-cover"
 											/>
@@ -455,7 +468,7 @@ export default function CheckoutClient() {
 										</div>
 										<div className="text-right">
 											<div className="font-medium text-gray-900">
-												৳{itemPrice.toFixed(2)}
+												৳{itemPrice?.toFixed(2)}
 											</div>
 											<div className="text-sm text-gray-500">
 												Qty: {item.quantity}

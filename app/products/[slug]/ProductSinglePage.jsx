@@ -222,12 +222,12 @@ export default function ProductSinglePage() {
 							<div className="relative border-2 border-gray-100 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-white">
 								<div className="aspect-square flex items-center justify-center p-8">
 								
-									<img
+									{/* <img
 										src={productData.images[selectedImage]}
 										alt={product.name}
 										className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
 										onLoad={() => setImageLoaded(true)}
-									/>
+									/> */}
 
 									{/* Badges */}
 									<div className="absolute top-4 left-4 flex flex-col gap-2">

@@ -69,17 +69,17 @@ const CardDrawer = ({ items, isCartOpen, cartRef, qty, setIsCartOpen }) => {
 									key={index}
 									className="flex gap-3 border rounded-lg p-3 hover:shadow-sm transition-shadow">
 									<Image
-										src={
-											item &&
-											Array.isArray(item.images) &&
-											item.images.length > 0
-												? item.images[0]
-												: '/placeholder.jpg'
-										}
-										alt={item?.name || 'Product'}
+										src=
+											'/placeholder.jpg'
+										
+										alt='Product'
 										width={80}
 										height={80}
 										className="rounded-lg object-cover"
+										unoptimized={
+											process.env.NODE_ENV ===
+											'development'
+										}
 									/>
 
 									<div className="flex-1 min-w-0">
