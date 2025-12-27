@@ -1,6 +1,7 @@
 import Providers from "../components/Providers";
 import "./globals.css";
 import MessengerChat from "@/components/MessengerChat";
+import Eruda from "@/components/Eruda";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -63,12 +64,8 @@ export default function RootLayout({ children }) {
 
 {children}</Providers>
 
-<script>
+<Eruda />
 
-
-javascript:(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda';document.body.appendChild(s);s.onload=function(){eruda.init();};})();
-
-</script>
       </body>
     </html>
   );
