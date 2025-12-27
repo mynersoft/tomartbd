@@ -1,109 +1,65 @@
-import { notFound } from "next/navigation";
-import { getBlogPost, getAllBlogPosts } from "@/lib/blog";
-import BlogPostClient from "./BlogPostClient";
+import Image from "next/image";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://tomartbd.com";
+/* Fetch single blog */
+async function getBlog(slug) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/blog/slug/${slug}`,
+    { cache: "no-store" }
+  );
 
-/* ----------------------------------------
-   Metadata
------------------------------------------ */
+  if (!res.ok) {
+    throw new Error("Blog not found");
+  }
+
+  return res.json();
+}
+
+/* SEO Metadata */
 export async function generateMetadata({ params }) {
-  const slug = params?.slug;
+  const blog = await getBlog(params.slug);
 
-  if (!slug) {
-    return {
-      title: "Blog | TomartBD",
-    };
-  }
-
-  try {
-    const post = await getBlogPost(slug);
-    if (!post) {
-      return {
-        title: "Blog Post Not Found | TomartBD",
-        description: "The requested blog post could not be found.",
-      };
-    }
-
-    const description =
-      post.excerpt ||
-      post.content?.replace(/<[^>]+>/g, "").slice(0, 160) ||
-      "Premium e-commerce insights and shopping guides";
-
-    const image =
-      post.featuredImage?.url ||
-      `${BASE_URL}/images/blog/default-og.jpg`;
-
-    return {
-      title: `${post.title} | TomartBD Blog`,
-      description,
-      openGraph: {
-        title: post.title,
-        description,
-        type: "article",
-        images: [image],
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: post.title,
-        description,
-        images: [image],
-      },
-      alternates: {
-        canonical: `${BASE_URL}/blog/${slug}`,
-      },
-    };
-  } catch {
-    return {
-      title: "Blog | TomartBD",
-    };
-  }
+  return {
+    title: blog.title,
+    description: blog.description,
+    openGraph: {
+      title: blog.title,
+      description: blog.description,
+      images: [blog.image],
+    },
+  };
 }
 
-/* ----------------------------------------
-   Static Paths
------------------------------------------ */
-export async function generateStaticParams() {
-  try {
-    const posts = await getAllBlogPosts();
-    return posts.map((post) => ({
-      slug: post.slug,
-    }));
-  } catch {
-    return [];
-  }
-}
+export default async function BlogDetails({ params }) {
+  const blog = await getBlog(params.slug);
 
-/* ----------------------------------------
-   Blog Single Page
------------------------------------------ */
-export default async function BlogPostPage({ params }) {
-  const slug = params?.slug;
-  if (!slug) notFound();
+  return (
+    <article className="max-w-5xl mx-auto px-4 py-10">
+      {/* Title */}
+      <h1 className="text-3xl md:text-4xl font-bold mb-4">
+        {blog.title}
+      </h1>
 
-  try {
-    const post = await getBlogPost(slug);
-    if (!post) notFound();
+      {/* Date */}
+      <p className="text-sm text-gray-500 mb-6">
+        {new Date(blog.createdAt).toDateString()}
+      </p>
 
-    const allPosts = await getAllBlogPosts();
+      {/* Image */}
+      <div className="relative w-full h-[350px] mb-8 rounded-xl overflow-hidden">
+        <Image
+          src={blog.image}
+          alt={blog.title}
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
 
-    const relatedPosts =
-      allPosts
-        ?.filter(
-          (p) =>
-            p.slug !== slug &&
-            p.category?.id === post.category?.id
-        )
-        .slice(0, 3) || [];
-
-    return (
-      <BlogPostClient
-        post={post}
-        relatedPosts={relatedPosts}
+      {/* Content */}
+      <div
+        className="prose max-w-none"
+        dangerouslySetInnerHTML={{ __html: blog.content }}
       />
-    );
-  } catch {
-    notFound();
-  }
+    </article>
+  );
 }
