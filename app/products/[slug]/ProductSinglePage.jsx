@@ -589,6 +589,7 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 						<div className="flex overflow-x-auto">
 							{[
 								'description',
+'questions',
 								'specifications',
 								'reviews',
 							].map((tab) => (
@@ -642,6 +643,32 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 								</div>
 							)}
 
+
+
+{activeTab === 'reviews' && (
+  <div className="space-y-6">
+    
+<ReviewForm
+  isOpen={showReviewForm}
+  onClose={() => setShowReviewForm(false)}
+  productId={product._id}
+  productName={product.name}
+  orderId="12345" // Pass actual order ID if available
+  customerName="John Doe" // Pass customer name if logged in
+  onReviewSubmit={(review) => {
+    // Handle the submitted review
+    console.log('New review:', review);
+    // You can update your reviews state here
+  }}
+
+/>
+  </div>
+)}
+
+
+
+
+
 							{activeTab === 'specifications' && (
 								<div className="space-y-6">
 									<h3 className="text-2xl font-bold text-gray-900">
@@ -670,7 +697,12 @@ const [showReviewForm, setShowReviewForm] = useState(false);
     console.log('New review:', review);
     // You can update your reviews state here
   }}
+
 />
+
+
+
+
 
 
 
