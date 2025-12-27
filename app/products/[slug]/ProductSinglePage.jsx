@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { addToCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import ReviewForm from '@/components/ReviewForm';
+import ProductQuestions from '@/components/ProductQuestions';
 import { toast } from 'react-hot-toast';
 import {
 	Star,
@@ -605,6 +606,18 @@ const [showReviewForm, setShowReviewForm] = useState(false);
 						</div>
 
 						<div className="p-8">
+
+{activeTab === 'questions' && (
+  <div className="space-y-6">
+    <ProductQuestions 
+      productId={product._id}
+      productName={product.name}
+    />
+  </div>
+)}
+
+
+
 							{activeTab === 'description' && (
 								<div className="space-y-6">
 									<h3 className="text-2xl font-bold text-gray-900">
