@@ -62,6 +62,13 @@ export default function RootLayout({ children }) {
 <MessengerChat pageId="583273884879650" />
 
 {children}</Providers>
+
+<script>
+
+
+javascript:(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/eruda';document.body.appendChild(s);s.onload=function(){eruda.init();};})();
+
+</script>
       </body>
     </html>
   );
