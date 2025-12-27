@@ -15,14 +15,22 @@ const ReviewSchema = new mongoose.Schema(
       required: true,
     },
 
-    rating: { type: Number, min: 1, max: 5, required: true },
-    title: String,
-    comment: { type: String, required: true },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
 
-    isVerifiedPurchase: { type: Boolean, default: false },
+    comment: {
+      type: String,
+      required: true,
+    },
 
-    helpfulVotes: { type: Number, default: 0 },
-    unhelpfulVotes: { type: Number, default: 0 },
+    isVerifiedPurchase: {
+      type: Boolean,
+      default: false,
+    },
 
     status: {
       type: String,
@@ -33,7 +41,7 @@ const ReviewSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔒 Prevent duplicate review by same user
+// ❌ prevent same user reviewing same product twice
 ReviewSchema.index({ product: 1, user: 1 }, { unique: true });
 
 export default mongoose.models.Review ||
