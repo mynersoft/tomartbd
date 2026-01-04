@@ -121,6 +121,16 @@ export const POST = withErrorHandler(async (req) => {
     })),
   });
 
+
+await createAdminNotification({
+message : session.user.name + "Placed order",
+type: "order",
+link : "/noti"
+
+});
+
+
+
   return NextResponse.json(
     {
       success: true,
