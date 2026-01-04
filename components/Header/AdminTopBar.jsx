@@ -33,11 +33,13 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import useLoginUser from '@/hooks/useAuth';
+import  {useNotifications} from "@/hooks/useNotifications";
 
 import  {useSelector} from "react-redux";
 
 const AdminTopBar = () => {
   const { user } = useLoginUser();
+useNotifications();
 
 const {notifications} = useSelector((state) => state.notification);
 
