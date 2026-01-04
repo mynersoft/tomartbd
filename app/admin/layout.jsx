@@ -4,11 +4,19 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
+import  {useNotifications} from "@hooks/useNotification";
 
 import AdminLayout from '../../components/Dashboard/AdminLayout';
 import UserLayout from '../../components/Dashboard/UserLayout';
 
 export default function DashboardLayout({ children }) {
+
+
+
+useNotifications();
+
+
+
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, status } = useSession();
