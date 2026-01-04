@@ -21,7 +21,7 @@ export default function CartPage() {
 
   const shippingFee = calculateShippingFee({
     subtotal,
-    location: 'Daka',
+    location: 'Dhaka',
   });
 
   if (items.length === 0)
