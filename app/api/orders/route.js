@@ -6,6 +6,7 @@ import Order from '@/models/Order';
 import { withErrorHandler } from '@/lib/withErrorHandler';
 import { ApiError } from '@/lib/ApiError';
 import crypto from 'crypto';
+import { createAdminNotification } from "@/utils/createAdminNotification";
 
 export async function GET(req) {
   try {
@@ -123,11 +124,11 @@ export const POST = withErrorHandler(async (req) => {
 
 
 await createAdminNotification({
-message : session.user.name + "Placed order",
-type: "order",
-link : "/noti"
-
-});
+    title: "New Order",
+    message: `${session.user.name} placed an order`,
+    type: "order",
+    link: "/admin/orders",
+  });
 
 
 
