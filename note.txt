@@ -1,0 +1,47 @@
+user login - store data in local storage, redux store
+
+login success - admin dashboard / before page redirect like shop/product  
+
+register and redirect login page
+
+add to cart - checkout (calculate tax,  cost, discout, voucher, total,  customer info )- success (send mail, whatsapp,  messenger) - invoice view
+
+payment - fail - order placed as bkash unpaid
+
+dashboard - user cancel order when unshipped
+
+vishlist - add to cart - checkout
+
+search - 2 or 3 word match product name - list show
+
+
+add product - image upload - product upload - success
+
+review,  question add - product update these data
+
+
+
+
+
+
+
+
+Push notifications
+Chat per user
+WhatsApp integration
+
+
+
+api- react query
+state - react redux
+
+
+ How to use modal --------------
+		<Modal
+					isOpen={isOpen}
+					onClose={close}
+					title="Basic Modal"
+					size="md">
+					Content
+				</Modal>
+

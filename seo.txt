@@ -1,0 +1,30 @@
+for last b/productSeo
+
+import { generateProductMeta } from '@/lib/seo';
+import { getProductBySlug } from '@/lib/getProduct';
+
+export async function generateMetadata({ params }) {
+  const product = await getProductBySlug(params.slug);
+
+  if (!product) {
+    return {
+      title: 'Product Not Found | Tomartbd',
+      description: 'This product is not available.',
+    };
+  }
+
+  const seo = generateProductMeta(product);
+
+  return {
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
+
+    openGraph: {
+      title: seo.title,
+      description: seo.description,
+      images: product.images || [],
+      type: 'product',
+    },
+  };
+}
