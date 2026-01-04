@@ -6,7 +6,7 @@ import Order from '@/models/Order';
 import { withErrorHandler } from '@/lib/withErrorHandler';
 import { ApiError } from '@/lib/ApiError';
 import crypto from 'crypto';
-import { createAdminNotification } from "@/utils/createAdminNotification";
+import { createAdminNotification } from "@/utils/createNotification";
 
 export async function GET(req) {
   try {
