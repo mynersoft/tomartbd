@@ -98,6 +98,7 @@ export const POST = withErrorHandler(async (req) => {
 
 const res = await validateVoucher({ voucherCode, cartItems, subtotal });
 
+const total = subtotal - discount
 
 
   // 🔁 invoice retry (safe)
@@ -121,7 +122,7 @@ const res = await validateVoucher({ voucherCode, cartItems, subtotal });
       email: session.user.email,
       phone,
     },
-    total: totalAmount,
+    total: total,
     subtotal: subtotal,
     shippingFee: 100,
     status: 'pending',
