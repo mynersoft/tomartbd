@@ -169,7 +169,7 @@ await createAdminNotification({
         shippingFee: order.shippingFee,
         createdAt: order.createdAt,
         voucher,
-discount:order.discount;
+discount:order.discount,
       },
     },
     { status: 200 }
