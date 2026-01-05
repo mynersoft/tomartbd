@@ -10,7 +10,7 @@ function StatusToggle({ voucher }) {
 
     try {
       // Call API to update voucher status
-      await axios.patch(`/api/voucher/${voucher._id}/status`, {
+      await axios.patch(`/api/voucher/status-update/${voucher._id}`, {
         isActive: newStatus ? "active" : "inactive",
       });
     } catch (err) {
