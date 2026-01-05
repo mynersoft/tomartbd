@@ -8,7 +8,7 @@ import { ApiError } from '@/lib/ApiError';
 import crypto from 'crypto';
 import { validateVoucher } from '@/lib/validateVoucher';
 import { createAdminNotification } from "@/utils/createNotification";
-import { validateVoucher } from '@/lib/validateVoucher'; // your reusable function
+
 
 export async function GET(req) {
   try {
