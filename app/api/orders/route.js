@@ -8,6 +8,7 @@ import { ApiError } from '@/lib/ApiError';
 import crypto from 'crypto';
 import { validateVoucher } from '@/lib/validateVoucher';
 import { createAdminNotification } from "@/utils/createNotification";
+import { validateVoucher } from '@/lib/validateVoucher'; // your reusable function
 
 export async function GET(req) {
   try {
@@ -64,9 +65,9 @@ export const POST = withErrorHandler(async (req) => {
     throw new ApiError('Invalid JSON body', 400);
   }
 
-  const { address, phone, cartItems, voucher, totalAmount, payment } = body;
+  const { address, phone, cartItems, voucherCode, totalAmount, payment } = body;
 
-  console.log(voucher, cartItems, '-------------------');
+  
 
   if (!address || !cartItems) {
     throw new ApiError('Missing required fields', 400);
@@ -92,11 +93,11 @@ export const POST = withErrorHandler(async (req) => {
   // voucher validation
 
 
-  const { discount } = await validateVoucher({
-    voucherCode: voucher,
-    cartItems,
-    subtotal,
-  });
+  
+
+
+const res = await validateVoucher({ voucherCode, cartItems, subtotal });
+
 
 
   // 🔁 invoice retry (safe)
@@ -124,6 +125,7 @@ export const POST = withErrorHandler(async (req) => {
     subtotal: subtotal,
     shippingFee: 100,
     status: 'pending',
+discount: res.discount,
     payment: {
       method: payment?.method || 'COD',
       status: payment?.status || 'pending',
@@ -167,6 +169,7 @@ await createAdminNotification({
         shippingFee: order.shippingFee,
         createdAt: order.createdAt,
         voucher,
+discount:order.discount;
       },
     },
     { status: 200 }
