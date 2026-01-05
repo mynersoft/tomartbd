@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Voucher from "@/models/Voucher";
 import { connectDB } from "@/lib/db";
 import { ApiError, handleApiError } from "@/lib/ApiError";
-import {getIdFromReq} from " @/lib/getIdFromReq";
+import {getIdFromReq} from "@/lib/getIdFromReq";
 
 export async function PUT(req, { params }) {
   try {
