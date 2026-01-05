@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { validateVoucher } from '@/lib/validateVoucher'; // your reusable function
 
-export async function POST(req: Request) {
+export async function POST(req) {
   try {
     const body = await req.json();
 
