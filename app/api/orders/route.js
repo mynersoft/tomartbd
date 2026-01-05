@@ -7,6 +7,7 @@ import { withErrorHandler } from '@/lib/withErrorHandler';
 import { ApiError } from '@/lib/ApiError';
 import crypto from 'crypto';
 import { validateVoucher } from '@/lib/validateVoucher';
+import { createAdminNotification } from "@/utils/createNotification";
 
 export async function GET(req) {
   try {
@@ -142,6 +143,16 @@ export const POST = withErrorHandler(async (req) => {
       image: item.image || '',
     })),
   });
+
+
+await createAdminNotification({
+    title: "New Order",
+    message: `${session.user.name} placed an order`,
+    type: "order",
+    link: "/admin/orders",
+  });
+
+
 
   return NextResponse.json(
     {

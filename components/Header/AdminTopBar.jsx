@@ -33,11 +33,19 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import useLoginUser from '@/hooks/useAuth';
+import  {useNotifications} from "@/hooks/useNotifications";
+
+import  {useSelector} from "react-redux";
 
 const AdminTopBar = () => {
   const { user } = useLoginUser();
+useNotifications();
 
+const {notifications} = useSelector((state) => state.notification);
+
+console.log(notifications);
   const router = useRouter();
+
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
 
@@ -45,37 +53,8 @@ const AdminTopBar = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'New Order Received',
-      time: '5 min ago',
-      read: false,
-      icon: <ShoppingCart className="h-4 w-4" />,
-    },
-    {
-      id: 2,
-      title: 'Website Traffic Up',
-      time: '1 hour ago',
-      read: false,
-      icon: <TrendingUp className="h-4 w-4" />,
-    },
-    {
-      id: 3,
-      title: 'Payment Received',
-      time: '2 hours ago',
-      read: true,
-      icon: <CreditCard className="h-4 w-4" />,
-    },
-    {
-      id: 4,
-      title: 'New User Registered',
-      time: '1 day ago',
-      read: true,
-      icon: <Users className="h-4 w-4" />,
-    },
-  ]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] =useState(false);
+    
 
   const [messages, setMessages] = useState([
     {
@@ -453,21 +432,21 @@ const AdminTopBar = () => {
                     <div className="max-h-96 overflow-y-auto">
                       {notifications.map((notification) => (
                         <div
-                          key={notification.id}
+                          key={notification._id}
                           className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer border-l-2 ${
                             !notification.read
                               ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/20'
                               : 'border-transparent'
                           }`}
                           onClick={() =>
-                            markNotificationAsRead(notification.id)
+                            markNotificationAsRead(notification._id)
                           }
                         >
                           <div className="flex items-start space-x-3">
                             <div className="flex-shrink-0">
                               <div
                                 className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                  !notification.read
+                                  !notification?.read
                                     ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600'
                                     : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
                                 }`}
