@@ -12,7 +12,7 @@ function ApplyVoucher({ subtotal, cartItems, }) {
 
   const data = {
     subtotal,
-    voucher,
+   voucherCode:  voucher,
     cartItems,
   };
 
