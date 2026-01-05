@@ -10,7 +10,7 @@ export async function POST(req) {
     const { voucherCode, cartItems, subtotal } = body;
 
     // ❌ Validation
-    if (!voucherCode || !Array.isArray(cartItems) || !subtotal == null) {
+    if (!voucherCode || !Array.isArray(cartItems) || !subtotal) {
       return NextResponse.json(
         { message: 'Voucher code, cart items & subtotal required' },
         { status: 400 }
