@@ -7,10 +7,10 @@ export async function POST(req) {
     await connectDB();
 
     const body = await req.json();
-    const { voucher, cartItems, subtotal } = body;
+    const { voucherCode, cartItems, subtotal } = body;
 
-    // ❌ Basic validation
-    if (!voucher || !cartItems || subtotal == null) {
+    // ❌ Validation
+    if (!voucherCode || !Array.isArray(cartItems) || subtotal == null) {
       return NextResponse.json(
         { message: 'Voucher code, cart items & subtotal required' },
         { status: 400 }
@@ -18,9 +18,9 @@ export async function POST(req) {
     }
 
     // 🔎 Find voucher
-    const voucher = await Voucher.findOne({ code: voucher });
+    const voucherDoc = await Voucher.findOne({ code: voucherCode });
 
-    if (!voucher) {
+    if (!voucherDoc) {
       return NextResponse.json(
         { message: 'Invalid voucher code' },
         { status: 400 }
@@ -28,7 +28,7 @@ export async function POST(req) {
     }
 
     // ❌ Status check
-    if (voucher.status !== 'active') {
+    if (voucherDoc.isActive !== 'active') {
       return NextResponse.json(
         { message: 'Voucher inactive' },
         { status: 400 }
@@ -37,7 +37,7 @@ export async function POST(req) {
 
     // ⏰ Date check
     const now = new Date();
-    if (now < voucher.startDate || now > voucher.endDate) {
+    if (now < voucherDoc.startDate || now > voucherDoc.endDate) {
       return NextResponse.json(
         { message: 'Voucher expired or not started' },
         { status: 400 }
@@ -45,9 +45,12 @@ export async function POST(req) {
     }
 
     // 💰 Minimum order check
-    if (voucher.minOrderAmount && subtotal < voucher.minOrderAmount) {
+    if (
+      voucherDoc.minOrderAmount &&
+      subtotal < voucherDoc.minOrderAmount
+    ) {
       return NextResponse.json(
-        { message: `Minimum order ${voucher.minOrderAmount} tk required` },
+        { message: `Minimum order ${voucherDoc.minOrderAmount} tk required` },
         { status: 400 }
       );
     }
@@ -58,20 +61,24 @@ export async function POST(req) {
        🎯 Apply discount logic
     ---------------------------- */
 
-    // ✅ All products
-    if (voucher.type === 'all-product') {
-      if (voucher.discountType === 'percentage') {
-        discount = (subtotal * voucher.discountValue) / 100;
+    // ✅ All product voucher
+    if (voucherDoc.type === 'all-product') {
+      if (voucherDoc.discountType === 'percentage') {
+        discount = (subtotal * voucherDoc.discountValue) / 100;
       } else {
-        discount = Math.min(voucher.discountValue, subtotal);
+        discount = Math.min(voucherDoc.discountValue, subtotal);
       }
     }
 
-    // ✅ Product specific
-    if (voucher.type === 'product-specific') {
+    // ✅ Product specific voucher
+    if (voucherDoc.type === 'product-specific') {
+      const applicableIds = (voucherDoc.applicableProducts || [])
+        .filter(Boolean)
+        .map(id => id.toString());
+
       const eligibleTotal = cartItems
         .filter(item =>
-          voucher.applicableProducts.includes(item.productId)
+          applicableIds.includes(item.productId.toString())
         )
         .reduce(
           (sum, item) => sum + item.price * item.quantity,
@@ -85,10 +92,10 @@ export async function POST(req) {
         );
       }
 
-      if (voucher.discountType === 'percentage') {
-        discount = (eligibleTotal * voucher.discountValue) / 100;
+      if (voucherDoc.discountType === 'percentage') {
+        discount = (eligibleTotal * voucherDoc.discountValue) / 100;
       } else {
-        discount = Math.min(voucher.discountValue, eligibleTotal);
+        discount = Math.min(voucherDoc.discountValue, eligibleTotal);
       }
     }
 
@@ -98,17 +105,26 @@ export async function POST(req) {
       {
         success: true,
         discount,
-voucher
+        finalTotal: subtotal - discount,
+        voucher: {
+          code: voucherDoc.code,
+          name: voucherDoc.name,
+          type: voucherDoc.type,
+          discountType: voucherDoc.discountType,
+          discountValue: voucherDoc.discountValue,
+        },
       },
       { status: 200 }
     );
   } catch (error) {
+    console.error('Voucher Apply Error:', error);
+
     return NextResponse.json(
       {
         success: false,
         message: error.message || 'Voucher apply failed',
       },
-      { status: 500 }
+      { status: 400 }
     );
   }
 }
