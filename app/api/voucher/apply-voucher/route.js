@@ -1,130 +1,35 @@
 import { NextResponse } from 'next/server';
-import Voucher from '@/models/Voucher';
-import { connectDB } from '@/lib/db';
+import { validateVoucher } from '@/lib/validateVoucher'; // your reusable function
 
-export async function POST(req) {
+export async function POST(req: Request) {
   try {
-    await connectDB();
-
     const body = await req.json();
+
     const { voucherCode, cartItems, subtotal } = body;
 
-    // ❌ Validation
-    if (!voucherCode || !Array.isArray(cartItems) || !subtotal) {
-      return NextResponse.json(
-        { message: 'Voucher code, cart items & subtotal required' },
-        { status: 400 }
-      );
-    }
+    // Call your reusable validator
+    const res = await validateVoucher({ voucherCode, cartItems, subtotal });
 
-    // 🔎 Find voucher
-    const voucherDoc = await Voucher.findOne({ code: voucherCode });
 
-    if (!voucherDoc) {
-      return NextResponse.json(
-        { message: 'Invalid voucher code' },
-        { status: 400 }
-      );
-    }
 
-    // ❌ Status check
-    if (voucherDoc.isActive !== 'active') {
-      return NextResponse.json(
-        { message: 'Voucher inactive' },
-        { status: 400 }
-      );
-    }
 
-    // ⏰ Date check
-    const now = new Date();
-    if (now < voucherDoc.startDate || now > voucherDoc.endDate) {
-      return NextResponse.json(
-        { message: 'Voucher expired or not started' },
-        { status: 400 }
-      );
-    }
-
-    // 💰 Minimum order check
-    if (
-      voucherDoc.minOrderAmount &&
-      subtotal < voucherDoc.minOrderAmount
-    ) {
-      return NextResponse.json(
-        { message: `Minimum order ${voucherDoc.minOrderAmount} tk required` },
-        { status: 400 }
-      );
-    }
-
-    let discount = 0;
-
-    /* ---------------------------
-       🎯 Apply discount logic
-    ---------------------------- */
-
-    // ✅ All product voucher
-    if (voucherDoc.type === 'all-product') {
-      if (voucherDoc.discountType === 'percentage') {
-        discount = (subtotal * voucherDoc.discountValue) / 100;
-      } else {
-        discount = Math.min(voucherDoc.discountValue, subtotal);
-      }
-    }
-
-    // ✅ Product specific voucher
-    if (voucherDoc.type === 'product-specific') {
-      const applicableIds = (voucherDoc.applicableProducts || [])
-        .filter(Boolean)
-        .map(id => id.toString());
-
-      const eligibleTotal = cartItems
-        .filter(item =>
-          applicableIds.includes(item.productId.toString())
-        )
-        .reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0
-        );
-
-      if (eligibleTotal === 0) {
-        return NextResponse.json(
-          { message: 'No eligible products for this voucher' },
-          { status: 400 }
-        );
-      }
-
-      if (voucherDoc.discountType === 'percentage') {
-        discount = (eligibleTotal * voucherDoc.discountValue) / 100;
-      } else {
-        discount = Math.min(voucherDoc.discountValue, eligibleTotal);
-      }
-    }
-
-    discount = Math.min(discount, subtotal);
-
-    return NextResponse.json(
+   return NextResponse.json(
       {
         success: true,
-        discount,
-        finalTotal: subtotal - discount,
-        voucher: {
-          code: voucherDoc.code,
-          name: voucherDoc.name,
-          type: voucherDoc.type,
-          discountType: voucherDoc.discountType,
-          discountValue: voucherDoc.discountValue,
-        },
+        discount: res.discount,
+        
       },
       { status: 200 }
     );
-  } catch (error) {
-    console.error('Voucher Apply Error:', error);
 
+
+
+
+  } catch (error) {
+    console.error('Voucher API Error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        message: error.message || 'Voucher apply failed',
-      },
-      { status: 400 }
+      { success: false, message: 'Something went wrong' },
+      { status: 500 }
     );
   }
 }
