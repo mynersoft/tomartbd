@@ -126,7 +126,7 @@ const total = subtotal - discount
     subtotal: subtotal,
     shippingFee: 100,
     status: 'pending',
-discount: res.discount,
+discount: res?.discount || null,
     payment: {
       method: payment?.method || 'COD',
       status: payment?.status || 'pending',
