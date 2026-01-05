@@ -98,7 +98,7 @@ export const POST = withErrorHandler(async (req) => {
 
 const res = await validateVoucher({ voucherCode, cartItems, subtotal });
 
-const total = subtotal - discount
+const total = subtotal - res?.discount || 0; 
 
 
   // 🔁 invoice retry (safe)
