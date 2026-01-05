@@ -31,3 +31,6 @@ function StatusToggle({ voucher }) {
     </label>
   );
 }
+
+
+export default StatusToggle;
