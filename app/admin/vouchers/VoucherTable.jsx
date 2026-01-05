@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useDeleteVoucher } from '@/hooks/useVoucher';
-import StatusToggle from "./StatusToggle";
+import {StatusToggle} from "./StatusToggle";
 
 const VoucherTable = ({
   handleSelectAll,
