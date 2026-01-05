@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import Voucher from "@/models/Voucher";
 import { connectDB } from "@/lib/db";
-import {getIdFromReq} from " @/libgetIdFromReq";
+import {getIdFromReq} from "@/lib/getIdFromReq";
 
 export async function PATCH(req, { params }) {
   try {
