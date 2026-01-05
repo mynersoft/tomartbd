@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const VoucherSchema = new mongoose.Schema(
   {
@@ -14,26 +14,33 @@ const VoucherSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    type: {
+      // all | single product
+      type: String,
+      enum: ['all-product', 'product-specific'],
+      default: 'product-specific',
+    },
+    applicableProducts: { type: Array }, // for all it empty array
 
     discountType: {
       type: String,
-      enum: ["percentage", "fixed","free-shipping"],
-      default: "percentage",
+      enum: ['percentage', 'fixed', 'free-shipping'],
+      default: 'percentage',
     },
 
-    value: {
+    discountValue: {
       type: Number,
       required: true,
     },
 
-    minPurchase: {
+    minOrderAmount: {
       type: Number,
       default: 0,
     },
 
     usageLimit: {
       type: Number,
-      default: null, 
+      default: null,
     },
 
     customerLimit: {
@@ -56,14 +63,14 @@ const VoucherSchema = new mongoose.Schema(
       default: 0,
     },
 
-    status: {
+    isActive: {
       type: String,
-      enum: ["active", "inactive"],
-      default: "active",
+      enum: ['active', 'inactive'],
+      default: 'inactive',
     },
   },
   { timestamps: true }
 );
 
 export default mongoose.models.Voucher ||
-  mongoose.model("Voucher", VoucherSchema);
+  mongoose.model('Voucher', VoucherSchema);

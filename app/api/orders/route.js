@@ -6,6 +6,7 @@ import Order from '@/models/Order';
 import { withErrorHandler } from '@/lib/withErrorHandler';
 import { ApiError } from '@/lib/ApiError';
 import crypto from 'crypto';
+import { validateVoucher } from '@/lib/validateVoucher';
 
 export async function GET(req) {
   try {
@@ -62,9 +63,11 @@ export const POST = withErrorHandler(async (req) => {
     throw new ApiError('Invalid JSON body', 400);
   }
 
-  const { address, phone, products, totalAmount, payment } = body;
+  const { address, phone, cartItems, voucher, totalAmount, payment } = body;
 
-  if (!address || !phone || !products || !totalAmount) {
+  console.log(voucher, cartItems, '-------------------');
+
+  if (!address || !phone || !cartItems || !totalAmount) {
     throw new ApiError('Missing required fields', 400);
   }
 
@@ -72,11 +75,28 @@ export const POST = withErrorHandler(async (req) => {
     throw new ApiError('Invalid address format', 400);
   }
 
-  if (!Array.isArray(products) || products.length === 0) {
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
     throw new ApiError('Invalid products data', 400);
   }
 
   await connectDB();
+
+  const subtotal = cartItems.reduce((sum, item) => {
+    const price = item.discount
+      ? (item.price * (100 - item.discount.value)) / 100
+      : item.price;
+    return sum + price * item.quantity;
+  }, 0);
+
+  // voucher validation
+
+
+  const { discount } = await validateVoucher({
+    voucherCode: voucher,
+    cartItems,
+    subtotal,
+  });
+
 
   // 🔁 invoice retry (safe)
   let invoice;
@@ -100,6 +120,8 @@ export const POST = withErrorHandler(async (req) => {
       phone,
     },
     total: totalAmount,
+    subtotal: subtotal,
+    shippingFee: 100,
     status: 'pending',
     payment: {
       method: payment?.method || 'COD',
@@ -112,7 +134,7 @@ export const POST = withErrorHandler(async (req) => {
       city: address.city,
       phone,
     },
-    orderItems: products.map((item) => ({
+    orderItems: cartItems.map((item) => ({
       productId: item.productId,
       name: item.name,
       quantity: item.quantity,
@@ -128,9 +150,12 @@ export const POST = withErrorHandler(async (req) => {
       order: {
         id: order._id,
         invoice: order.invoice,
+        subtotal: order.subtotal,
         total: order.total,
         status: order.status,
+        shippingFee: order.shippingFee,
         createdAt: order.createdAt,
+        voucher,
       },
     },
     { status: 200 }

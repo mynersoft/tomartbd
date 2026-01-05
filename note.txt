@@ -32,9 +32,20 @@ WhatsApp integration
 
 
 
+
+
+const applyVoucher = useApplyVoucher();
+
+    applyVoucher.mutate(data, {
+      onSuccess: (data) => {
+        console.log(data);
+      },
+    });
+	
+
+
 api- react query
 state - react redux
-
 
  How to use modal --------------
 		<Modal

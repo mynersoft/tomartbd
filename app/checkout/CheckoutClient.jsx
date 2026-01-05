@@ -19,26 +19,29 @@ import {
   MapPin,
   CheckCircle2,
   Lock,
+  Building,
 } from 'lucide-react';
 import { calculateShippingFee } from '../../lib/calculateShippingFee';
 import CartItems from '../../components/Cart/CartItems';
+import ApplyVoucher from '../../components/Voucher/ApplyVoucher';
 
 export default function CheckoutClient() {
   const taxData = 1.5;
+
   const { user } = useLoginUser();
   const cart = useSelector((state) => state.cart.items);
-  const dispatch = useDispatch();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const mutation = useAddOrder();
+  const { applyVoucher } = useSelector((state) => state.voucher);
 
+  const router = useRouter();
+  const mutation = useAddOrder();
   const [processing, setProcessing] = useState(false);
 
   const [orderData, setOrderData] = useState({
     address: { area: '', city: '', thana: '' },
     phone: '',
-    products: [],
+    cartItems: [],
     totalAmount: 0,
+    voucher: "WELCOME26",
     payment: {
       method: 'COD',
       status: 'pending',
@@ -46,19 +49,13 @@ export default function CheckoutClient() {
     },
   });
 
+  console.log(orderData);
+  
   /* ================= PRODUCTS ================= */
   useEffect(() => {
     setOrderData((prev) => ({
       ...prev,
-      products: cart.map((item) => ({
-        productId: item._id || item.productId,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.discount
-          ? (item.price * (100 - item.discount)) / 100
-          : item.price,
-        image: item.images?.[0],
-      })),
+      cartItems: cart,
     }));
   }, [cart]);
 
@@ -77,12 +74,12 @@ export default function CheckoutClient() {
         },
       }));
     }
-  }, [user]);
+  }, [orderData.phone, user]);
 
   /* ================= TOTAL ================= */
   const subtotal = cart.reduce((sum, item) => {
     const price = item.discount
-      ? (item.price * (100 - item.discount)) / 100
+      ? (item.price * (100 - item.discount.value)) / 100
       : item.price;
     return sum + price * item.quantity;
   }, 0);
@@ -91,10 +88,11 @@ export default function CheckoutClient() {
 
   const shippingFee = calculateShippingFee({
     subtotal,
-    location,
+    location: 'Dhaka',
   });
 
-  const grandTotal = subtotal + shippingFee;
+  const grandTotal =
+    subtotal + shippingFee + (applyVoucher ? applyVoucher.discount : 0);
 
   useEffect(() => {
     setOrderData((prev) => ({
@@ -298,6 +296,13 @@ export default function CheckoutClient() {
                 <span className="font-medium">৳{subtotal.toFixed(2)}</span>
               </div>
 
+              {applyVoucher !== null && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Discount</span>
+                  <span className="font-medium">৳{applyVoucher.discount}</span>
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span
@@ -323,9 +328,14 @@ export default function CheckoutClient() {
                   </div>
                 </div>
               </div>
+              <div>
+
+                <ApplyVoucher  subtotal={subtotal} cartItems={cart} />
+              </div>
             </div>
 
-            {/* Shipping Notice */}
+
+            
 
             {/* Terms & Conditions */}
             <div className="mb-6">

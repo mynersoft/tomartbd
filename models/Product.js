@@ -19,21 +19,20 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-salePrice: {
+    salePrice: {
       type: Number,
     },
-discount: {
-  type: {
-    type: String,
-    enum: ['percentage', 'fixed'],
-  },
-  value: Number,
-},
-
+    discount: {
+      type: {
+        type: String,
+        enum: ['percentage', 'fixed'],
+      },
+      value: Number,
+    },
 
     brand: String,
     category: String,
-sold: Number,
+    sold: Number,
 
     stock: {
       type: Number,
@@ -82,9 +81,6 @@ sold: Number,
       default: true,
     },
 
- 
-
-    
     // ✅ SEO
     metaTitle: String,
     metaDescription: String,

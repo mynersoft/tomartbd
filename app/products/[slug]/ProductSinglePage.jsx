@@ -7,7 +7,7 @@ import { addToCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import ReviewForm from '@/components/ReviewForm';
 import ProductQuestions from '@/components/ProductQuestions';
-import { formatCurrency } from "@/utils/formatCurrency";
+import { formatCurrency } from '@/utils/formatCurrency';
 import { toast } from 'react-hot-toast';
 import {
   Star,
@@ -72,18 +72,62 @@ export default function ProductSinglePage() {
     }
   }, [products, slug]);
 
+  // Calculate discount price correctly
+  const getDiscountPrice = useCallback(() => {
+    if (!product) return product?.price || 0;
+
+    if (!product.discount?.value) return product.price;
+
+    if (product.discount.type === 'percentage') {
+      return product.price - (product.price * product.discount.value) / 100;
+    } else if (product.discount.type === 'fixed') {
+      return product.price - product.discount.value;
+    }
+
+    return product.price;
+  }, [product]);
+
+  // Get discount text for display
+  const getDiscountText = useCallback(() => {
+    if (!product?.discount?.value) return null;
+
+    if (product.discount.type === 'percentage') {
+      return `${product.discount.value}% OFF`;
+    } else if (product.discount.type === 'fixed') {
+      return `৳${product.discount.value} OFF`;
+    }
+
+    return null;
+  }, [product]);
+
+  // Get discount amount
+  const getDiscountAmount = useCallback(() => {
+    if (!product?.discount?.value) return 0;
+
+    if (product.discount.type === 'percentage') {
+      return (product.price * product.discount.value) / 100;
+    } else if (product.discount.type === 'fixed') {
+      return product.discount.value;
+    }
+
+    return 0;
+  }, [product]);
+
   // Create product data with fallbacks
   const getProductData = useCallback(() => {
     if (!product) return null;
 
     return {
       ...product,
-      images: product.images || [
-        '/placeholder-product.jpg',
-        'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1581092160607-ee22621f8a6a?w=800&auto=format&fit=crop',
-      ],
+      images:
+        product.images && product.images.length > 0
+          ? product.images
+          : [
+              '/placeholder-product.jpg',
+              'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1581092160607-ee22621f8a6a?w=800&auto=format&fit=crop',
+            ],
       variants: product.variants || [
         { id: 1, name: '4GB+64GB', color: '#000000', stock: 15 },
         { id: 2, name: '6GB+128GB', color: '#2563eb', stock: 8 },
@@ -93,7 +137,7 @@ export default function ProductSinglePage() {
         { label: 'Brand', value: product.brand || 'Generic', icon: '🏷️' },
         { label: 'Model', value: '2024 Edition', icon: '📱' },
         { label: 'Warranty', value: '2 Years', icon: '🛡️' },
-        { label: 'In Stock', value: '45 Units', icon: '📦' },
+        { label: 'In Stock', value: `${product.stock || 0} Units`, icon: '📦' },
       ],
       highlights: product.highlights || [
         '4K Ultra HD Display',
@@ -113,7 +157,8 @@ export default function ProductSinglePage() {
           user: 'Alex Johnson',
           rating: 5,
           date: '2024-01-15',
-          comment: 'Absolutely amazing product! The build quality exceeded my expectations. Delivery was super fast.',
+          comment:
+            'Absolutely amazing product! The build quality exceeded my expectations. Delivery was super fast.',
           verified: true,
           avatar: '👨🏽‍💻',
         },
@@ -122,7 +167,8 @@ export default function ProductSinglePage() {
           user: 'Sarah Miller',
           rating: 4,
           date: '2024-01-10',
-          comment: 'Very satisfied with the purchase. Battery life is incredible. Minor improvement needed in packaging.',
+          comment:
+            'Very satisfied with the purchase. Battery life is incredible. Minor improvement needed in packaging.',
           verified: true,
           avatar: '👩🏼‍🎓',
         },
@@ -131,16 +177,16 @@ export default function ProductSinglePage() {
   }, [product]);
 
   const isWishlisted = wishlist.some((item) => item._id === product?._id);
-  const discountPrice = product?.discount
-    ? (product.price * (100 - product.discount)) / 100
-    : product?.price || 0;
+  const discountPrice = getDiscountPrice();
+  const discountText = getDiscountText();
+  const discountAmount = getDiscountAmount();
 
   const handleAddToCart = () => {
     if (!product) {
       toast.error('Product not available');
       return;
     }
-    
+
     dispatch(
       addToCart({
         product,
@@ -156,7 +202,7 @@ export default function ProductSinglePage() {
       toast.error('Product not available');
       return;
     }
-    
+
     handleAddToCart();
     router.push('/cart');
   };
@@ -166,7 +212,7 @@ export default function ProductSinglePage() {
       toast.error('Product not available');
       return;
     }
-    
+
     dispatch(toggleWishlist(product));
     toast.success(
       isWishlisted ? '❤️ Removed from wishlist' : '💝 Added to wishlist'
@@ -175,7 +221,7 @@ export default function ProductSinglePage() {
 
   const handleShare = async () => {
     if (!product) return;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -224,14 +270,14 @@ export default function ProductSinglePage() {
             {error || 'Product Not Found'}
           </h2>
           <p className="text-gray-600 text-lg">
-            {error === 'Failed to load product' 
+            {error === 'Failed to load product'
               ? 'Failed to load product details. Please try again later.'
-              : 'The product you\'re looking for doesn\'t exist or has been moved.'
-            }
+              : "The product you're looking for doesn't exist or has been moved."}
           </p>
           <button
             onClick={() => router.push('/')}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl">
+            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
+          >
             Back to Home
           </button>
         </div>
@@ -249,19 +295,22 @@ export default function ProductSinglePage() {
           <nav className="flex items-center space-x-2 text-sm">
             <Link
               href="/"
-              className="text-blue-600 hover:text-blue-800 transition-colors font-medium">
+              className="text-blue-600 hover:text-blue-800 transition-colors font-medium"
+            >
               Home
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <Link
               href="/categories"
-              className="text-gray-600 hover:text-blue-600 transition-colors">
+              className="text-gray-600 hover:text-blue-600 transition-colors"
+            >
               Electronics
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <Link
               href="/categories/smartphones"
-              className="text-gray-600 hover:text-blue-600 transition-colors">
+              className="text-gray-600 hover:text-blue-600 transition-colors"
+            >
               Smartphones
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -281,24 +330,33 @@ export default function ProductSinglePage() {
               {/* Main Image Container */}
               <div className="relative border-2 border-gray-100 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-white">
                 <div className="aspect-square flex items-center justify-center p-8">
-                  <Image
-                    src={productData.images[selectedImage]}
-                    alt={product.name}
-                    width={800}
-                    height={800}
-                    className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
-                    priority
-                    onError={(e) => {
-                      console.error('Failed to load image:', e);
-                      e.target.src = '/placeholder-product.jpg';
-                    }}
-                  />
+                  {productData.images.length > 0 ? (
+                    <Image
+                      src={productData.images[selectedImage]}
+                      alt={productData.name}
+                      width={800}
+                      height={800}
+                      className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
+                      priority
+                      onError={(e) => {
+                        console.error('Failed to load image:', e);
+                        e.target.src = '/placeholder-product.jpg';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">📷</div>
+                        <p className="text-gray-500">No image available</p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Badges */}
                   <div className="absolute top-4 left-4 flex flex-col gap-2">
-                    {product.discount && (
-                      <span className="bg-gradient-to-r from-red-500 to-pink-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                        -{product.discount}% OFF
+                    {discountText && (
+                      <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                        {discountText}
                       </span>
                     )}
                     <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
@@ -313,7 +371,8 @@ export default function ProductSinglePage() {
                         prev > 0 ? prev - 1 : productData.images.length - 1
                       )
                     }
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm w-10 h-10 rounded-full shadow-lg flex items-center justify-center hover:bg-white transition-all">
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm w-10 h-10 rounded-full shadow-lg flex items-center justify-center hover:bg-white transition-all"
+                  >
                     <ChevronLeft className="w-5 h-5 text-gray-700" />
                   </button>
                   <button
@@ -322,7 +381,8 @@ export default function ProductSinglePage() {
                         prev < productData.images.length - 1 ? prev + 1 : 0
                       )
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm w-10 h-10 rounded-full shadow-lg flex items-center justify-center hover:bg-white transition-all">
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm w-10 h-10 rounded-full shadow-lg flex items-center justify-center hover:bg-white transition-all"
+                  >
                     <ChevronRight className="w-5 h-5 text-gray-700" />
                   </button>
                 </div>
@@ -330,63 +390,62 @@ export default function ProductSinglePage() {
 
               {/* Thumbnails Gallery */}
               <div className="grid grid-cols-4 gap-3">
-                {productData.images.map((img, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`relative overflow-hidden rounded-xl border-2 transition-all duration-200 ${
-                      selectedImage === index
-                        ? 'border-blue-500 ring-4 ring-blue-100 scale-105'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}>
-                    <div className="aspect-square bg-gray-50 flex items-center justify-center">
-                      <Image
-                        src={img}
-                        alt={`Thumbnail ${index + 1}`}
-                        width={200}
-                        height={200}
-                        className="w-full h-full object-contain p-2"
-                        onError={(e) => {
-                          console.error('Failed to load thumbnail:', e);
-                          e.target.src = '/placeholder-thumb.jpg';
-                        }}
-                      />
-                    </div>
-                    {selectedImage === index && (
-                      <div className="absolute inset-0 bg-blue-500/10"></div>
-                    )}
-                  </button>
-                ))}
+                {/* {productData.images && productData.images.length > 0 ? (
+                  productData.images.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`relative overflow-hidden rounded-xl border-2 transition-all duration-200 ${
+                        selectedImage === index
+                          ? 'border-blue-500 ring-4 ring-blue-100 scale-105'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="aspect-square bg-gray-50 flex items-center justify-center">
+                        {  !img ||  <Image
+                          src={img || '/placeholder-thumb.jpg'}
+                          alt={`Thumbnail ${index + 1}`}
+                          width={200}
+                          height={200}
+                          className="w-full h-full object-contain p-2"
+                          onError={(e) => {
+                            console.error('Failed to load thumbnail:', e);
+                            e.target.src = '/placeholder-thumb.jpg';
+                          }}  />
+                        }
+                      
+                      </div>
+                      {selectedImage === index && (
+                        <div className="absolute inset-0 bg-blue-500/10"></div>
+                      )}
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center col-span-4 py-4">
+                    No thumbnails available
+                  </p>
+                )}
+                 */}
               </div>
 
               {/* Quick Stats */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl text-center">
                   <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-800">
-                    1.2K+
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Sold Today
-                  </div>
+                  <div className="text-2xl font-bold text-gray-800">1.2K+</div>
+                  <div className="text-sm text-gray-600">Sold Today</div>
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl text-center">
                   <Award className="w-8 h-8 text-green-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-gray-800">
                     {productData.ratings.average.toFixed(1)}/5
                   </div>
-                  <div className="text-sm text-gray-600">
-                    Rating
-                  </div>
+                  <div className="text-sm text-gray-600">Rating</div>
                 </div>
                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl text-center">
                   <Clock className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-gray-800">
-                    24h
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Delivery
-                  </div>
+                  <div className="text-2xl font-bold text-gray-800">24h</div>
+                  <div className="text-sm text-gray-600">Delivery</div>
                 </div>
               </div>
             </div>
@@ -416,7 +475,8 @@ export default function ProductSinglePage() {
                         isWishlisted
                           ? 'bg-red-50 text-red-500 hover:bg-red-100'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}>
+                      }`}
+                    >
                       <Heart
                         className={`w-6 h-6 ${
                           isWishlisted ? 'fill-current' : ''
@@ -425,7 +485,8 @@ export default function ProductSinglePage() {
                     </button>
                     <button
                       onClick={handleShare}
-                      className="p-3 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all">
+                      className="p-3 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
+                    >
                       <Share2 className="w-6 h-6" />
                     </button>
                   </div>
@@ -463,32 +524,34 @@ export default function ProductSinglePage() {
                     <span className="text-4xl font-bold text-gray-900">
                       ৳{formatCurrency(discountPrice)}
                     </span>
-                    {product.discount && (
+                    {product.price > discountPrice && (
                       <div className="flex items-center gap-3">
                         <span className="text-2xl text-gray-400 line-through">
                           ৳{formatCurrency(product.price)}
                         </span>
-                        <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold">
-                          Save {product.discount}%
-                        </span>
+                        {discountText && (
+                          <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold">
+                            {discountText}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-green-600 font-semibold">
-                      <Check className="w-5 h-5" />
-                      <span>
-                        You save ৳{formatCurrency(product.price - discountPrice)}
-                      </span>
+                  {discountAmount > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-green-600 font-semibold">
+                        <Check className="w-5 h-5" />
+                        <span>You save ৳{formatCurrency(discountAmount)}</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
               {/* Variants Component */}
-              <Variants 
-                productData={productData} 
+              <Variants
+                productData={productData}
                 selectedVariant={selectedVariant}
                 onVariantSelect={handleVariantSelect}
                 discountPrice={discountPrice}
@@ -497,13 +560,12 @@ export default function ProductSinglePage() {
               {/* Quantity & Actions */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <span className="font-semibold text-gray-700">
-                    Quantity:
-                  </span>
+                  <span className="font-semibold text-gray-700">Quantity:</span>
                   <div className="flex items-center gap-4">
                     <button
                       onClick={decreaseQuantity}
-                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
+                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
+                    >
                       <Minus className="w-4 h-4" />
                     </button>
                     <span className="text-2xl font-bold w-12 text-center">
@@ -511,7 +573,8 @@ export default function ProductSinglePage() {
                     </span>
                     <button
                       onClick={increaseQuantity}
-                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
+                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
+                    >
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
@@ -520,13 +583,15 @@ export default function ProductSinglePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button
                     onClick={handleAddToCart}
-                    className="group bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-2xl hover:scale-[1.02] flex items-center justify-center gap-3">
+                    className="group bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-2xl hover:scale-[1.02] flex items-center justify-center gap-3"
+                  >
                     <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
                     <span>Add to Cart</span>
                   </button>
                   <button
                     onClick={handleBuyNow}
-                    className="group bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-red-600 hover:to-red-700 hover:shadow-2xl hover:scale-[1.02]">
+                    className="group bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-red-600 hover:to-red-700 hover:shadow-2xl hover:scale-[1.02]"
+                  >
                     Buy Now
                   </button>
                 </div>
@@ -544,12 +609,8 @@ export default function ProductSinglePage() {
                         <Truck className="w-6 h-6 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900">
-                          Free Delivery
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Within 2-3 days
-                        </p>
+                        <p className="font-bold text-gray-900">Free Delivery</p>
+                        <p className="text-sm text-gray-600">Within 2-3 days</p>
                       </div>
                     </div>
                   </div>
@@ -562,9 +623,7 @@ export default function ProductSinglePage() {
                         <p className="font-bold text-gray-900">
                           2 Year Warranty
                         </p>
-                        <p className="text-sm text-gray-600">
-                          Full coverage
-                        </p>
+                        <p className="text-sm text-gray-600">Full coverage</p>
                       </div>
                     </div>
                   </div>
@@ -574,12 +633,8 @@ export default function ProductSinglePage() {
                         <RefreshCw className="w-6 h-6 text-purple-600" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900">
-                          14-Day Return
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Easy returns
-                        </p>
+                        <p className="font-bold text-gray-900">14-Day Return</p>
+                        <p className="text-sm text-gray-600">Easy returns</p>
                       </div>
                     </div>
                   </div>
@@ -600,7 +655,8 @@ export default function ProductSinglePage() {
                       activeTab === tab
                         ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                    }`}>
+                    }`}
+                  >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
                 )
@@ -630,7 +686,8 @@ export default function ProductSinglePage() {
                     {productData.highlights.map((highlight, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                      >
                         <Check className="w-5 h-5 text-green-500" />
                         <span>{highlight}</span>
                       </div>
@@ -647,16 +704,20 @@ export default function ProductSinglePage() {
                     </h3>
                     <button
                       onClick={() => setShowReviewForm(true)}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl">
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
+                    >
                       <MessageSquare className="w-5 h-5" />
                       Write a Review
                     </button>
                   </div>
-                  
+
                   {/* Display existing reviews */}
                   <div className="space-y-6">
                     {productData.reviews.map((review) => (
-                      <div key={review.id} className="bg-gray-50 p-6 rounded-xl">
+                      <div
+                        key={review.id}
+                        className="bg-gray-50 p-6 rounded-xl"
+                      >
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
                             <div className="text-2xl">{review.avatar}</div>
@@ -693,7 +754,7 @@ export default function ProductSinglePage() {
                       </div>
                     ))}
                   </div>
-                  
+
                   <ReviewForm
                     isOpen={showReviewForm}
                     onClose={() => setShowReviewForm(false)}
@@ -721,7 +782,8 @@ export default function ProductSinglePage() {
                     {productData.specifications.map((spec, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
+                      >
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{spec.icon}</span>
                           <span className="font-semibold text-gray-700">

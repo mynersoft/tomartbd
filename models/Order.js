@@ -11,8 +11,9 @@ const orderSchema = new mongoose.Schema(
       phone: { type: String, required: true },
     },
 
+    subtotal: { type: Number, required: true },
     total: { type: Number, required: true },
-
+    shippingFee: { type: Number, required: true },
     status: {
       type: String,
       enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],

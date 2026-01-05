@@ -15,7 +15,15 @@ import {
 import { formatDate } from '../../utils/formatDate';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-const Invoice = ({ order }) => {
+const Invoice = ({ order }) => { 
+
+
+  // console.log(order);
+  
+
+
+
+
   const invoiceRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
@@ -53,6 +61,7 @@ const Invoice = ({ order }) => {
       0
     );
   };
+
 
   const subtotal = calculateSubtotal();
 

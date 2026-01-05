@@ -5,18 +5,26 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAddProduct } from '@/hooks/useProducts';
 
-export default function AddProductPage() { 
-   const { mutate, isLoading } = useAddProduct();
-	
+export default function AddProductPage() {
+  const { mutate, isLoading } = useAddProduct();
+
+  const [discount, setDiscount] = useState({
+    type: '',
+    value: '',
+  });
+
   const [form, setForm] = useState({
     name: '',
     description: '',
-    category: 'electronics',
+    category: '',
     brand: '',
     price: '',
-    discount: '',
     stock: '',
     sku: '',
+    discount: {
+      type: '',
+      value: '',
+    },
     images: [],
     tags: '',
     featured: false,
@@ -26,10 +34,24 @@ export default function AddProductPage() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+
+    // Handle nested properties (e.g., discount.type)
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
+      setForm((prev) => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: type === 'checkbox' ? checked : value,
+        },
+      }));
+    } else {
+      // Handle top-level properties
+      setForm((prev) => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+      }));
+    }
   };
 
   const handleUploadImages = async (e) => {
@@ -57,7 +79,6 @@ export default function AddProductPage() {
         }
       );
 
-
       const data = await res.json();
       uploaded.push(data.secure_url);
     }
@@ -71,42 +92,45 @@ export default function AddProductPage() {
     }));
   };
 
+  const handleAddProduct = (e) => {
+    e.preventDefault();
 
-
-const handleAddProduct = (e) => {
-  e.preventDefault();
-
-  mutate(
-    {
-      ...form,
-      price: Number(form.price),
-      discount: Number(form.discount),
-      stock: Number(form.stock),
-      tags: form.tags.split(',').map((t) => t.trim()),
-    },
-
-    {
-      onSuccess: () => {
-        setForm({
-          name: '',
-          description: '',
-          category: 'electronics',
-          brand: '',
-          price: '',
-          discount: '',
-          stock: '',
-          sku: '',
-          images: [],
-          tags: '',
-          featured: false,
-          bestseller: false,
-          newArrival: true,
-        });
+    mutate(
+      {
+        ...form,
+        price: Number(form.price),
+        discount: {
+          type: form.discount.type,
+          value: Number(form.discount.value),
+        },
+        stock: Number(form.stock),
+        tags: form.tags.split(',').map((t) => t.trim()),
       },
-    }
-  );
-};
 
+      {
+        onSuccess: () => {
+          setForm({
+            name: '',
+            description: '',
+            category: '',
+            brand: '',
+            price: '',
+            stock: '',
+            sku: '',
+            discount: {
+              type: '',
+              value: '',
+            },
+            images: [],
+            tags: '',
+            featured: false,
+            bestseller: false,
+            newArrival: true,
+          });
+        },
+      }
+    );
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded mt-6">
@@ -160,6 +184,7 @@ const handleAddProduct = (e) => {
           onChange={handleChange}
           className="w-full border px-3 py-2 rounded"
         >
+          <option value="electronics">Select Category</option>
           <option value="electronics">Electronics</option>
           <option value="mobile">Mobile</option>
           <option value="fashion">Fashion</option>
@@ -176,13 +201,22 @@ const handleAddProduct = (e) => {
             className="w-1/2 border px-3 py-2 rounded"
             required
           />
-          <input
-            type="number"
-            name="discount"
-            value={form.discount}
+          <select
+            name="discount.type"
+            value={form.discount.type}
             onChange={handleChange}
-            placeholder="Discount %"
-            className="w-1/2 border px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded"
+          >
+            <option>Select discount type</option>
+            <option value="percentage">Percentage</option>
+            <option value="fixed">Fixed</option>
+          </select>
+          <input
+            name="discount.value"
+            value={form.discount.value}
+            onChange={handleChange}
+            className="w-full border px-3 py-2 rounded"
+            placeholder="Discount value"
           />
         </div>
         <input
