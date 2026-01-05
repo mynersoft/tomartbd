@@ -159,6 +159,16 @@ const VoucherTable = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {getStatusBadge(voucher.isActive)}
+
+
+ 
+<td className="px-6 py-4 whitespace-nowrap">
+  <StatusToggle voucher={voucher} />
+</td>
+
+
+
+
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {voucher.customerLimit}
