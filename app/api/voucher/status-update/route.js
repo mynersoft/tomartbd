@@ -10,18 +10,13 @@ export async function PATCH(req, { params }) {
 
     await connectDB();
 
-    const { isActive } = await req.json();
+    const body = await req.json();
 
-    if (!["active", "inactive"].includes(isActive)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid status" },
-        { status: 400 }
-      );
-    }
+   
 
     const voucher = await Voucher.findByIdAndUpdate(
       id,
-      { isActive },
+      { isActive:body.status },
       { new: true }
     );
 
