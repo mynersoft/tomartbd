@@ -4,9 +4,9 @@ import Voucher from "@/models/Voucher";
 import { connectDB } from "@/lib/db";
 import {getIdFromReq} from "@/lib/getIdFromReq";
 
-export async function PATCH(req, { params }) {
+export async function PATCH(req) {
   try {
-    const id = await getIdFromReq (req);
+    const id = await getIdFromReq(req);
 
     await connectDB();
 
@@ -16,7 +16,7 @@ export async function PATCH(req, { params }) {
 
     const voucher = await Voucher.findByIdAndUpdate(
       id,
-      { isActive:body.status },
+      { isActive: "active" },
       { new: true }
     );
 
