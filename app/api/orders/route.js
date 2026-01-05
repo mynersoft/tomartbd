@@ -68,7 +68,7 @@ export const POST = withErrorHandler(async (req) => {
 
   console.log(voucher, cartItems, '-------------------');
 
-  if (!address || !phone || !cartItems || !totalAmount) {
+  if (!address || !cartItems) {
     throw new ApiError('Missing required fields', 400);
   }
 
