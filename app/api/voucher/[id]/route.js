@@ -22,10 +22,11 @@ export async function PUT(req, { params }) {
   }
 }
 
-export async function DELETE(req, { params }) {
+export async function DELETE(req) {
   try {
+const id = await getIdFromReq(req);
     await connectDB();
-    await Voucher.findByIdAndDelete(params.id);
+    await Voucher.findByIdAndDelete(id);
 
     return NextResponse.json({
       success: true,
