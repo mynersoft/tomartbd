@@ -36,10 +36,7 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    const url = new URL(req.url);
-    const pathname = url.pathname;
-    const parts = pathname.split('/');
-    const id = parts[parts.length - 1];
+   const id = await getIdFromReq(req);
 
     if (!id) {
       return NextResponse.json(
