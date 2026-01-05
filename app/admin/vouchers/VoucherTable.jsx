@@ -158,7 +158,7 @@ const VoucherTable = ({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(voucher.status)}
+                  {getStatusBadge(voucher.isActive)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {voucher.customerLimit}
