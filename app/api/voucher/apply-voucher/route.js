@@ -98,14 +98,7 @@ export async function POST(req) {
       {
         success: true,
         discount,
-        finalTotal: subtotal - discount,
-        voucher: {
-          code: voucher.code,
-          name: voucher.name,
-          type: voucher.type,
-          discountType: voucher.discountType,
-          discountValue: voucher.discountValue,
-        },
+voucher
       },
       { status: 200 }
     );
