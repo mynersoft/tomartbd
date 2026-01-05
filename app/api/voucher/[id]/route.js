@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 import Voucher from "@/models/Voucher";
 import { connectDB } from "@/lib/db";
 import { ApiError, handleApiError } from "@/lib/ApiError";
+import {getIdFromReq} from " @/lib/getIdFromReq";
 
 export async function PUT(req, { params }) {
   try {
+const id = await getIdFromReq(req);
     await connectDB();
     const body = await req.json();
 
-    const voucher = await Voucher.findByIdAndUpdate(
-      params.id,
+    const voucher = await Voucher.findByIdAndUpdate(id,
       body,
       { new: true }
     );
