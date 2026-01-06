@@ -84,13 +84,13 @@ export function useAddOrder() {
   return useMutation({
     mutationFn: async (orderData) => {
       const res = await axios.post('/api/orders', orderData);
+      dispatch(addOrder(res.data));
       return res.data.order;
     },
 
     onSuccess: (newOrder) => {
-      dispatch(addOrder(newOrder)); 
       queryClient.invalidateQueries(['orders']);
-        dispatch(clearCart());
+      dispatch(clearCart());
       toast.success('Order added successfully!', { id: 'add-order' });
     },
     onError: (error) => {

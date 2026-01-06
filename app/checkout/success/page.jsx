@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { useSearchParams } from 'next/navigation';
 import { useOrders } from '@/hooks/useOrder';
 import Invoice from '@/components/Order/Invoice';
+import FancyLoader from '@/components/Loader/FancyLoader';
 
 function InvoiceContent() {
   useOrders();
@@ -16,10 +17,14 @@ function InvoiceContent() {
   const orderData = orders.orders;
  
 
+  
+
   const order =
     orderData?.length > 0 && orderData.find((o) => o._id === orderId);
+  console.log(order);
+  
 
-  if (!order) return <p>Order not found or still loading...</p>;
+  if (!order) return <FancyLoader/>
 
   return <Invoice order={order} />;
 }

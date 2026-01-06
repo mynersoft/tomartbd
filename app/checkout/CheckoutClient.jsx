@@ -24,6 +24,7 @@ import {
 import { calculateShippingFee } from '../../lib/calculateShippingFee';
 import CartItems from '../../components/Cart/CartItems';
 import ApplyVoucher from '../../components/Voucher/ApplyVoucher';
+import CheckEmptyCart from '../../components/Cart/CheckEmptyCart';
 
 export default function CheckoutClient() {
   const taxData = 1.5;
@@ -36,21 +37,21 @@ export default function CheckoutClient() {
   const mutation = useAddOrder();
   const [processing, setProcessing] = useState(false);
 
+  const [parentVoucher, setParentVoucher] = useState('');
+
   const [orderData, setOrderData] = useState({
     address: { area: '', city: '', thana: '' },
     phone: '',
     cartItems: [],
     totalAmount: 0,
-    voucher: "WELCOME26",
+    voucherCode: parentVoucher || '',
     payment: {
       method: 'COD',
-      status: 'pending',
+      status: 'unpaid',
       transactionId: null,
     },
   });
 
-  console.log(orderData);
-  
   /* ================= PRODUCTS ================= */
   useEffect(() => {
     setOrderData((prev) => ({
@@ -100,6 +101,14 @@ export default function CheckoutClient() {
       totalAmount: grandTotal,
     }));
   }, [grandTotal]);
+  useEffect(() => {
+    setOrderData((prev) => ({
+      ...prev,
+      voucherCode: parentVoucher,
+    }));
+  }, [parentVoucher]);
+
+  
 
   /* ================= CHANGE ================= */
   const handleChange = (e) => {
@@ -127,7 +136,7 @@ export default function CheckoutClient() {
   const placeOrder = (data) => {
     mutation.mutate(data, {
       onSuccess: (res) => {
-        router.push(`/checkout/success?orderId=${res.id}`);
+        router.push(`/checkout/success?orderId=${res._id}`);
       },
       onError: () => {
         toast.error('Order failed');
@@ -148,13 +157,15 @@ export default function CheckoutClient() {
     if (orderData.payment.method === 'COD') {
       placeOrder({
         ...orderData,
-        payment: { method: 'COD', status: 'pending', transactionId: null },
+        payment: { method: 'COD', status: 'unpaid', transactionId: null },
       });
     } else {
       toast.error('bKash flow handled separately');
       setProcessing(false);
     }
   };
+
+  if (cart.length === 0) return <CheckEmptyCart />;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -329,13 +340,13 @@ export default function CheckoutClient() {
                 </div>
               </div>
               <div>
-
-                <ApplyVoucher  subtotal={subtotal} cartItems={cart} />
+                <ApplyVoucher
+                  subtotal={subtotal}
+                  cartItems={cart}
+                  setVoucherInParent={setParentVoucher}
+                />
               </div>
             </div>
-
-
-            
 
             {/* Terms & Conditions */}
             <div className="mb-6">

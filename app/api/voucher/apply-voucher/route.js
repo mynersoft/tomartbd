@@ -9,22 +9,25 @@ export async function POST(req) {
 
     // Call your reusable validator
     const res = await validateVoucher({ voucherCode, cartItems, subtotal });
+    const checkedRes = await res.json();
 
+    if (res.status !== 200) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: checkedRes.message,
+        },
+        { status: res.status }
+      );
+    }
 
-
-
-   return NextResponse.json(
+    return NextResponse.json(
       {
         success: true,
-        discount: res.discount,
-        
+        voucher: checkedRes,
       },
       { status: 200 }
     );
-
-
-
-
   } catch (error) {
     console.error('Voucher API Error:', error);
     return NextResponse.json(

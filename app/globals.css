@@ -172,6 +172,42 @@
   }
 }
 
+
+
+
+/* Basic hide-on-print class */
+.hide-on-print {
+  
+}
+
+/* Show-on-print alternative */
+.show-on-print {
+
+}
+
+/* Print media query approach */
+@media print {
+  .hide-on-print {
+      display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+  }
+  
+  .show-on-print {
+    display: block !important;
+  }
+}
+
+
+
+
+
+
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
@@ -339,3 +375,5 @@
     -webkit-line-clamp: 3;
   }
 }
+
+

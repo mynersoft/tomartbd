@@ -1,26 +1,28 @@
 import { useState } from 'react';
 import { useApplyVoucher } from '../../hooks/useVoucher';
 
-function ApplyVoucher({ subtotal, cartItems, }) {
+function ApplyVoucher({ subtotal, cartItems, setVoucherInParent }) {
   const applyVoucher = useApplyVoucher();
 
   const [voucher, setVoucher] = useState('');
 
   const handleVoucherChange = (e) => {
-    setVoucher(e.target.value);
+    const newValue = e.target.value;
+    setVoucher(newValue);
+    if (setVoucherInParent) {
+      setVoucherInParent(newValue);
+    }
   };
 
   const data = {
     subtotal,
-   voucherCode:  voucher,
+    voucherCode: voucher,
     cartItems,
   };
 
-  console.log(data);
-  
   const handleVoucherSubmit = () => {
     applyVoucher.mutate(data, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         // console.log(data);
       },
     });

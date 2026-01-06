@@ -7,8 +7,8 @@ import { withErrorHandler } from '@/lib/withErrorHandler';
 import { ApiError } from '@/lib/ApiError';
 import crypto from 'crypto';
 import { validateVoucher } from '@/lib/validateVoucher';
-import { createAdminNotification } from "@/utils/createNotification";
-
+import { createAdminNotification } from '@/utils/createNotification';
+import { shippingCost } from '@/utils/shippingCost';
 
 export async function GET(req) {
   try {
@@ -65,9 +65,7 @@ export const POST = withErrorHandler(async (req) => {
     throw new ApiError('Invalid JSON body', 400);
   }
 
-  const { address, phone, cartItems, voucherCode, totalAmount, payment } = body;
-
-  
+  const { address, phone, cartItems, voucherCode, payment } = body;
 
   if (!address || !cartItems) {
     throw new ApiError('Missing required fields', 400);
@@ -92,14 +90,13 @@ export const POST = withErrorHandler(async (req) => {
 
   // voucher validation
 
+  const res = await validateVoucher({ voucherCode, cartItems, subtotal });
 
-  
+  const checkedVoucher = await res.json();
 
+  let shippingFee = shippingCost;
 
-const res = await validateVoucher({ voucherCode, cartItems, subtotal });
-
-const total = subtotal - res?.discount || 0; 
-
+  const total = subtotal + shippingFee - checkedVoucher?.discount || 0;
 
   // 🔁 invoice retry (safe)
   let invoice;
@@ -122,14 +119,14 @@ const total = subtotal - res?.discount || 0;
       email: session.user.email,
       phone,
     },
-    total: total,
     subtotal: subtotal,
-    shippingFee: 100,
+    total: total,
+    shippingFee,
     status: 'pending',
-discount: res?.discount || null,
+    discount: checkedVoucher?.discount || null,
     payment: {
       method: payment?.method || 'COD',
-      status: payment?.status || 'pending',
+      status: payment?.status || 'unpaid',
       transactionId: payment?.transactionId || null,
     },
     shippingAddress: {
@@ -147,31 +144,18 @@ discount: res?.discount || null,
     })),
   });
 
-
-await createAdminNotification({
-    title: "New Order",
-    message: `${session.user.name} placed an order`,
-    type: "order",
-    link: "/admin/orders",
-  });
-
-
+  // await createAdminNotification({
+  //   title: 'New Order',
+  //   message: `${session.user.name} placed an order`,
+  //   type: 'order',
+  //   link: '/admin/orders',
+  // });
 
   return NextResponse.json(
     {
       success: true,
       message: 'Order created successfully',
-      order: {
-        id: order._id,
-        invoice: order.invoice,
-        subtotal: order.subtotal,
-        total: order.total,
-        status: order.status,
-        shippingFee: order.shippingFee,
-        createdAt: order.createdAt,
-        voucher,
-discount:order.discount,
-      },
+      order: order,
     },
     { status: 200 }
   );

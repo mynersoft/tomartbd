@@ -64,12 +64,11 @@ export function useApplyVoucher() {
   return useMutation({
     mutationFn: async (voucherData) => {
       const res = await axios.post('/api/voucher/apply-voucher', voucherData);
-    
       return res.data;
     },
 
-	  onSuccess: (newVoucher) => {		  
-		  dispatch(applyVoucher(newVoucher));
+    onSuccess: (newVoucher) => {		
+		  dispatch(applyVoucher(newVoucher.voucher));
       toast.success('Voucher added successfully!', { id: 'apply-voucher' });
     },
 

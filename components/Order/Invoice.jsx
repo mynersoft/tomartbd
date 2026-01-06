@@ -15,15 +15,7 @@ import {
 import { formatDate } from '../../utils/formatDate';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-const Invoice = ({ order }) => { 
-
-
-  // console.log(order);
-  
-
-
-
-
+const Invoice = ({ order }) => {
   const invoiceRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
@@ -54,17 +46,6 @@ const Invoice = ({ order }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Calculate subtotal from items
-  const calculateSubtotal = () => {
-    return order.orderItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-  };
-
-
-  const subtotal = calculateSubtotal();
-
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 md:p-8">
       <div ref={invoiceRef} className="max-w-4xl mx-auto">
@@ -84,18 +65,18 @@ const Invoice = ({ order }) => {
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5">
                 <div className="flex items-center gap-3 mb-2">
                   <div
-                    className={`p-2 rounded-full ${order.paymentStatus === 'paid' ? 'bg-green-500/20' : 'bg-yellow-500/20'}`}
+                    className={`p-2 rounded-full ${order.payment.status === 'paid' ? 'bg-green-500/20' : 'bg-yellow-500/20'}`}
                   >
                     <CheckCircle
-                      className={`h-5 w-5 ${order.paymentStatus === 'paid' ? 'text-green-300' : 'text-yellow-300'}`}
+                      className={`h-5 w-5 ${order.payment.status === 'unpaid' ? 'text-green-300' : 'text-yellow-300'}`}
                     />
                   </div>
                   <div>
                     <p className="text-sm text-blue-200">Status</p>
                     <p
-                      className={`text-lg font-semibold capitalize ${order.paymentStatus === 'paid' ? 'text-green-300' : 'text-yellow-300'}`}
+                      className={`text-lg font-semibold capitalize ${order.payment.status === 'paid' ? 'text-green-300' : 'text-yellow-300'}`}
                     >
-                      {order.paymentStatus}
+                      {order.payment.status}
                     </p>
                   </div>
                 </div>
@@ -121,7 +102,7 @@ const Invoice = ({ order }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3 p-6 bg-gray-50 border-b">
+          <div className="hide-on-print flex flex-wrap gap-3 p-6 bg-gray-50 border-b">
             <button
               onClick={handlePrint}
               className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all hover:shadow-md"
@@ -146,9 +127,9 @@ const Invoice = ({ order }) => {
           </div>
 
           {/* Company & Customer Info */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
+          <div className="flex justify-between gap-8 p-8  ">
             <div className="space-y-4">
-              <div className="bg-gray-50 rounded-xl p-5">
+              <div className=" rounded-xl p-5 ">
                 <p className="text-xl font-bold text-gray-900 mb-1">Tomartbd</p>
                 <p className="text-gray-600">Aushnara</p>
                 <p className="text-gray-600">Madhupur,Tangail</p>
@@ -158,25 +139,25 @@ const Invoice = ({ order }) => {
             </div>
 
             {/* Customer Info */}
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded-xl p-5">
+            <div className="space-y-4 text-right">
+              <div className=" rounded-xl p-5 text-right">
                 <p className="text-xl font-bold text-gray-900 mb-1">
                   {order.customer.name}
                 </p>
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 justify-end text-gray-600">
                     <Mail className="h-4 w-4" />
                     <span>{order.customer.email}</span>
                   </div>
                   {order.customer.phone && (
-                    <div className="flex items-center gap-2 text-gray-600">
+                    <div className="flex items-center gap-2 justify-end text-gray-600">
                       <Phone className="h-4 w-4" />
                       <span>{order.customer.phone}</span>
                     </div>
                   )}
-                  <div className="flex items-start gap-2 text-gray-600">
+                  <div className="flex items-start gap-2 justify-end text-gray-600">
                     <MapPin className="h-4 w-4 mt-1" />
-                    <div>
+                    <div className="text-right">
                       <p>
                         {order.shippingAddress?.area},
                         {order.shippingAddress?.thana},
@@ -273,12 +254,19 @@ const Invoice = ({ order }) => {
               <div className="w-full md:w-96 space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                    <span className="text-gray-600">Delivery fee</span>
+                    <span className="font-medium">
+                      {formatCurrency(order.shippingFee)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-gray-200">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium">
-                      {formatCurrency(subtotal)}
+                      {formatCurrency(order.subtotal)}
                     </span>
                   </div>
 
+                  {/* tax  */}
                   {order.taxAmount > 0 && (
                     <div className="flex justify-between items-center py-2 border-b border-gray-200">
                       <span className="text-gray-600">
@@ -299,11 +287,11 @@ const Invoice = ({ order }) => {
                     </div>
                   )}
 
-                  {order.discountAmount > 0 && (
+                  {order.discount > 0 && (
                     <div className="flex justify-between items-center py-2 border-b border-gray-200 text-green-600">
                       <span>Discount</span>
                       <span className="font-medium">
-                        -{formatCurrency(order.discountAmount)}
+                        -{formatCurrency(order.discount)}
                       </span>
                     </div>
                   )}
@@ -330,23 +318,6 @@ const Invoice = ({ order }) => {
               <p className="text-blue-600 font-medium">
                 01868944080 • tomartbd21@gmail.com
               </p>
-
-              <div className="flex justify-center gap-6 mt-6 pt-6 border-t border-gray-200">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">30</div>
-                  <div className="text-sm text-gray-500">Days Payment Term</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">24/7</div>
-                  <div className="text-sm text-gray-500">Support Available</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">100%</div>
-                  <div className="text-sm text-gray-500">
-                    Satisfaction Guarantee
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

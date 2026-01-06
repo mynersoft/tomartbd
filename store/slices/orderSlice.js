@@ -30,7 +30,7 @@ const orderSlice = createSlice({
       state.orders = action.payload;
     },
     addOrder(state, action) {
-      state.orders = [action.payload, ...state.orders];
+      state.orders = [...state.orders,action.payload.order];
     },
   },
   extraReducers: () => {},
