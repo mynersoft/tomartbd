@@ -18,11 +18,6 @@ import {
   PieChart,
   LineChart,
   RefreshCw,
-  Bell,
-  Search,
-  User,
-  Moon,
-  Sun,
   Clock,
   Globe,
   Filter,
@@ -36,6 +31,7 @@ import TrafficSources from '@/components/Dashboard/Admin/TrafficSources';
 import TopProducts from '@/components/Dashboard/Admin/TopProducts';
 import SalesMap from '@/components/Dashboard/Admin/SalesMap';
 import ActivityFeed from '@/components/Dashboard/Admin/ActivityFeed';
+import { useSelector } from 'react-redux';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -50,7 +46,9 @@ export default function DashboardPage() {
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
+  const { statcards } = useSelector((state) => state.statcard);
 
+  console.log(statcards);
   const [data, setData] = useState({
     revenue: 45231.89,
     orders: 1245,
@@ -80,6 +78,7 @@ export default function DashboardPage() {
     { id: 'year', label: 'This Year' },
     { id: 'custom', label: 'Custom Range' },
   ];
+
   const metrics = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'sales', label: 'Sales', icon: DollarSign },
@@ -91,7 +90,7 @@ export default function DashboardPage() {
   const statCard = [
     {
       title: 'Total Revenue',
-      value: data.revenue,
+      value: statcards.totalRevenue,
       change: data.growth,
       icon: DollarSign,
       iconColor: 'text-green-500',
@@ -101,7 +100,7 @@ export default function DashboardPage() {
     },
     {
       title: 'Total Orders',
-      value: data.orders,
+      value: statcards.totalOrders,
       change: 8.2,
       icon: ShoppingCart,
       iconColor: 'text-blue-500',
@@ -110,7 +109,7 @@ export default function DashboardPage() {
     },
     {
       title: 'New Users',
-      value: data.users,
+      value: statcards.newUsers,
       change: 15.3,
       icon: Users,
       iconColor: 'text-purple-500',
@@ -119,7 +118,7 @@ export default function DashboardPage() {
     },
     {
       title: 'Conversion Rate',
-      value: data.conversion,
+      value: statcards.conversionRate,
       change: -2.1,
       icon: TrendingUp,
       iconColor: 'text-yellow-500',
@@ -305,6 +304,7 @@ export default function DashboardPage() {
       <main className="px-6 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Stats Grid */}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {statCard.map((item, index) => (
               <StatCard

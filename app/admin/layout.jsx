@@ -4,16 +4,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import  {useNotifications} from "@/hooks/useNotifications";
-
-import AdminLayout from '../../components/Dashboard/AdminLayout';
-import UserLayout from '../../components/Dashboard/UserLayout';
+import { useNotifications } from '@/hooks/useNotifications';
+import AdminLayout from '@/components/Dashboard/AdminLayout';
+import UserLayout from '@/components/Dashboard/UserLayout';
+import { useStatCard } from '@/hooks/useStatCard';
+import { useSelector } from 'react-redux';
 
 export default function DashboardLayout({ children }) {
-
-
-
-useNotifications();
+ 
 
 
 

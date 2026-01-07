@@ -1,7 +1,7 @@
 // components/ProductCard.jsx
 import React from 'react';
 
-const ProducrCard2 = () => {
+const ProducrCardS = () => {
   return (
     <div className="max-w-sm mx-auto bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
       {/* Badge Section */}
@@ -92,4 +92,4 @@ const ProducrCard2 = () => {
   );
 };
 
-export default ProducrCard2;
+export default ProducrCardS;

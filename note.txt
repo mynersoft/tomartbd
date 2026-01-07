@@ -14,12 +14,9 @@ vishlist - add to cart - checkout
 
 search - 2 or 3 word match product name - list show
 
-
 add product - image upload - product upload - success
 
 review,  question add - product update these data
-
-
 
 
 
@@ -30,6 +27,14 @@ Push notifications
 Chat per user
 WhatsApp integration
 
+
+
+
+
+Total Revenue 
+New Users
+Total Orders
+Conversion Rate
 
 
 

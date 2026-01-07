@@ -1,4 +1,4 @@
-// components/Dashboard/StatCard.js
+// components/Dashboard/Admin/StatCard.js
 'use client';
 
 import React from 'react';
@@ -20,6 +20,7 @@ const StatCard = ({
     >
       <div className="flex items-start justify-between">
         <div>
+      
           <p
             className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-2`}
           >
