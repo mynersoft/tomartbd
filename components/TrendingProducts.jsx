@@ -1,53 +1,64 @@
 // components/TrendingProducts.jsx
 import { Star, Heart, Eye, ShoppingCart } from 'lucide-react';
+import { toast } from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import { addToCart } from "../../store/slices/cartSlice";
+import { toggleWishlist } from "../../store/slices/wishlistSlice";
+import ProductQuickView from "./ProductQuickView";
+import Link from "next/link";
 
-export default function TrendingProducts() {
-  const products = [
-    {
-      id: 1,
-      name: 'Wireless Bluetooth Headphones',
-      vendor: 'TechZone BD',
-      price: '৳ 2,499',
-      originalPrice: '৳ 3,999',
-      rating: 4.5,
-      reviews: 128,
-      imageColor: 'bg-gradient-to-br from-blue-100 to-blue-200',
-      discount: '37% OFF',
-    },
-    {
-      id: 2,
-      name: 'Casual Summer T-Shirt',
-      vendor: 'Fashion Hub',
-      price: '৳ 599',
-      originalPrice: '৳ 899',
-      rating: 4.2,
-      reviews: 89,
-      imageColor: 'bg-gradient-to-br from-pink-100 to-pink-200',
-      discount: '33% OFF',
-    },
-    {
-      id: 3,
-      name: 'Kitchen Mixer Grinder',
-      vendor: 'Home Essentials',
-      price: '৳ 3,299',
-      originalPrice: '৳ 4,299',
-      rating: 4.7,
-      reviews: 256,
-      imageColor: 'bg-gradient-to-br from-emerald-100 to-emerald-200',
-      discount: '23% OFF',
-    },
-    {
-      id: 4,
-      name: 'Sports Running Shoes',
-      vendor: 'Active Gear',
-      price: '৳ 1,899',
-      originalPrice: '৳ 2,499',
-      rating: 4.3,
-      reviews: 167,
-      imageColor: 'bg-gradient-to-br from-orange-100 to-orange-200',
-      discount: '24% OFF',
-    },
-  ];
+export default function TrendingProducts({product}) {
+
+const dispatch = useDispatch();
+
+        const wishlist = useSelector((state) => state.wishlist.items);
+
+const {products} = useSelector((state) => state.product);
+
+        const isWishlisted = wishlist.some((item) => item._id === product._id);
+        const [open, setOpen] = useState(false);
+
+        // ✅ Discount price
+        const calculateDiscountPrice = () => {
+                if (product.discount && product.discount > 0) {
+                        return (product.price * (100 - product.discount)) / 100;
+                }
+                return product.price;
+        };
+
+        const formatPrice = (price) => Number(price).toFixed(2);
+
+        const discountPrice = calculateDiscountPrice();
+        const hasDiscount = product.discount && product.discount > 0;
+
+        const handleToggle = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dispatch(toggleWishlist(product));
+                toast.success(
+                        isWishlisted ? "Removed from wishlist" : "Added to wishlist"
+                );
+        };
+
+        const handleAddToCart = (e) => {
+                if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                }
+                dispatch(addToCart({ product }));
+                toast.success("Added to cart!");
+        };
+
+        // Get product slug/ID for URL
+        const productSlug = product.slug || product._id;
+        const productUrl = `/products/${productSlug}`;
+
+
+
+
+
+  
 
   return (
     <section className="py-12 bg-gray-50">
