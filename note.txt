@@ -8,20 +8,10 @@ add to cart - checkout (calculate tax,  cost, discout, voucher, total,  customer
 
 payment - fail - order placed as bkash unpaid
 
-dashboard - user cancel order when unshipped
-
+dashboard - user cancel order when  shipping
 vishlist - add to cart - checkout
 
-search - 2 or 3 word match product name - list show
-
 add product - image upload - product upload - success
-
-review,  question add - product update these data
-
-
-
-
-
 
 Push notifications
 Chat per user
@@ -60,4 +50,3 @@ state - react redux
 					size="md">
 					Content
 				</Modal>
-
