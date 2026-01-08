@@ -3,8 +3,8 @@ import { Star, Heart, Eye, ShoppingCart } from 'lucide-react';
 import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { addToCart } from "../../store/slices/cartSlice";
-import { toggleWishlist } from "../../store/slices/wishlistSlice";
+import { addToCart } from "@/store/slices/cartSlice";
+import { toggleWishlist } from "@/store/slices/wishlistSlice";
 import ProductQuickView from "./ProductQuickView";
 import Link from "next/link";
 
