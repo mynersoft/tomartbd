@@ -1,4 +1,4 @@
-// components/TrendingProducts.jsx
+"use client";
 import { Star, Heart, Eye, ShoppingCart } from 'lucide-react';
 import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
