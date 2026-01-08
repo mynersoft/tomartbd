@@ -8,7 +8,7 @@ import { toggleWishlist } from "../../store/slices/wishlistSlice";
 import ProductQuickView from "./ProductQuickView";
 import Link from "next/link";
 
-export default function TrendingProducts({product}) {
+export default function TrendingProducts() {
 
 const dispatch = useDispatch();
 
@@ -131,10 +131,10 @@ const {products} = useSelector((state) => state.product);
                     <div>
                       <div className="flex items-center">
                         <span className="text-xl font-bold text-gray-900">
-                          {product.price}
+                          {product.selePrice}
                         </span>
                         <span className="text-sm text-gray-500 line-through ml-2">
-                          {product.originalPrice}
+                          {product.price}
                         </span>
                       </div>
                     </div>
