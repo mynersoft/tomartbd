@@ -4,7 +4,7 @@
 import HeroSection from "@/components/HeroSection";
 import CategoriesSection from "@/components/CategoriesSection";
 import FeaturedVendors from "@/components/FeaturedVendors";
-import TrendingProducts from "@/components/TrendingProducts";
+import TrendingProducts from "@/components/Product/TrendingProducts";
 import MarketplaceFeatures from "@/components/MarketplaceFeatures";
 
 import PromoBanner from "@/components/PromoBanner";
