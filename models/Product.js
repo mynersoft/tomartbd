@@ -1,5 +1,29 @@
 import mongoose from 'mongoose';
 
+
+
+const VariantSchema = new mongoose.Schema(
+  {
+    size: {
+      type: String,
+    },
+    color: {
+      type: String,
+}
+    price: {
+      type: Number,
+    },
+    stock: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { _id: false }
+);
+
+
+
+
 const ProductSchema = new mongoose.Schema(
   {
     name: {
@@ -38,6 +62,8 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+variants: [VariantSchema],
 
     description: String,
 
