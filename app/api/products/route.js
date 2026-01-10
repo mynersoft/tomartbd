@@ -14,9 +14,28 @@ export async function GET() {
 
 
 
+
+/**
+ * Calculate sale price based on price and discount
+ * @param {Number} price - regular or variant price
+ * @param {Object} discount - { type: 'percentage'|'fixed', value: Number }
+ * @returns {Number} salePrice
+ */
+function calculateSalePrice(price, discount) {
+  if (!discount || !discount.value || Number(discount.value) <= 0) return price;
+
+  if (discount.type === 'percentage') {
+    return Math.max(0, price - (price * Number(discount.value)) / 100);
+  } else if (discount.type === 'fixed') {
+    return Math.max(0, price - Number(discount.value));
+  }
+  return price;
+}
+
 export async function POST(req) {
   try {
     await connectDB();
+
     const data = await req.json();
 
     // 🔹 Slug helper
@@ -26,7 +45,7 @@ export async function POST(req) {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-    const baseSlug = `${slugify(data.name)}-tomartbd`;
+    let baseSlug = `${slugify(data.name)}-tomartbd`;
     let slug = baseSlug;
     let counter = 1;
 
@@ -34,7 +53,7 @@ export async function POST(req) {
       slug = `${baseSlug}-${counter++}`;
     }
 
-    // 🔹 SEO
+    // 🔹 SEO Auto Generate
     const metaTitle = `${data.name} | Buy Online at Best Price - TomartBD`;
     const metaDescription =
       data.description?.length > 160
@@ -48,89 +67,45 @@ export async function POST(req) {
       ...(data.tags || []),
     ].filter(Boolean);
 
-    // 🔹 Product type
+    // 🔹 Product type detect
     let type = 'regular';
     if (data.featured) type = 'featured';
     else if (data.bestseller) type = 'best-selling';
     else if (data.newArrival) type = 'new';
 
-    // 🔹 Product-level discount
-    const productDiscount =
+    // 🔹 Calculate main product salePrice
+    const salePrice = calculateSalePrice(data.regularPrice, data.discount);
+
+    // 🔹 Calculate salePrice for each variant
+    const variants = (data.variants || []).map((v) => {
+      const variantSalePrice = calculateSalePrice(v.price, data.discount);
+      return {
+        ...v,
+        price: Number(v.price),
+        stock: Number(v.stock || 0),
+        salePrice: variantSalePrice,
+      };
+    });
+
+    const discountData =
       data.discount?.value && Number(data.discount.value) > 0
         ? {
             type: data.discount.type,
             value: Number(data.discount.value),
           }
-        : null;
+        : undefined;
 
-    const isOnSale = Boolean(productDiscount);
-
-    // 🔹 Product sale price (no variant selected)
-    const salePrice = calculateSalePrice({
-      basePrice: Number(data.regularPrice),
-      discount: productDiscount,
-    });
-
-    // 🔹 Variants price calculation (WITH variant discount priority)
-    const variants =
-      data.variants?.map((variant) => {
-        const variantBasePrice = Number(variant.price);
-
-        // Variant discount has priority
-        const appliedDiscount =
-          variant.discount?.value && Number(variant.discount.value) > 0
-            ? {
-                type: variant.discount.type,
-                value: Number(variant.discount.value),
-              }
-            : productDiscount;
-
-        const finalVariantPrice = calculateSalePrice({
-          basePrice: variantBasePrice,
-          discount: appliedDiscount,
-        });
-
-        return {
-          size: variant.size,
-          color: variant.color,
-          stock: variant.stock ?? 0,
-
-          // original price
-          price: variantBasePrice,
-
-          // applied discount
-          discount: appliedDiscount,
-
-          // final price
-          salePrice: finalVariantPrice,
-        };
-      }) || [];
-
-    // 🔹 Create product
     const product = await Product.create({
-      name: data.name,
+      ...data,
       slug,
-
-      regularPrice: Number(data.regularPrice),
-      salePrice,
-
-      discount: productDiscount,
-      isOnSale,
-
-      brand: data.brand,
-      category: data.category,
-      description: data.description,
-
       images: data.images || [],
-      variants,
-
-      type,
-
+      keywords,
       metaTitle,
       metaDescription,
-      keywords,
-
-      isActive: true,
+      type,
+      salePrice,
+      variants,
+      ...(discountData && { discount: discountData }),
     });
 
     return Response.json(
@@ -138,15 +113,12 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (err) {
-    console.error(err);
     return Response.json(
       { success: false, error: err.message },
       { status: 500 }
     );
   }
 }
-
-
 
 
 
