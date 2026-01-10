@@ -300,9 +300,10 @@ export default function ProductSinglePage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
 
 
-<ProductVariants
-  product={product}
-  onVariantChange={(variant) => setSelectedVariant(variant)}
+<Variants
+  productData={productData}
+  selectedVariant={selectedVariant}
+  onVariantSelect={handleVariantSelect}
 />
 
 
