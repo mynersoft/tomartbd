@@ -298,6 +298,14 @@ export default function ProductSinglePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+
+
+<ProductVariants
+  product={product}
+  onVariantChange={(variant) => setSelectedVariant(variant)}
+/>
+
+
       {/* Enhanced Breadcrumb */}
       <div className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4">
