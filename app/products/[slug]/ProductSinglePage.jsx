@@ -6,13 +6,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { addToCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import ReviewForm from '@/components/ReviewForm';
-import ProductQuestions from '@/components/ProductQuestions';
+import ProductQuestions from '@/components/Product/ProductQuestions';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { toast } from 'react-hot-toast';
 import {
   Star,
   Truck,
   Shield,
+  X,
   RefreshCw,
   Check,
   Share2,
@@ -667,8 +668,10 @@ export default function ProductSinglePage() {
               {activeTab === 'questions' && (
                 <div className="space-y-6">
                   <ProductQuestions
-                    productId={product._id}
-                    productName={product.name}
+                    productId={product._Id}
+                    productName="Your Product Name"
+                    userId={'6958968aa2a045f211bb0654'}
+                    // userId={user?.id || null}
                   />
                 </div>
               )}

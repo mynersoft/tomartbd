@@ -24,7 +24,7 @@ export default function CategoriesSection() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className=" font-bold text-gray-900">
               Shop by Category
             </h2>
             <p className="text-gray-600 mt-2">
@@ -41,18 +41,18 @@ export default function CategoriesSection() {
           {categories.map((category, index) => (
             <div
               key={index}
-              className={`${category.color} p-4 rounded-xl hover:shadow-lg transition-shadow cursor-pointer group border border-transparent hover:border-blue-200`}
+              className={`${category.color}  p-3 rounded-xl hover:shadow-lg transition-shadow cursor-pointer group border border-transparent `}
             >
               <div className="flex flex-col items-center text-center">
-                <div className="text-3xl mb-3">{category.icon}</div>
-                <h3 className="font-semibold text-gray-800 mb-1">
+                <div className="text-xl mb-2">{category.icon}</div>
+                <h3 className="font-semibold text-gray-800 mb-1 leading-4">
                   {category.name}
                 </h3>
                 <p className="text-sm text-gray-600">
                   {category.products} products
                 </p>
                 <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-8 h-1 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full"></div>
+                  <div className="w-8 h-1 bg-linear-to-r from-blue-600 to-emerald-500 rounded-full"></div>
                 </div>
               </div>
             </div>

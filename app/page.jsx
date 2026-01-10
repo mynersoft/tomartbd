@@ -21,8 +21,7 @@ export default function HomePage() {
       <header className="sr-only">
         <h1>Buy Quality Products Online from TomartBD, Stay connected</h1>
       </header>
-      <HeroBanner />
-
+    
 
 
       <div className="mt-14"></div>

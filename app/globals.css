@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 /* Custom animation */
@@ -28,6 +29,13 @@
     --accent: #fbbf24;
     --background: #111827;
     --foreground: #f9fafb;
+  }
+  html {
+      font-family: 'Barlow', sans-serif;
+  }
+
+  h2{
+    @apply font-semibold text-2xl;
   }
 }
 

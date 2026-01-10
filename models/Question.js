@@ -1,10 +1,10 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const AnswerSchema = new mongoose.Schema(
   {
-    user: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
 
     answer: {
@@ -22,16 +22,16 @@ const AnswerSchema = new mongoose.Schema(
 
 const QuestionSchema = new mongoose.Schema(
   {
-    product: {
+    productId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: 'Product',
       required: true,
       index: true,
     },
 
-    user: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
 
@@ -42,8 +42,8 @@ const QuestionSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "answered"],
-      default: "pending",
+      enum: ['pending', 'answered'],
+      default: 'pending',
     },
 
     answers: [AnswerSchema],
@@ -52,4 +52,4 @@ const QuestionSchema = new mongoose.Schema(
 );
 
 export default mongoose.models.Question ||
-  mongoose.model("Question", QuestionSchema);
+  mongoose.model('Question', QuestionSchema);

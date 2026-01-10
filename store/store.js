@@ -11,6 +11,7 @@ import authReducer from './slices/authSlice';
 import statcardReducer from './slices/statCardSlice';
 import authRecoveryReducer from './slices/authRecoverySlice';
 import notificationReducer from './slices/notificationSlice';
+import questionsReducer from './slices/questionsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     order: orderReducer,
     voucher: voucherReducer,
     statcard: statcardReducer,
+    questions: questionsReducer,
     notification: notificationReducer,
     blog: blogReducer,
     authRecovery: authRecoveryReducer,

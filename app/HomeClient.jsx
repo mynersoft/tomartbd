@@ -1,42 +1,25 @@
-
-// app/page.js
-
-import HeroSection from "@/components/HeroSection";
-import CategoriesSection from "@/components/CategoriesSection";
-import FeaturedVendors from "@/components/FeaturedVendors";
-import MarketplaceFeatures from "@/components/MarketplaceFeatures";
-
-import PromoBanner from "@/components/PromoBanner";
+'use client';
+import CategoriesSection from '@/components/Home/CategoriesSection';
+import FeaturedVendors from '@/components/FeaturedVendors';
+import ProductCardNew from '../components/Product/ProductCardNew';
+import { useSelector } from 'react-redux';
+import ProductGrid from '../components/Product/ProductGrid';
 
 export default function Home() {
+  const { products } = useSelector((state) => state.product);
+  
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* <Header /> */}
-      <main>
-        <HeroSection />
-        <PromoBanner />
+      <main className="container mx-auto">
         <CategoriesSection />
-        
+        <ProductGrid products={products}/>
+
         <FeaturedVendors />
-        <MarketplaceFeatures />
       </main>
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // 'use client';
 
