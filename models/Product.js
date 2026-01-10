@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
-
-
+/* ---------- Variant Schema ---------- */
 const VariantSchema = new mongoose.Schema(
   {
     size: {
@@ -9,9 +8,9 @@ const VariantSchema = new mongoose.Schema(
     },
     color: {
       type: String,
-}
+    },
     price: {
-      type: Number,
+      type: Number, // optional
     },
     stock: {
       type: Number,
@@ -21,9 +20,7 @@ const VariantSchema = new mongoose.Schema(
   { _id: false }
 );
 
-
-
-
+/* ---------- Product Schema ---------- */
 const ProductSchema = new mongoose.Schema(
   {
     name: {
@@ -39,13 +36,17 @@ const ProductSchema = new mongoose.Schema(
       index: true,
     },
 
-   regularPrice: {
+    // ✅ Base price (must)
+    regularPrice: {
       type: Number,
       required: true,
     },
+
+    // ✅ Calculated price
     salePrice: {
       type: Number,
     },
+
     discount: {
       type: {
         type: String,
@@ -56,37 +57,35 @@ const ProductSchema = new mongoose.Schema(
 
     brand: String,
     category: String,
-    sold: Number,
+    sold: {
+      type: Number,
+      default: 0,
+    },
 
+    // ⚠ optional if variants used
     stock: {
       type: Number,
       default: 0,
     },
 
-variants: [VariantSchema],
+    // ✅ Optional Variants
+    variants: [VariantSchema],
 
     description: String,
 
-    images: [
-      {
-        type: String,
-      },
-    ],
+    images: [String],
 
-    // ✅ Product type
     type: {
       type: String,
       enum: ['featured', 'new', 'best-selling', 'regular'],
       default: 'regular',
     },
 
-    // ✅ Rating (cached value)
     rating: {
       type: Number,
       default: 0,
     },
 
-    // ✅ Relations (IMPORTANT FIX)
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -101,18 +100,16 @@ variants: [VariantSchema],
       },
     ],
 
-    // ✅ Flags
     isActive: {
       type: Boolean,
       default: true,
     },
 
-    // ✅ SEO
+    // SEO
     metaTitle: String,
     metaDescription: String,
     keywords: [String],
 
-    // ✅ Inventory
     sku: {
       type: String,
       unique: true,
@@ -121,6 +118,3 @@ variants: [VariantSchema],
   },
   { timestamps: true }
 );
-
-export default mongoose.models.Product ||
-  mongoose.model('Product', ProductSchema);
