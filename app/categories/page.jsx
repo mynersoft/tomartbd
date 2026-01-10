@@ -1,3 +1,7 @@
+
+"use client";
+
+
 import React, { useState, useEffect } from 'react';
 import { 
   Search, Filter, Grid, List, ChevronDown, ChevronRight,
