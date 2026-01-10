@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Star, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
-import { useProductReviews } from '../hooks/useReviews';
+import { useProductReviews } from '@/lib/hooks/useReviews';
 import ReviewItem from './ReviewItem';
 
 const ReviewList = ({ productId }) => {
