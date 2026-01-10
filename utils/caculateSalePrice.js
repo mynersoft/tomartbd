@@ -1,21 +1,26 @@
 export function calculateSalePrice({
   regularPrice,
-  discount,
   variantPrice = null,
+  discount = null,
 }) {
-  let basePrice = variantPrice ?? regularPrice;
+  // base price decide
+  const basePrice = variantPrice ?? regularPrice;
 
-  if (!discount || !discount.value) {
-    return basePrice;
+  // no discount → regular price = sale price
+  if (!discount || !discount.type || !discount.value) {
+    return regularPrice;
   }
 
+  let salePrice = basePrice;
+
   if (discount.type === 'percentage') {
-    return basePrice - (basePrice * discount.value) / 100;
+    salePrice = basePrice - (basePrice * discount.value) / 100;
   }
 
   if (discount.type === 'fixed') {
-    return basePrice - discount.value;
+    salePrice = basePrice - discount.value;
   }
 
-  return basePrice;
+  // never negative
+  return Math.max(Math.round(salePrice), 0);
 }
