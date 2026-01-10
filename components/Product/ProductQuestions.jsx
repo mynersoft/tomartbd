@@ -29,8 +29,15 @@ import {
 } from '@/hooks/useQuestionsQuery';
 import { setFilters, setPagination } from '@/store/slices/questionsSlice';
 
-const ProductQuestions = ({ productName, userId }) => {
+const ProductQuestions = ({ productId, productName }) => {
+
+
+  
   const dispatch = useDispatch();
+
+  const { user } = useSelector((state) => state.user);
+
+
   const { filters, pagination } = useSelector((state) => state.questions);
 
   const [expandedQuestion, setExpandedQuestion] = useState(null);
@@ -67,7 +74,7 @@ const ProductQuestions = ({ productName, userId }) => {
       return;
     }
 
-    if (!isAuthenticated) {
+    if (!user) {
       toast.error('Please login to ask a question');
       return;
     }
@@ -94,7 +101,7 @@ const ProductQuestions = ({ productName, userId }) => {
       return;
     }
 
-    if (!isAuthenticated) {
+    if (!user) {
       toast.error('Please login to submit an answer');
       return;
     }
@@ -114,7 +121,7 @@ const ProductQuestions = ({ productName, userId }) => {
   };
 
   const handleMarkBestAnswer = (questionId, answerId) => {
-    if (!isAuthenticated) {
+    if (!user) {
       toast.error('Please login to mark best answer');
       return;
     }
@@ -126,7 +133,7 @@ const ProductQuestions = ({ productName, userId }) => {
   };
 
   const handleVoteQuestion = (questionId, voteType) => {
-    if (!isAuthenticated) {
+    if (!user) {
       toast.error('Please login to vote');
       return;
     }
@@ -138,7 +145,7 @@ const ProductQuestions = ({ productName, userId }) => {
   };
 
   const handleVoteAnswer = (questionId, answerId, voteType) => {
-    if (!isAuthenticated) {
+    if (!user) {
       toast.error('Please login to vote');
       return;
     }
@@ -281,7 +288,7 @@ const ProductQuestions = ({ productName, userId }) => {
               disabled={
                 addQuestionMutation.isLoading ||
                 newQuestion.length < 10 ||
-                !isAuthenticated
+                !user
               }
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -298,7 +305,7 @@ const ProductQuestions = ({ productName, userId }) => {
               )}
             </button>
 
-            {!isAuthenticated && (
+            {!user && (
               <p className="text-sm text-amber-600 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
                 Please login to ask a question
@@ -523,7 +530,7 @@ const ProductQuestions = ({ productName, userId }) => {
                                   </button>
                                 </div>
 
-                                {isAuthenticated &&
+                                {user &&
                                   question.userId?._id === user?.id &&
                                   !answer.isBestAnswer && (
                                     <button
@@ -557,7 +564,7 @@ const ProductQuestions = ({ productName, userId }) => {
                     )}
 
                     {/* Answer Form */}
-                    {isAuthenticated && (
+                    {user && (
                       <div className="bg-gray-50 rounded-lg p-4">
                         <h5 className="font-medium text-gray-900 mb-3">
                           {question.answers?.length > 0
@@ -605,7 +612,7 @@ const ProductQuestions = ({ productName, userId }) => {
                       </div>
                     )}
 
-                    {!isAuthenticated && (
+                    {!user && (
                       <div className="text-center py-4">
                         <p className="text-sm text-gray-600">
                           Please{' '}

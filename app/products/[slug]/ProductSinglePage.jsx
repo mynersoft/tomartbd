@@ -245,7 +245,12 @@ export default function ProductSinglePage() {
 
   const handleVariantSelect = (variant) => {
     setSelectedVariant(variant);
+
   };
+
+
+
+
 
   // Loading state
   if (loading) {
@@ -287,6 +292,9 @@ export default function ProductSinglePage() {
   }
 
   const productData = getProductData();
+
+  
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
@@ -668,7 +676,7 @@ export default function ProductSinglePage() {
               {activeTab === 'questions' && (
                 <div className="space-y-6">
                   <ProductQuestions
-                    productId={product._Id}
+                    productId={productData._id}
                     productName="Your Product Name"
                     userId={'6958968aa2a045f211bb0654'}
                     // userId={user?.id || null}

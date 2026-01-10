@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
+import { connectDB } from '@/lib/db';
 import Question from '@/models/Question';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 // GET: Fetch questions with pagination and filters
 export async function GET(request) {
@@ -82,8 +83,8 @@ export async function POST(request) {
   try {
     await connectDB();
 
-    const session = await getServerSession();
-    if (!session?.user?.id) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -91,6 +92,8 @@ export async function POST(request) {
     }
 
     const body = await request.json();
+    console.log(session, '==============');
+    
 
     // Validate required fields
     if (!body.productId || !body.question) {
