@@ -22,10 +22,12 @@ const ProductCardNew = ({ product }) => {
 
   const hasVariants = product.variants.length > 0;
 
-const imageSrc =
-  hasVariants
+const imgSrc =
+  (hasVariants
     ? product.variants?.[0]?.images?.[0]
-    : product.images?.[0];
+    : product.images?.[0]) ?? "/placeholder.png";
+   
+
 
   const wishlist = useSelector((state) => state.wishlist.items);
   const cart = useSelector((state) => state.cart.items);
@@ -107,8 +109,8 @@ const imageSrc =
               
 
 <Image
-  src={imageSrc && imageSrc.length > 0 ? imageSrc : "/placeholder.png"}
-  alt={product.name}
+  src={imgSrc}
+  alt={product.name || "Product image"}
   fill
   className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
 />
@@ -143,7 +145,7 @@ const imageSrc =
 
           {/* Price */}
 
-          <div className="mb-4">
+          <div className="mb-4 flex justify-between">
 
 
            <div>
@@ -160,8 +162,8 @@ const imageSrc =
             </span>
 </div>
 
-<span className=" text-center px-2  font-medium select-none">
-            stock {product.stock }
+<span className=" text-center px-2 font-semibold font-medium select-none">
+            Stock {product.stock }
               </span>
 
 
