@@ -9,14 +9,23 @@ import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 
+import  Image from 'next/image';
+
 const ProductCardNew = ({ product }) => {
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
 
+
+
   const dispatch = useDispatch();
 
   const hasVariants = product.variants.length > 0;
+
+const imageSrc =
+  hasVariants
+    ? product.variants?.[0]?.images?.[0]
+    : product.images?.[0];
 
   const wishlist = useSelector((state) => state.wishlist.items);
   const cart = useSelector((state) => state.cart.items);
@@ -95,13 +104,16 @@ const ProductCardNew = ({ product }) => {
 
           <Link href={productUrl}>
             <div className="h-[220px] w-full overflow-hidden relative duration-500">
-              <img
-                src={ hasVariants
-                ? product.variants[0].images[0]
-                :  product.images?.[0]}
-                alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-              />
+              
+
+<Image
+  src={imageSrc && imageSrc.length > 0 ? imageSrc : "/placeholder.png"}
+  alt={product.name}
+  fill
+  className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+/>
+
+
             </div>
           </Link>
         </div>
