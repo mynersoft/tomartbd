@@ -98,7 +98,7 @@ export default function Login() {
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-8 lg:gap-12">
         {/* Left Side - Brand & Features (Light Version) */}
-        <div className="lg:w-1/2">
+        <div className=" hidden md:block  lg:w-1/2">
           <div className="bg-gradient-to-br from-primary-50 via-white to-accent-50/20 rounded-3xl shadow-lg p-8 lg:p-10 h-full border border-gray-100">
             {/* Brand Logo */}
             <div className="mb-10 relative z-10">
@@ -446,20 +446,7 @@ export default function Login() {
               </Link>
             </div>
 
-            {/* Security Badge */}
-            <div className="mt-8 p-4 bg-primary-50 rounded-xl border border-primary-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary-100 rounded-lg">
-                  <Shield className="h-5 w-5 text-primary-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-primary-800">Secure & Trusted</p>
-                  <p className="text-sm text-primary-700">
-                    All login data is encrypted with 256-bit SSL protection
-                  </p>
-                </div>
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
