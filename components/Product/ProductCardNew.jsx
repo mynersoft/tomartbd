@@ -16,10 +16,15 @@ const ProductCardNew = ({ product }) => {
 
   const dispatch = useDispatch();
 
-  const wishlist = useSelector((state) => state.wishlist.items);
-  const isWishlisted = wishlist.some((item) => item._id === product._id);
+  const hasVariants = product.variants.length > 0;
 
-  // ✅ Toggle wishlist (FIXED)
+  const wishlist = useSelector((state) => state.wishlist.items);
+  const cart = useSelector((state) => state.cart.items);
+  console.log(cart);
+
+  const isWishlisted = wishlist.some((item) => item._id === product._id);
+  const isAddToCart = cart.some((item) => item._id === product._id);
+
   const handleToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -58,17 +63,19 @@ const ProductCardNew = ({ product }) => {
         />
       )}
 
-      <div className="group bg-white w-full rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+      <div className="group bg-white w-full rounded-xl shadow-md hover:shadow transition-all duration-300 overflow-hidden border border-gray-100">
         {/* Product Image Section */}
         <div className="relative overflow-hidden bg-gray-50">
           {/* Discount Badge */}
-          {product.discount > 0 && (
-            <div className="absolute top-4 left-4 z-10">
-              <span className="bg-red-500 text-white font-bold text-sm px-3 py-1.5 rounded-full shadow-md">
-                {product.discount.value}% OFF
-              </span>
-            </div>
-          )}
+
+          <div className="absolute top-4 left-4 z-10">
+            <span className="bg-red-500 text-white font-bold text-sm px-3 py-1.5 rounded-full shadow-md">
+              -{hasVariants
+                ? product.variants[0].discount.value
+                : product.discount.value}
+              %
+            </span>
+          </div>
 
           {/* Wishlist Button */}
           <button
@@ -82,31 +89,25 @@ const ProductCardNew = ({ product }) => {
             />
           </button>
 
-          {/* Quick View */}
-          <button
-            onClick={() => setOpen(true)}
-            className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white text-gray-800 font-medium px-4 py-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-gray-800 hover:text-white z-10 flex items-center"
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Quick View
-          </button>
+        
 
           {/* Image */}
 
           <Link href={productUrl}>
-             <div className="h-[250px] w-full overflow-hidden relative">
-            <img
-              src={product.images?.[0]}
-              alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            />
-          </div>
+            <div className="h-[220px] w-full overflow-hidden relative duration-500">
+              <img
+                src={ hasVariants
+                ? product.variants[0].images[0]
+                :  product.images?.[0]}
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              />
+            </div>
           </Link>
-       
         </div>
 
         {/* Product Details */}
-        <div className="p-5">
+        <div className="p-4">
           <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">
             {product.name}
           </h3>
@@ -129,45 +130,63 @@ const ProductCardNew = ({ product }) => {
           </div>
 
           {/* Price */}
+
           <div className="mb-4">
-            <span className="text-2xl font-bold text-gray-900">
-              {product.salePrice || product.price}
+            <span className="text-lg font-bold text-gray-900">
+              {/* If product has variants, use first variant's price, otherwise use salePrice or product price */}
+              {hasVariants
+                ? product.variants[0].salePrice
+                : product.salePrice || product.price}
+              tk
             </span>
-            {product.discount && (
-              <span className="ml-2 text-lg text-gray-500 line-through">
-                {product.price}
-              </span>
-            )}
+
+            <span className="ml-2 text-base text-gray-500 line-through">
+              {hasVariants ? product.variants[0].price : product.price} tk
+            </span>
           </div>
 
-          {/* Quantity + Cart */}
-          <div className="flex space-x-2">
-            <div className="flex items-center border border-gray-300 rounded-lg">
+          {/* Quantity + Cart + View*/}
+
+          <div className="flex h-8 items-center justify-between gap-3">
+            {/* Quick View */}
+            <button
+              onClick={() => setOpen(true)}
+              className="flex items-center justify-center  w-8 h-8 rounded-full bg-white border border-gray-300 text-gray-700 hover:text-gray-700 hover:bg-gray-50  transition cursor-pointer"
+            >
+              <Eye className="w-5 h-5" />
+            </button>
+
+            {/* Quantity Control */}
+            <div className="flex items-center   h-8 border border-gray-300 rounded-full overflow-hidden">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3"
+                className=" flex items-center h-full px-2 justify-center text-lg hover:bg-gray-100 transition cursor-pointer"
               >
                 −
               </button>
-              <span className="px-3 w-12 text-center">{quantity}</span>
+
+              <span className=" text-center px-2  font-medium select-none">
+                {quantity}
+              </span>
+
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="px-3 "
+                className=" flex items-center h-full  px-2 cursor-pointer  justify-center text-lg hover:bg-gray-100 transition"
               >
                 +
               </button>
             </div>
 
+            {/* Add to Cart */}
             <button
               onClick={handleAddToCart}
-              className={`flex-1 flex items-center justify-center py-3 rounded-lg ${
-                isAddedToCart
+              className={`flex items-center justify-center gap-2 px-6 rounded-full font-medium transition  h-full cursor-pointer ${
+                isAddToCart
                   ? 'bg-green-500 text-white'
                   : 'bg-gray-900 text-white hover:bg-gray-800'
               }`}
             >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              {/* {isAddedToCart ? 'Added to Cart!' : 'Add to Cart'} */}
+              <ShoppingCart className="w-5 h-5" />
             </button>
           </div>
         </div>
