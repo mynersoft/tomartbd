@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAddProduct } from '@/hooks/useProducts';
 
+import {colors } from "@/constants/colors";
+
 
 export default function AddProductPage() {
   const { mutate, isLoading } = useAddProduct();
@@ -299,15 +301,22 @@ export default function AddProductPage() {
                   placeholder="Size"
                   className="border px-2 py-1 rounded w-1/4"
                 />
-                <input
-                  type="text"
-                  value={variant.color}
-                  onChange={(e) =>
-                    updateVariant(index, 'color', e.target.value)
-                  }
-                  placeholder="Color"
-                  className="border px-2 py-1 rounded w-1/4"
-                />
+            <select
+  value={variant.color}
+  onChange={(e) =>
+    updateVariant(index, "color", e.target.value)
+  }
+  className="border px-2 py-1 rounded w-1/4"
+>
+  <option value="">Select Color</option>
+  {colors.map((c) => (
+    <option key={c.value} value={c.value}>
+      {c.name}
+    </option>
+  ))}
+</select>
+                
+                
                 <input
                   type="number"
                   value={variant.price}
