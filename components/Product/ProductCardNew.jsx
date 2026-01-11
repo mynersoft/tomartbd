@@ -132,8 +132,11 @@ const ProductCardNew = ({ product }) => {
           {/* Price */}
 
           <div className="mb-4">
-            <span className="text-lg font-bold text-gray-900">
-              {/* If product has variants, use first variant's price, otherwise use salePrice or product price */}
+
+
+           <div>
+ <span className="text-lg font-bold text-gray-900">
+              
               {hasVariants
                 ? product.variants[0].salePrice
                 : product.salePrice || product.price}
@@ -143,6 +146,14 @@ const ProductCardNew = ({ product }) => {
             <span className="ml-2 text-base text-gray-500 line-through">
               {hasVariants ? product.variants[0].price : product.regularPrice} tk
             </span>
+</div>
+
+<span className=" text-center px-2  font-medium select-none">
+            stock {product.stock }
+              </span>
+
+
+
           </div>
 
           {/* Quantity + Cart + View*/}
