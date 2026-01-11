@@ -103,6 +103,11 @@ export default function ProductQuickView({ product, onClose }) {
   const discount = Math.round(
     ((originalPrice - currentPrice) / originalPrice) * 100
   );
+  const imgSrc =
+  (hasVariants
+    ? product.variants?.[0]?.images?.[0]
+    : product.images?.[0]) ?? "/placeholder.png";
+   
 
   return (
     <div
@@ -134,9 +139,7 @@ export default function ProductQuickView({ product, onClose }) {
               <div className="relative h-full max-h-[500px] aspect-square overflow-hidden rounded-2xl bg-gray-50 group">
                 <Image
                   src={
-                    hasVariants
-                      ? product.variants[0].images[0]
-                      : product.images?.[0]
+                    imgSrc
                   }
                   alt={product.name}
                   width={400}
@@ -312,7 +315,9 @@ export default function ProductQuickView({ product, onClose }) {
                               : 'border-gray-300 hover:border-gray-400 text-gray-700'
                           }`}
                         >
-                          {color}
+                       <div className={`h-full w-full bg-[${color}]`}>
+                            
+                          </div>
                         </button>
                       ))}
                     </div>

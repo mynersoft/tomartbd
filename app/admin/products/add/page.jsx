@@ -5,11 +5,20 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAddProduct } from '@/hooks/useProducts';
 
-import {colors } from "@/constants/colors";
-
-
 export default function AddProductPage() {
   const { mutate, isLoading } = useAddProduct();
+
+  const colors = [
+    { name: "White", value: "#ffffff" },
+    { name: "Black", value: "#000000" },
+    { name: "Red", value: "#ff0000" },
+    { name: "Blue", value: "#0000ff" },
+    { name: "Green", value: "#00ff00" },
+    { name: "Yellow", value: "#ffff00" },
+    { name: "Purple", value: "#800080" },
+    { name: "Orange", value: "#ffa500" },
+    { name: "Gray", value: "#808080" },
+  ];
 
   const [form, setForm] = useState({
     name: '',
@@ -28,6 +37,7 @@ export default function AddProductPage() {
   });
 
   const [selectedColor, setSelectedColor] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const hasVariants = form.variants.length > 0;
 
@@ -85,22 +95,47 @@ export default function AddProductPage() {
   const updateVariant = (index, field, value) => {
     const newVariants = [...form.variants];
     newVariants[index][field] = value;
+    
+    // Recalculate sale price when price changes
+    if (field === 'price') {
+      const price = Number(value || 0);
+      const discountValue = Number(newVariants[index].discount.value || 0);
+      
+      if (newVariants[index].discount.type === 'percentage') {
+        newVariants[index].salePrice = price - (price * discountValue) / 100;
+      } else if (newVariants[index].discount.type === 'fixed') {
+        newVariants[index].salePrice = price - discountValue;
+      } else {
+        newVariants[index].salePrice = price;
+      }
+    }
+    
     setForm(prev => ({ ...prev, variants: newVariants }));
   };
 
-  const updateVariantDiscount = (index, field,value) => {
+  const updateVariantDiscount = (index, field, value) => {
     const newVariants = [...form.variants];
     newVariants[index].discount[field] = value;
 
     const price = Number(newVariants[index].price || 0);
     const discountValue = Number(newVariants[index].discount.value || 0);
 
-    if (newVariants[index].discount.type === 'percentage') {
-      newVariants[index].salePrice = price - (price * discountValue) / 100;
-    } else if (newVariants[index].discount.type === 'fixed') {
-      newVariants[index].salePrice = price - discountValue;
-    } else {
-      newVariants[index].salePrice = price;
+    if (field === 'value') {
+      if (newVariants[index].discount.type === 'percentage') {
+        newVariants[index].salePrice = price - (price * discountValue) / 100;
+      } else if (newVariants[index].discount.type === 'fixed') {
+        newVariants[index].salePrice = price - discountValue;
+      } else {
+        newVariants[index].salePrice = price;
+      }
+    } else if (field === 'type') {
+      if (value === 'percentage') {
+        newVariants[index].salePrice = price - (price * discountValue) / 100;
+      } else if (value === 'fixed') {
+        newVariants[index].salePrice = price - discountValue;
+      } else {
+        newVariants[index].salePrice = price;
+      }
     }
 
     setForm(prev => ({ ...prev, variants: newVariants }));
@@ -112,55 +147,48 @@ export default function AddProductPage() {
     setForm(prev => ({ ...prev, variants: newVariants }));
   };
 
- const [isUploading, setIsUploading] = useState(false);
+  const uploadVariantImages = async (files, index) => {
+    if (!files.length) return;
 
- const uploadVariantImages = async (files, index) => {
-   if (!files.length) return;
+    setIsUploading(true);
+    toast.loading('Uploading variant images...');
+    const uploaded = [];
 
-   setIsUploading(true);
-   toast.loading('Uploading variant images...');
-   const uploaded = [];
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append(
+        'upload_preset',
+        process.env.NEXT_PUBLIC_CLOUDINARY_PRESET
+      );
 
-   for (const file of files) {
-     const formData = new FormData();
-     formData.append('file', file);
-     formData.append(
-       'upload_preset',
-       process.env.NEXT_PUBLIC_CLOUDINARY_PRESET
-     );
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        { method: 'POST', body: formData }
+      );
 
-     const res = await fetch(
-       `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-       { method: 'POST', body: formData }
-     );
+      const data = await res.json();
+      uploaded.push(data.secure_url);
+    }
 
-     const data = await res.json();
-     uploaded.push(data.secure_url);
-   }
+    toast.dismiss();
+    toast.success('Variant images uploaded');
 
-   toast.dismiss();
-   toast.success('Variant images uploaded');
+    const newVariants = [...form.variants];
+    newVariants[index].images = [
+      ...(newVariants[index].images || []),
+      ...uploaded,
+    ];
+    setForm((prev) => ({ ...prev, variants: newVariants }));
 
-   const newVariants = [...form.variants];
-   newVariants[index].images = [
-     ...(newVariants[index].images || []),
-     ...uploaded,
-   ];
-   setForm((prev) => ({ ...prev, variants: newVariants }));
-
-   setIsUploading(false);
- };
-
+    setIsUploading(false);
+  };
 
   const removeVariantImage = (variantIndex, imageIndex) => {
     const newVariants = [...form.variants];
     newVariants[variantIndex].images.splice(imageIndex, 1);
     setForm(prev => ({ ...prev, variants: newVariants }));
   };
-
-
-  console.log(form);
-  
 
   // -------------------- SUBMIT --------------------
   const handleAddProduct = (e) => {
@@ -169,7 +197,6 @@ export default function AddProductPage() {
     const hasDiscount = form.discount.type && Number(form.discount.value) > 0;
 
     const variants = form.variants.map(v => ({
-    
       size: v.size,
       color: v.color,
       price: Number(v.price),
@@ -179,44 +206,54 @@ export default function AddProductPage() {
       ...(v.discount?.value && { discount: { type: v.discount.type, value: Number(v.discount.value) } }),
     }));
 
-    mutate(
-      {
-        name: form.name,
-        description: form.description,
-        category: form.category,
-        brand: form.brand,
-        regularPrice: hasVariants ? undefined : Number(form.regularPrice),
-        stock: Number(form.stock),
-        images: form.images,
-        tags: form.tags ? form.tags.split(',').map(t => t.trim()) : [],
-        featured: form.featured,
-        bestseller: form.bestseller,
-        newArrival: form.newArrival,
-        variants,
-        ...(hasDiscount && { discount: { type: form.discount.type, value: Number(form.discount.value) } }),
+    const productData = {
+      name: form.name,
+      description: form.description,
+      category: form.category,
+      brand: form.brand,
+      stock: Number(form.stock),
+      images: form.images,
+      tags: form.tags ? form.tags.split(',').map(t => t.trim()) : [],
+      featured: form.featured,
+      bestseller: form.bestseller,
+      newArrival: form.newArrival,
+      ...(hasDiscount && { discount: { type: form.discount.type, value: Number(form.discount.value) } }),
+    };
+
+    // Add regularPrice only if there are no variants
+    if (!hasVariants) {
+      productData.regularPrice = Number(form.regularPrice);
+    }
+
+    // Add variants only if they exist
+    if (variants.length > 0) {
+      productData.variants = variants;
+    }
+
+    mutate(productData, {
+      onSuccess: () => {
+        toast.success('Product added successfully');
+        setForm({
+          name: '',
+          description: '',
+          category: '',
+          brand: '',
+          regularPrice: '',
+          stock: '',
+          discount: { type: '', value: '' },
+          images: [],
+          tags: '',
+          featured: false,
+          bestseller: false,
+          newArrival: true,
+          variants: [],
+        });
+        setSelectedColor('');
       },
-      {
-        onSuccess: () => {
-          toast.success('Product added successfully');
-          setForm({
-            name: '',
-            description: '',
-            category: '',
-            brand: '',
-            regularPrice: '',
-            stock: '',
-            discount: { type: '', value: '' },
-            images: [],
-            tags: '',
-            featured: false,
-            bestseller: false,
-            newArrival: true,
-            variants: [],
-          });
-          setSelectedColor('');
-        },
+      onError: (error) => {
+        toast.error(error.message || 'Failed to add product');
       }
-    );
+    });
   };
 
   // -------------------- UI --------------------
@@ -245,13 +282,27 @@ export default function AddProductPage() {
         />
 
         {/* Main Images */}
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleUploadImages}
-          className="w-full border px-3 py-2 rounded"
-        />
+        <div>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleUploadImages}
+            className="w-full border px-3 py-2 rounded"
+          />
+          {form.images.length > 0 && (
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {form.images.map((img, index) => (
+                <img
+                  key={index}
+                  src={img}
+                  alt="product"
+                  className="w-16 h-16 object-cover rounded border"
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Description */}
         <textarea
@@ -301,22 +352,21 @@ export default function AddProductPage() {
                   placeholder="Size"
                   className="border px-2 py-1 rounded w-1/4"
                 />
-            <select
-  value={variant.color}
-  onChange={(e) =>
-    updateVariant(index, "color", e.target.value)
-  }
-  className="border px-2 py-1 rounded w-1/4"
->
-  <option value="">Select Color</option>
-  {colors.map((c) => (
-    <option key={c.value} value={c.value}>
-      {c.name}
-    </option>
-  ))}
-</select>
-                
-                
+                <select
+                  value={variant.color}
+                  onChange={(e) =>
+                    updateVariant(index, "color", e.target.value)
+                  }
+                  className="border px-2 py-1 rounded w-1/4"
+                >
+                  <option value="">Select Color</option>
+                  {colors.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+
                 <input
                   type="number"
                   value={variant.price}
@@ -363,7 +413,7 @@ export default function AddProductPage() {
 
                 <input
                   type="number"
-                  value={variant.salePrice}
+                  value={variant.salePrice || 0}
                   readOnly
                   placeholder="Sale Price"
                   className="border px-2 py-1 rounded w-1/3 bg-gray-100"
@@ -377,27 +427,27 @@ export default function AddProductPage() {
                 accept="image/*"
                 onChange={(e) => uploadVariantImages(e.target.files, index)}
                 className="border px-2 py-1 rounded w-full"
+                disabled={isUploading}
               />
 
               {variant.images?.length > 0 && (
                 <div className="flex gap-2 mt-2 flex-wrap">
-                  {variant.color === selectedColor &&
-                    variant.images.map((img, imgIndex) => (
-                      <div key={imgIndex} className="relative">
-                        <img
-                          src={img}
-                          alt="variant"
-                          className="w-16 h-16 object-cover rounded border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeVariantImage(index, imgIndex)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
+                  {variant.images.map((img, imgIndex) => (
+                    <div key={imgIndex} className="relative">
+                      <img
+                        src={img}
+                        alt="variant"
+                        className="w-16 h-16 object-cover rounded border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVariantImage(index, imgIndex)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -420,39 +470,44 @@ export default function AddProductPage() {
           </button>
         </div>
 
-        {/* Main Price & Discount */}
-        <div className="flex gap-2">
-          {!hasVariants && (
-            <input
-              type="number"
-              name="regularPrice"
-              value={form.regularPrice}
-              onChange={handleChange}
-              placeholder="Regular Price"
-              className="w-1/2 border px-3 py-2 rounded"
-            />
-          )}
+        {/* Main Price & Discount - Only show if no variants */}
+        {!hasVariants && (
+          <>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                name="regularPrice"
+                value={form.regularPrice}
+                onChange={handleChange}
+                placeholder="Regular Price"
+                className="w-full border px-3 py-2 rounded"
+                required
+              />
+            </div>
+            <div className="flex gap-2">
+              <select
+                name="discount.type"
+                value={form.discount.type}
+                onChange={handleChange}
+                className="w-1/2 border px-3 py-2 rounded"
+              >
+                <option value="">Select discount type</option>
+                <option value="percentage">Percentage</option>
+                <option value="fixed">Fixed</option>
+              </select>
 
-          <select
-            name="discount.type"
-            value={form.discount.type}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-          >
-            <option value="">Select discount type</option>
-            <option value="percentage">Percentage</option>
-            <option value="fixed">Fixed</option>
-          </select>
+              <input
+                name="discount.value"
+                value={form.discount.value}
+                onChange={handleChange}
+                className="w-1/2 border px-3 py-2 rounded"
+                placeholder="Discount value"
+              />
+            </div>
+          </>
+        )}
 
-          <input
-            name="discount.value"
-            value={form.discount.value}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Discount value"
-          />
-        </div>
-
+        {/* Stock - Only show if no variants */}
         {!hasVariants && (
           <input
             type="number"
@@ -483,7 +538,7 @@ export default function AddProductPage() {
               name="featured"
               checked={form.featured}
               onChange={handleChange}
-            />{' '}
+            />
             Featured
           </label>
           <label className="inline-flex items-center gap-2">
@@ -492,7 +547,7 @@ export default function AddProductPage() {
               name="bestseller"
               checked={form.bestseller}
               onChange={handleChange}
-            />{' '}
+            />
             Bestseller
           </label>
           <label className="inline-flex items-center gap-2">
@@ -501,7 +556,7 @@ export default function AddProductPage() {
               name="newArrival"
               checked={form.newArrival}
               onChange={handleChange}
-            />{' '}
+            />
             New Arrival
           </label>
         </div>
