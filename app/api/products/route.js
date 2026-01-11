@@ -1,7 +1,11 @@
 import Product from '@/models/Product';
 import { connectDB } from '@/lib/db';
+import { generateSKU } from '@/lib/generateSKU';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { NextResponse } from 'next/server';
+
+
 
 // GET
 export async function GET() {
@@ -12,40 +16,71 @@ export async function GET() {
 
 // POST======================
 
-
-
-
 /**
  * Calculate sale price based on price and discount
  * @param {Number} price - regular or variant price
  * @param {Object} discount - { type: 'percentage'|'fixed', value: Number }
  * @returns {Number} salePrice
  */
-function calculateSalePrice(price, discount) {
-  if (!discount || !discount.value || Number(discount.value) <= 0) return price;
+
+
+
+
+// -------------------- SALE PRICE CALC --------------------
+function calculateSalePrice(regularPrice, discount) {
+  if (!discount || !discount.value || Number(discount.value) <= 0) {
+    return regularPrice;
+  }
 
   if (discount.type === 'percentage') {
-    return Math.max(0, price - (price * Number(discount.value)) / 100);
-  } else if (discount.type === 'fixed') {
-    return Math.max(0, price - Number(discount.value));
+    return Math.max(
+      0,
+      regularPrice - (regularPrice * Number(discount.value)) / 100
+    );
   }
-  return price;
+
+  if (discount.type === 'fixed') {
+    return Math.max(0, regularPrice - Number(discount.value));
+  }
+
+  return regularPrice;
 }
 
+
+// -------------------- POST API --------------------
 export async function POST(req) {
   try {
     await connectDB();
 
     const data = await req.json();
+    console.log(data.variants.images, '===========================================');
+    
+    const {
+      name,
+      description,
+      brand,
+      category,
+      tags,
+      featured,
+      bestseller,
+      newArrival,
+    } = data;
 
-    // 🔹 Slug helper
+    if (!name) {
+      return NextResponse.json(
+        { success: false, message: 'Product name is required' },
+        { status: 400 }
+      );
+    }
+
+    // -------------------- SLUG --------------------
     const slugify = (text) =>
       text
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-    let baseSlug = `${slugify(data.name)}-tomartbd`;
+    let baseSlug = `${slugify(name)}-tomartbd`;
     let slug = baseSlug;
     let counter = 1;
 
@@ -53,40 +88,22 @@ export async function POST(req) {
       slug = `${baseSlug}-${counter++}`;
     }
 
-    // 🔹 SEO Auto Generate
-    const metaTitle = `${data.name} | Buy Online at Best Price - TomartBD`;
+    // -------------------- SEO --------------------
+    const metaTitle = `${name} | Buy Online at Best Price - TomartBD`;
     const metaDescription =
-      data.description?.length > 160
-        ? data.description.substring(0, 157) + '...'
-        : data.description;
+      description?.length > 160
+        ? description.substring(0, 157) + '...'
+        : description;
 
-    const keywords = [
-      data.name,
-      data.brand,
-      data.category,
-      ...(data.tags || []),
-    ].filter(Boolean);
+    const keywords = [name, brand, category, ...(tags || [])].filter(Boolean);
 
-    // 🔹 Product type detect
+    // -------------------- PRODUCT TYPE --------------------
     let type = 'regular';
-    if (data.featured) type = 'featured';
-    else if (data.bestseller) type = 'best-selling';
-    else if (data.newArrival) type = 'new';
+    if (featured) type = 'featured';
+    else if (bestseller) type = 'best-selling';
+    else if (newArrival) type = 'new';
 
-    // 🔹 Calculate main product salePrice
-    const salePrice = calculateSalePrice(data.regularPrice, data.discount);
-
-    // 🔹 Calculate salePrice for each variant
-    const variants = (data.variants || []).map((v) => {
-      const variantSalePrice = calculateSalePrice(v.price, data.discount);
-      return {
-        ...v,
-        price: Number(v.price),
-        stock: Number(v.stock || 0),
-        salePrice: variantSalePrice,
-      };
-    });
-
+    // -------------------- DISCOUNT --------------------
     const discountData =
       data.discount?.value && Number(data.discount.value) > 0
         ? {
@@ -95,30 +112,84 @@ export async function POST(req) {
           }
         : undefined;
 
+    // -------------------- VARIANTS --------------------
+    const variants = (data.variants || []).map((v) => ({
+      size: v.size,
+      color: v.color,
+      price: Number(v.price),
+      stock: Number(v.stock || 0),
+      salePrice: calculateSalePrice(Number(v.price), v.discount),
+      images: v.images || [],
+      ...(v.discount?.value && {
+        discount: {
+          type: v.discount.type,
+          value: Number(v.discount.value),
+        },
+      }),
+    }));
+
+    // -------------------- REGULAR PRICE & SALE PRICE --------------------
+    let regularPrice = 0;
+    let salePrice = 0;
+    let stock = Number(data.stock || 0);
+
+    if (variants.length > 0) {
+      // If variants exist → main price = 0, main stock = sum of variant stocks
+      regularPrice = 0;
+      salePrice = 0;
+      stock = variants.reduce((total, v) => total + v.stock, 0);
+    } else {
+      // No variants → use main price and stock
+      regularPrice = Number(data.regularPrice);
+      if (!regularPrice || regularPrice <= 0) {
+        return NextResponse.json(
+          { success: false, message: 'Price is required' },
+          { status: 400 }
+        );
+      }
+      salePrice = calculateSalePrice(regularPrice, discountData);
+    }
+
+    // -------------------- SKU --------------------
+    const sku = generateSKU(name);
+
+    // -------------------- CREATE PRODUCT --------------------
     const product = await Product.create({
-      ...data,
+      name,
+      description,
+      brand,
+      category,
+
       slug,
+      sku,
+
+      regularPrice,
+      salePrice,
+      stock,
+
+      variants,
       images: data.images || [],
       keywords,
       metaTitle,
       metaDescription,
       type,
-      salePrice,
-      variants,
+
       ...(discountData && { discount: discountData }),
     });
 
-    return Response.json(
+    return NextResponse.json(
       { success: true, product, message: 'Product added successfully' },
       { status: 201 }
     );
   } catch (err) {
-    return Response.json(
-      { success: false, error: err.message },
+    console.error(err);
+    return NextResponse.json(
+      { success: false, error: err.message || 'Something went wrong' },
       { status: 500 }
     );
   }
 }
+
 
 
 

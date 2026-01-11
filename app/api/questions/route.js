@@ -93,7 +93,6 @@ export async function POST(request) {
 
     const body = await request.json();
     console.log(session, '==============');
-    
 
     // Validate required fields
     if (!body.productId || !body.question) {

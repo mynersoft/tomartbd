@@ -10,12 +10,25 @@ const VariantSchema = new mongoose.Schema(
       type: String,
     },
     price: {
-      type: Number, // optional
+      type: Number,
     },
     stock: {
       type: Number,
       default: 0,
     },
+    salePrice: {
+      type: Number,
+      default: 0,
+    },
+    discount: {
+      type: {
+        type: String,
+        enum: ['percentage', 'fixed'],
+      },
+      value: Number,
+    },
+
+    images: [String],
   },
   { _id: false }
 );
@@ -39,7 +52,6 @@ const ProductSchema = new mongoose.Schema(
     // ✅ Base price (must)
     regularPrice: {
       type: Number,
-      required: true,
     },
 
     // ✅ Calculated price
@@ -61,14 +73,11 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-
-    // ⚠ optional if variants used
     stock: {
       type: Number,
       default: 0,
     },
 
-    // ✅ Optional Variants
     variants: [VariantSchema],
 
     description: String,
@@ -116,9 +125,11 @@ const ProductSchema = new mongoose.Schema(
       sparse: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    strict: true, // 🔒 blocks unknown fields
+  }
 );
 
-
-
-export default mongoose.models.Product|| mongoose.model('Product', ProductSchema);
+export default mongoose.models.Product ||
+  mongoose.model('Product', ProductSchema);

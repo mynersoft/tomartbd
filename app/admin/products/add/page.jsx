@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAddProduct } from '@/hooks/useProducts';
 
+
 export default function AddProductPage() {
   const { mutate, isLoading } = useAddProduct();
 
@@ -13,43 +14,39 @@ export default function AddProductPage() {
     description: '',
     category: '',
     brand: '',
-    price: '',
+    regularPrice: '',
     stock: '',
-    sku: '',
     discount: { type: '', value: '' },
     images: [],
     tags: '',
     featured: false,
     bestseller: false,
     newArrival: true,
-    variants: [], // ✅ variants array
+    variants: [],
   });
 
-  // handle top-level and nested fields
+  const [selectedColor, setSelectedColor] = useState('');
+
+  const hasVariants = form.variants.length > 0;
+
+  // -------------------- HANDLERS --------------------
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setForm((prev) => ({
+      setForm(prev => ({
         ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: type === 'checkbox' ? checked : value,
-        },
+        [parent]: { ...prev[parent], [child]: type === 'checkbox' ? checked : value },
       }));
     } else {
-      setForm((prev) => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value,
-      }));
+      setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     }
   };
 
-  // handle image upload
   const handleUploadImages = async (e) => {
     const files = e.target.files;
-    if (!files.length) return;
+    if (!files || !files.length) return;
 
     toast.loading('Uploading images...');
     const uploaded = [];
@@ -57,10 +54,7 @@ export default function AddProductPage() {
     for (const file of files) {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append(
-        'upload_preset',
-        process.env.NEXT_PUBLIC_CLOUDINARY_PRESET
-      );
+      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_PRESET);
 
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -73,43 +67,114 @@ export default function AddProductPage() {
 
     toast.dismiss();
     toast.success('Images uploaded!');
-
-    setForm((prev) => ({ ...prev, images: uploaded }));
+    setForm(prev => ({ ...prev, images: uploaded }));
   };
 
-  // variant handlers
   const addVariant = () => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
-      variants: [...prev.variants, { size: '', color: '', price: '', stock: '' }],
+      variants: [
+        ...prev.variants,
+        { size: '', color: '', price: '', stock: '', discount: { type: '', value: '' }, salePrice: 0, images: [] },
+      ],
     }));
   };
 
   const updateVariant = (index, field, value) => {
     const newVariants = [...form.variants];
     newVariants[index][field] = value;
-    setForm((prev) => ({ ...prev, variants: newVariants }));
+    setForm(prev => ({ ...prev, variants: newVariants }));
+  };
+
+  const updateVariantDiscount = (index, field,value) => {
+    const newVariants = [...form.variants];
+    newVariants[index].discount[field] = value;
+
+    const price = Number(newVariants[index].price || 0);
+    const discountValue = Number(newVariants[index].discount.value || 0);
+
+    if (newVariants[index].discount.type === 'percentage') {
+      newVariants[index].salePrice = price - (price * discountValue) / 100;
+    } else if (newVariants[index].discount.type === 'fixed') {
+      newVariants[index].salePrice = price - discountValue;
+    } else {
+      newVariants[index].salePrice = price;
+    }
+
+    setForm(prev => ({ ...prev, variants: newVariants }));
   };
 
   const removeVariant = (index) => {
     const newVariants = [...form.variants];
     newVariants.splice(index, 1);
-    setForm((prev) => ({ ...prev, variants: newVariants }));
+    setForm(prev => ({ ...prev, variants: newVariants }));
   };
 
-  // submit handler
+ const [isUploading, setIsUploading] = useState(false);
+
+ const uploadVariantImages = async (files, index) => {
+   if (!files.length) return;
+
+   setIsUploading(true);
+   toast.loading('Uploading variant images...');
+   const uploaded = [];
+
+   for (const file of files) {
+     const formData = new FormData();
+     formData.append('file', file);
+     formData.append(
+       'upload_preset',
+       process.env.NEXT_PUBLIC_CLOUDINARY_PRESET
+     );
+
+     const res = await fetch(
+       `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+       { method: 'POST', body: formData }
+     );
+
+     const data = await res.json();
+     uploaded.push(data.secure_url);
+   }
+
+   toast.dismiss();
+   toast.success('Variant images uploaded');
+
+   const newVariants = [...form.variants];
+   newVariants[index].images = [
+     ...(newVariants[index].images || []),
+     ...uploaded,
+   ];
+   setForm((prev) => ({ ...prev, variants: newVariants }));
+
+   setIsUploading(false);
+ };
+
+
+  const removeVariantImage = (variantIndex, imageIndex) => {
+    const newVariants = [...form.variants];
+    newVariants[variantIndex].images.splice(imageIndex, 1);
+    setForm(prev => ({ ...prev, variants: newVariants }));
+  };
+
+
+  console.log(form);
+  
+
+  // -------------------- SUBMIT --------------------
   const handleAddProduct = (e) => {
     e.preventDefault();
 
-    const hasDiscount =
-      form.discount.type && Number(form.discount.value) > 0;
+    const hasDiscount = form.discount.type && Number(form.discount.value) > 0;
 
-    // convert variant price/stock to numbers
-    const variants = form.variants.map((v) => ({
+    const variants = form.variants.map(v => ({
+    
       size: v.size,
       color: v.color,
       price: Number(v.price),
       stock: Number(v.stock),
+      salePrice: Number(v.salePrice),
+      images: v.images || [],
+      ...(v.discount?.value && { discount: { type: v.discount.type, value: Number(v.discount.value) } }),
     }));
 
     mutate(
@@ -118,18 +183,15 @@ export default function AddProductPage() {
         description: form.description,
         category: form.category,
         brand: form.brand,
-        regularPrice: Number(form.price),
+        regularPrice: hasVariants ? undefined : Number(form.regularPrice),
         stock: Number(form.stock),
-        sku: form.sku,
         images: form.images,
-        tags: form.tags ? form.tags.split(',').map((t) => t.trim()) : [],
+        tags: form.tags ? form.tags.split(',').map(t => t.trim()) : [],
         featured: form.featured,
         bestseller: form.bestseller,
         newArrival: form.newArrival,
         variants,
-        ...(hasDiscount && {
-          discount: { type: form.discount.type, value: Number(form.discount.value) },
-        }),
+        ...(hasDiscount && { discount: { type: form.discount.type, value: Number(form.discount.value) } }),
       },
       {
         onSuccess: () => {
@@ -139,9 +201,8 @@ export default function AddProductPage() {
             description: '',
             category: '',
             brand: '',
-            price: '',
+            regularPrice: '',
             stock: '',
-            sku: '',
             discount: { type: '', value: '' },
             images: [],
             tags: '',
@@ -150,11 +211,13 @@ export default function AddProductPage() {
             newArrival: true,
             variants: [],
           });
+          setSelectedColor('');
         },
       }
     );
   };
 
+  // -------------------- UI --------------------
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded mt-6">
       <div className="flex justify-between my-2">
@@ -168,6 +231,7 @@ export default function AddProductPage() {
       </div>
 
       <form className="space-y-4" onSubmit={handleAddProduct}>
+        {/* Product Name */}
         <input
           type="text"
           name="name"
@@ -178,6 +242,7 @@ export default function AddProductPage() {
           required
         />
 
+        {/* Main Images */}
         <input
           type="file"
           multiple
@@ -186,6 +251,7 @@ export default function AddProductPage() {
           className="w-full border px-3 py-2 rounded"
         />
 
+        {/* Description */}
         <textarea
           name="description"
           value={form.description}
@@ -195,6 +261,7 @@ export default function AddProductPage() {
           required
         />
 
+        {/* Brand & Category */}
         <input
           type="text"
           name="brand"
@@ -218,16 +285,144 @@ export default function AddProductPage() {
           <option value="other">Other</option>
         </select>
 
+        {/* Variants Section */}
+        <div className="border-t pt-4">
+          <h2 className="text-lg font-semibold mb-2">Variants</h2>
+
+          {form.variants.map((variant, index) => (
+            <div key={index} className="border p-4 rounded mb-4 space-y-3">
+              <div className="flex gap-2 flex-wrap items-center">
+                <input
+                  type="text"
+                  value={variant.size}
+                  onChange={(e) => updateVariant(index, 'size', e.target.value)}
+                  placeholder="Size"
+                  className="border px-2 py-1 rounded w-1/4"
+                />
+                <input
+                  type="text"
+                  value={variant.color}
+                  onChange={(e) =>
+                    updateVariant(index, 'color', e.target.value)
+                  }
+                  placeholder="Color"
+                  className="border px-2 py-1 rounded w-1/4"
+                />
+                <input
+                  type="number"
+                  value={variant.price}
+                  onChange={(e) =>
+                    updateVariant(index, 'price', e.target.value)
+                  }
+                  placeholder="Price"
+                  className="border px-2 py-1 rounded w-1/4"
+                />
+                <input
+                  type="number"
+                  value={variant.stock}
+                  onChange={(e) =>
+                    updateVariant(index, 'stock', e.target.value)
+                  }
+                  placeholder="Stock"
+                  className="border px-2 py-1 rounded w-1/4"
+                />
+              </div>
+
+              {/* Discount & Sale Price */}
+              <div className="flex gap-2">
+                <select
+                  value={variant.discount.type}
+                  onChange={(e) =>
+                    updateVariantDiscount(index, 'type', e.target.value)
+                  }
+                  className="border px-2 py-1 rounded w-1/3"
+                >
+                  <option value="">Discount Type</option>
+                  <option value="percentage">Percentage</option>
+                  <option value="fixed">Fixed</option>
+                </select>
+
+                <input
+                  type="number"
+                  value={variant.discount.value}
+                  onChange={(e) =>
+                    updateVariantDiscount(index, 'value', e.target.value)
+                  }
+                  placeholder="Discount Value"
+                  className="border px-2 py-1 rounded w-1/3"
+                />
+
+                <input
+                  type="number"
+                  value={variant.salePrice}
+                  readOnly
+                  placeholder="Sale Price"
+                  className="border px-2 py-1 rounded w-1/3 bg-gray-100"
+                />
+              </div>
+
+              {/* Variant Images */}
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => uploadVariantImages(e.target.files, index)}
+                className="border px-2 py-1 rounded w-full"
+              />
+
+              {variant.images?.length > 0 && (
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {variant.color === selectedColor &&
+                    variant.images.map((img, imgIndex) => (
+                      <div key={imgIndex} className="relative">
+                        <img
+                          src={img}
+                          alt="variant"
+                          className="w-16 h-16 object-cover rounded border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeVariantImage(index, imgIndex)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => removeVariant(index)}
+                className="bg-red-500 text-white px-3 py-1 rounded"
+              >
+                Remove Variant
+              </button>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={addVariant}
+            className="bg-blue-600 text-white px-4 py-1 rounded"
+          >
+            Add Variant
+          </button>
+        </div>
+
+        {/* Main Price & Discount */}
         <div className="flex gap-2">
-          <input
-            type="number"
-            name="price"
-            value={form.price}
-            onChange={handleChange}
-            placeholder="Price"
-            className="w-1/2 border px-3 py-2 rounded"
-            required
-          />
+          {!hasVariants && (
+            <input
+              type="number"
+              name="regularPrice"
+              value={form.regularPrice}
+              onChange={handleChange}
+              placeholder="Regular Price"
+              className="w-1/2 border px-3 py-2 rounded"
+            />
+          )}
 
           <select
             name="discount.type"
@@ -249,25 +444,19 @@ export default function AddProductPage() {
           />
         </div>
 
-        <input
-          type="number"
-          name="stock"
-          value={form.stock}
-          onChange={handleChange}
-          placeholder="Stock Quantity"
-          className="w-full border px-3 py-2 rounded"
-          required
-        />
+        {!hasVariants && (
+          <input
+            type="number"
+            name="stock"
+            value={form.stock}
+            onChange={handleChange}
+            placeholder="Stock Quantity"
+            className="w-full border px-3 py-2 rounded"
+            required
+          />
+        )}
 
-        <input
-          type="text"
-          name="sku"
-          value={form.sku}
-          onChange={handleChange}
-          placeholder="SKU"
-          className="w-full border px-3 py-2 rounded"
-        />
-
+        {/* Tags */}
         <input
           type="text"
           name="tags"
@@ -277,6 +466,7 @@ export default function AddProductPage() {
           className="w-full border px-3 py-2 rounded"
         />
 
+        {/* Featured / Bestseller / NewArrival */}
         <div className="flex gap-4">
           <label className="inline-flex items-center gap-2">
             <input
@@ -284,7 +474,7 @@ export default function AddProductPage() {
               name="featured"
               checked={form.featured}
               onChange={handleChange}
-            />
+            />{' '}
             Featured
           </label>
           <label className="inline-flex items-center gap-2">
@@ -293,7 +483,7 @@ export default function AddProductPage() {
               name="bestseller"
               checked={form.bestseller}
               onChange={handleChange}
-            />
+            />{' '}
             Bestseller
           </label>
           <label className="inline-flex items-center gap-2">
@@ -302,68 +492,21 @@ export default function AddProductPage() {
               name="newArrival"
               checked={form.newArrival}
               onChange={handleChange}
-            />
+            />{' '}
             New Arrival
           </label>
         </div>
 
-        {/* 🔹 VARIANTS SECTION */}
-        <div className="border-t pt-4">
-          <h2 className="text-lg font-semibold mb-2">Variants</h2>
-          {form.variants.map((variant, index) => (
-            <div key={index} className="flex gap-2 mb-2 items-center">
-              <input
-                type="text"
-                value={variant.size}
-                onChange={(e) => updateVariant(index, 'size', e.target.value)}
-                placeholder="Size"
-                className="border px-2 py-1 rounded w-1/5"
-              />
-              <input
-                type="text"
-                value={variant.color}
-                onChange={(e) => updateVariant(index, 'color', e.target.value)}
-                placeholder="Color"
-                className="border px-2 py-1 rounded w-1/5"
-              />
-              <input
-                type="number"
-                value={variant.price}
-                onChange={(e) => updateVariant(index, 'price', e.target.value)}
-                placeholder="Price"
-                className="border px-2 py-1 rounded w-1/5"
-              />
-              <input
-                type="number"
-                value={variant.stock}
-                onChange={(e) => updateVariant(index, 'stock', e.target.value)}
-                placeholder="Stock"
-                className="border px-2 py-1 rounded w-1/5"
-              />
-              <button
-                type="button"
-                onClick={() => removeVariant(index)}
-                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addVariant}
-            className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
-          >
-            Add Variant
-          </button>
-        </div>
-
         <button
-          disabled={isLoading}
+          disabled={isLoading || isUploading}
           type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
         >
-          {isLoading ? 'Adding...' : 'Add Product'}
+          {isLoading
+            ? 'Adding...'
+            : isUploading
+              ? 'Uploading images...'
+              : 'Add Product'}
         </button>
       </form>
     </div>
