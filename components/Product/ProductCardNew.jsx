@@ -141,7 +141,7 @@ const ProductCardNew = ({ product }) => {
             </span>
 
             <span className="ml-2 text-base text-gray-500 line-through">
-              {hasVariants ? product.variants[0].price : product.price} tk
+              {hasVariants ? product.variants[0].price : product.regularPrice} tk
             </span>
           </div>
 
