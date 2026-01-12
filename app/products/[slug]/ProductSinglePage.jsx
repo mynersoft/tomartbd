@@ -293,7 +293,12 @@ export default function ProductSinglePage() {
 
   const productData = getProductData();
 
-  
+  const hasVariants = productData.variants.length > 0;
+const imgSrc =
+  (hasVariants
+    ? productData.variants?.[0]?.images?.[0]
+    : productData.images?.[0]) ?? "/placeholder.png";
+   
 
 
   return (
@@ -348,9 +353,9 @@ export default function ProductSinglePage() {
               {/* Main Image Container */}
               <div className="relative border-2 border-gray-100 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-white">
                 <div className="aspect-square flex items-center justify-center p-8">
-                  {productData.images.length > 0 ? (
+                  
                     <Image
-                      src={productData.images[selectedImage]}
+                      src={imgSrc}
                       alt={productData.name}
                       width={800}
                       height={800}
@@ -361,22 +366,17 @@ export default function ProductSinglePage() {
                         e.target.src = '/placeholder-product.jpg';
                       }}
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      <div className="text-center">
-                        <div className="text-4xl mb-2">📷</div>
-                        <p className="text-gray-500">No image available</p>
-                      </div>
-                    </div>
-                  )}
+                 
 
                   {/* Badges */}
                   <div className="absolute top-4 left-4 flex flex-col gap-2">
-                    {discountText && (
+                    
                       <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                        {discountText}
+                   -{hasVariants
+                ? product.variants[0].discount.value
+                : product.discount.value}
                       </span>
-                    )}
+                    
                     <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
                       🔥 Best Seller
                     </span>
@@ -447,7 +447,7 @@ export default function ProductSinglePage() {
               </div>
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="md:grid hidden grid-cols-3 gap-4">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl text-center">
                   <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-gray-800">1.2K+</div>
@@ -456,7 +456,7 @@ export default function ProductSinglePage() {
                 <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl text-center">
                   <Award className="w-8 h-8 text-green-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-gray-800">
-                    {productData.ratings.average.toFixed(1)}/5
+                    {productData.rating}
                   </div>
                   <div className="text-sm text-gray-600">Rating</div>
                 </div>
@@ -476,7 +476,7 @@ export default function ProductSinglePage() {
                   <div>
                     <div className="flex items-center gap-3 mb-3">
                       <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
-                        {product.brand || 'Premium'}
+                        {product.brand || ""}
                       </span>
                       <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
                         In Stock
@@ -518,7 +518,7 @@ export default function ProductSinglePage() {
                         <Star
                           key={i}
                           className={`w-5 h-5 ${
-                            i < Math.floor(productData.ratings.average)
+                            i < Math.floor(productData.rating)
                               ? 'fill-yellow-400 text-yellow-400'
                               : 'fill-gray-200 text-gray-200'
                           }`}
@@ -529,7 +529,7 @@ export default function ProductSinglePage() {
                       {productData.ratings.average.toFixed(1)}
                     </span>
                     <span className="text-gray-500">
-                      ({productData.ratings.total} reviews)
+                      ({productData.reviews || 0} reviews)
                     </span>
                   </div>
                 </div>
@@ -540,12 +540,12 @@ export default function ProductSinglePage() {
                 <div className="space-y-4">
                   <div className="flex items-baseline gap-4">
                     <span className="text-4xl font-bold text-gray-900">
-                      ৳{formatCurrency(discountPrice)}
+                      ৳{ hasVariants?  productData.variants[0].price : Product.salePrice}
                     </span>
-                    {product.price > discountPrice && (
+                    
                       <div className="flex items-center gap-3">
                         <span className="text-2xl text-gray-400 line-through">
-                          ৳{formatCurrency(product.price)}
+                      ৳{ hasVariants?  productData.variants[0].price : Product.regularPrice}
                         </span>
                         {discountText && (
                           <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold">
@@ -553,7 +553,7 @@ export default function ProductSinglePage() {
                           </span>
                         )}
                       </div>
-                    )}
+                    
                   </div>
 
                   {discountAmount > 0 && (
