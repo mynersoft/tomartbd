@@ -104,10 +104,8 @@ export default function ProductQuickView({ product, onClose }) {
     ((originalPrice - currentPrice) / originalPrice) * 100
   );
   const imgSrc =
-  (hasVariants
-    ? product.variants?.[0]?.images?.[0]
-    : product.images?.[0]) ?? "/placeholder.png";
-   
+    (hasVariants ? product.variants?.[0]?.images?.[0] : product.images?.[0]) ??
+    '/placeholder.png';
 
   return (
     <div
@@ -138,9 +136,7 @@ export default function ProductQuickView({ product, onClose }) {
               {/* Main Image */}
               <div className="relative h-full max-h-[500px] aspect-square overflow-hidden rounded-2xl bg-gray-50 group">
                 <Image
-                  src={
-                    imgSrc
-                  }
+                  src={imgSrc}
                   alt={product.name}
                   width={400}
                   height={400}
@@ -315,15 +311,13 @@ export default function ProductQuickView({ product, onClose }) {
                               : 'border-gray-300 hover:border-gray-400 text-gray-700'
                           }`}
                         >
-                       <div className={`h-full w-full bg-[${color}]`}>
-                            
-                          </div>
+                          <div className={`h-full w-full bg-[${color}]`}></div>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className='flex gap-2'>
+                  <div className="flex gap-2">
                     <h3 className="font-semibold text-gray-900 mb-3">Size</h3>
 
                     {sizes.map((size) => (
