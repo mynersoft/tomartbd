@@ -325,21 +325,20 @@ export default function ProductQuickView({ product, onClose }) {
 
                   <div className='flex gap-2'>
                     <h3 className="font-semibold text-gray-900 mb-3">Size</h3>
-              
-                      {sizes.map((size) => (
-                        <button
-                          key={size}
-                          onClick={() => setSelectedSize(size)}
-                          className={`w-7 h-7 flex items-center justify-center rounded-full border font-medium transition-all ${
-                            selectedSize === size
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-300 hover:border-gray-400 text-gray-700'
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                 
+
+                    {sizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`w-7 h-7 flex items-center justify-center rounded-full border font-medium transition-all ${
+                          selectedSize === size
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
                   </div>
                 </>
               )}
