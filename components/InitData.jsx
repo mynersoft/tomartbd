@@ -12,7 +12,6 @@ export default function InitData() {
   useInitializeCart(user?.id);
   useProducts();
   useBlogs();
-
   useStatCard();
   useEffect(() => {
     fetch('/api/visitor', {

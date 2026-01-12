@@ -8,47 +8,60 @@ import { addToCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
-
-import  Image from 'next/image';
+import Image from 'next/image';
 
 const ProductCardNew = ({ product }) => {
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
 
-
-
   const dispatch = useDispatch();
 
-  const hasVariants = product.variants.length > 0;
+  const hasVariants = product?.variants?.length > 0;
 
-const imgSrc =
-  (hasVariants
-    ? product.variants?.[0]?.images?.[0]
-    : product.images?.[0]) ?? "/placeholder.png";
-   
+  // Get the correct image source
+  const getImageSrc = () => {
+    if (!product) return '/placeholder.png';
 
+    if (hasVariants && product.variants[0]?.images?.[0]) {
+      return product.variants[0].images[0];
+    }
 
-  const wishlist = useSelector((state) => state.wishlist.items);
-  const cart = useSelector((state) => state.cart.items);
-  console.log(cart);
+    if (product.images?.[0]) {
+      return product.images[0];
+    }
 
-  const isWishlisted = wishlist.some((item) => item._id === product._id);
-  const isAddToCart = cart.some((item) => item._id === product._id);
+    return '/placeholder.png';
+  };
+
+  const imgSrc = getImageSrc();
+
+  const wishlist = useSelector((state) => state.wishlist.items || []);
+  const cart = useSelector((state) => state.cart.items || []);
+
+  const isWishlisted = wishlist.some((item) => item._id === product?._id);
+  const isAddToCart = cart.some((item) => item._id === product?._id);
 
   const handleToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
+    if (!product) return;
+
     dispatch(toggleWishlist(product));
     toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
   };
 
-  // ✅ Add to cart (FIXED)
+  // Add to cart
   const handleAddToCart = (e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
+    }
+
+    if (!product) {
+      toast.error('Product not available');
+      return;
     }
 
     dispatch(addToCart({ product, quantity }));
@@ -57,8 +70,71 @@ const imgSrc =
     toast.success('Added to cart!');
   };
 
-  const productSlug = product.slug || product._id;
+  const productSlug = product?.slug || product?._id || '';
   const productUrl = `/product/${productSlug}`;
+
+  // Get discount value safely
+  const getDiscountValue = () => {
+    if (!product) return null;
+
+    if (hasVariants && product.variants[0]?.discount?.value > 0) {
+      return product.variants[0].discount.value;
+    }
+
+    if (product.discount?.value > 0) {
+      return product.discount.value;
+    }
+
+    return null;
+  };
+
+  const discountValue = getDiscountValue();
+
+  // Get price info safely
+  const getPriceInfo = () => {
+    if (!product) {
+      return { hasDiscount: false, regularPrice: 0, salePrice: 0 };
+    }
+
+    let hasDiscount = false;
+    let regularPrice = 0;
+    let salePrice = 0;
+
+    if (hasVariants && product.variants?.[0]) {
+      const variant = product.variants[0];
+      regularPrice = variant.price || 0;
+      salePrice = variant.salePrice || variant.price || 0;
+      hasDiscount = variant.discount?.value > 0;
+    } else {
+      regularPrice = product.regularPrice || product.price || 0;
+      salePrice =
+        product.salePrice || product.regularPrice || product.price || 0;
+      hasDiscount = product.discount?.value > 0;
+    }
+
+    return { hasDiscount, regularPrice, salePrice };
+  };
+
+  const { hasDiscount, regularPrice, salePrice } = getPriceInfo();
+
+  // Get stock safely
+  const getStock = () => {
+    if (!product) return 0;
+
+    if (hasVariants && product.variants?.[0]?.stock !== undefined) {
+      return product.variants[0].stock;
+    }
+
+    return product.stock || 0;
+  };
+
+  const stock = getStock();
+
+  // Safely get rating
+  const rating = product?.rating || 0;
+  const reviewCount = product?.reviewCount || 0;
+
+  if (!product) return null;
 
   return (
     <>
@@ -68,7 +144,6 @@ const imgSrc =
           onClose={() => setOpen(false)}
           onAddToCart={() => {
             handleAddToCart();
-
             setOpen(false);
           }}
         />
@@ -78,15 +153,13 @@ const imgSrc =
         {/* Product Image Section */}
         <div className="relative overflow-hidden bg-gray-50">
           {/* Discount Badge */}
-
-          <div className="absolute top-4 left-4 z-10">
-            <span className="bg-red-500 text-white font-bold text-sm px-3 py-1.5 rounded-full shadow-md">
-              -{hasVariants
-                ? product.variants[0].discount.value
-                : product.discount.value}
-              %
-            </span>
-          </div>
+          {discountValue !== null && (
+            <div className="absolute top-4 left-4 z-10">
+              <span className="bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-sm px-3 py-1.5 rounded-full shadow-md">
+                -{discountValue}% OFF
+              </span>
+            </div>
+          )}
 
           {/* Wishlist Button */}
           <button
@@ -100,22 +173,17 @@ const imgSrc =
             />
           </button>
 
-        
-
           {/* Image */}
-
           <Link href={productUrl}>
             <div className="h-[220px] w-full overflow-hidden relative duration-500">
-              
-
-<Image
-  src={imgSrc}
-  alt={product.name || "Product image"}
-  fill
-  className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-/>
-
-
+              <Image
+                src={imgSrc}
+                alt={product.name || 'Product image'}
+                fill
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority={false}
+              />
             </div>
           </Link>
         </div>
@@ -132,71 +200,62 @@ const imgSrc =
               <Star
                 key={i}
                 className={`w-4 h-4 ${
-                  i < Math.floor(product.rating)
+                  i < Math.floor(rating)
                     ? 'fill-yellow-400 text-yellow-400'
                     : 'text-gray-300'
                 }`}
               />
             ))}
             <span className="text-sm text-gray-600 ml-2">
-              {product.rating} ({product.reviewCount} reviews)
+              {rating} ({reviewCount} reviews)
             </span>
           </div>
 
           {/* Price */}
-
           <div className="mb-4 flex justify-between">
-
-
-           <div>
- <span className="text-lg font-bold text-gray-900">
-              
-              {hasVariants
-                ? product.variants[0].salePrice
-                : product.salePrice || product.price}
-              tk
-            </span>
-
-            <span className="ml-2 text-base text-gray-500 line-through">
-              {hasVariants ? product.variants[0].price : product.regularPrice} tk
-            </span>
-</div>
-
-<span className=" text-center px-2 font-semibold font-medium select-none">
-            Stock {product.stock }
+            <div>
+              <span className="text-lg font-bold text-gray-900">
+                {salePrice} tk
               </span>
 
+              {hasDiscount && salePrice < regularPrice && (
+                <span className="ml-2 text-base text-gray-500 line-through">
+                  {regularPrice} tk
+                </span>
+              )}
+            </div>
 
-
+            <span className="text-center px-2 font-medium select-none">
+              Stock {stock}
+            </span>
           </div>
 
-          {/* Quantity + Cart + View*/}
-
+          {/* Quantity + Cart + View */}
           <div className="flex h-8 items-center justify-between gap-3">
             {/* Quick View */}
             <button
               onClick={() => setOpen(true)}
-              className="flex items-center justify-center  w-8 h-8 rounded-full bg-white border border-gray-300 text-gray-700 hover:text-gray-700 hover:bg-gray-50  transition cursor-pointer"
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-gray-300 text-gray-700 hover:text-gray-700 hover:bg-gray-50 transition cursor-pointer"
             >
               <Eye className="w-5 h-5" />
             </button>
 
             {/* Quantity Control */}
-            <div className="flex items-center   h-8 border border-gray-300 rounded-full overflow-hidden">
+            <div className="flex items-center h-8 border border-gray-300 rounded-full overflow-hidden">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className=" flex items-center h-full px-2 justify-center text-lg hover:bg-gray-100 transition cursor-pointer"
+                className="flex items-center h-full px-2 justify-center text-lg hover:bg-gray-100 transition cursor-pointer"
               >
                 −
               </button>
 
-              <span className=" text-center px-2  font-medium select-none">
+              <span className="text-center px-2 font-medium select-none">
                 {quantity}
               </span>
 
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className=" flex items-center h-full  px-2 cursor-pointer  justify-center text-lg hover:bg-gray-100 transition"
+                className="flex items-center h-full px-2 cursor-pointer justify-center text-lg hover:bg-gray-100 transition"
               >
                 +
               </button>
@@ -205,7 +264,7 @@ const imgSrc =
             {/* Add to Cart */}
             <button
               onClick={handleAddToCart}
-              className={`flex items-center justify-center gap-2 px-6 rounded-full font-medium transition  h-full cursor-pointer ${
+              className={`flex items-center justify-center gap-2 px-6 rounded-full font-medium transition h-full cursor-pointer ${
                 isAddToCart
                   ? 'bg-green-500 text-white'
                   : 'bg-gray-900 text-white hover:bg-gray-800'

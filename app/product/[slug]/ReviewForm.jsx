@@ -1,6 +1,7 @@
+'use client';
 import React, { useState } from 'react';
 import { Star, X, Upload } from 'lucide-react';
-import { useCreateReview } from '../hooks/useReviews';
+import { useCreateReview } from '@/hooks/useReviews';
 
 const ReviewForm = ({ productId, userId, userName, userAvatar, onSuccess }) => {
   const [rating, setRating] = useState(0);
@@ -11,16 +12,19 @@ const ReviewForm = ({ productId, userId, userName, userAvatar, onSuccess }) => {
 
   const createReviewMutation = useCreateReview();
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!rating || !comment.trim()) {
       alert('Please provide a rating and comment');
       return;
     }
 
+
     setIsSubmitting(true);
-    
+
     try {
       await createReviewMutation.mutateAsync({
         productId,
@@ -29,16 +33,15 @@ const ReviewForm = ({ productId, userId, userName, userAvatar, onSuccess }) => {
         userAvatar,
         rating,
         comment,
-        images
+        images,
       });
 
       // Reset form
       setRating(0);
       setComment('');
       setImages([]);
-      
+
       if (onSuccess) onSuccess();
-      
     } catch (error) {
       console.error('Error submitting review:', error);
     } finally {
@@ -50,7 +53,7 @@ const ReviewForm = ({ productId, userId, userName, userAvatar, onSuccess }) => {
     const files = Array.from(e.target.files);
     // In a real app, you would upload to cloud storage and get URLs
     // For now, we'll create object URLs
-    const newImages = files.map(file => URL.createObjectURL(file));
+    const newImages = files.map((file) => URL.createObjectURL(file));
     setImages([...images, ...newImages]);
   };
 
@@ -60,8 +63,10 @@ const ReviewForm = ({ productId, userId, userName, userAvatar, onSuccess }) => {
 
   return (
     <div className="bg-white rounded-lg p-6 shadow-sm border">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Write a Review</h3>
-      
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        Write a Review
+      </h3>
+
       <form onSubmit={handleSubmit}>
         {/* Rating */}
         <div className="mb-4">
@@ -88,7 +93,9 @@ const ReviewForm = ({ productId, userId, userName, userAvatar, onSuccess }) => {
               </button>
             ))}
             <span className="ml-3 text-sm text-gray-600">
-              {rating > 0 ? `${rating} star${rating !== 1 ? 's' : ''}` : 'Select rating'}
+              {rating > 0
+                ? `${rating} star${rating !== 1 ? 's' : ''}`
+                : 'Select rating'}
             </span>
           </div>
         </div>
@@ -130,7 +137,7 @@ const ReviewForm = ({ productId, userId, userName, userAvatar, onSuccess }) => {
                 className="hidden"
               />
             </label>
-            
+
             {/* Preview Images */}
             <div className="flex space-x-2 overflow-x-auto">
               {images.map((image, index) => (
