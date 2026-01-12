@@ -138,7 +138,6 @@ const TabContent = ({product}) => {
               orderId="12345"
               customerName="John Doe"
               onReviewSubmit={(review) => {
-                console.log('New review:', review);
                 // Here you would typically update the product reviews
                 // For now, just close the form
                 setShowReviewForm(false);

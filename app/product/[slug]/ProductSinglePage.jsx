@@ -40,7 +40,7 @@ export default function ProductSinglePage() {
   const products = useSelector((state) => state.product.products);
 
   const [product, setProduct] = useState(null);
-  console.log(product);
+
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ export default function ProductSinglePage() {
         setLoading(true);
 
         if (!products || products.length === 0) {
-          console.log('No products available yet');
+       
           return;
         }
 
@@ -70,7 +70,6 @@ export default function ProductSinglePage() {
 
           if (foundProduct) {
             setProduct(foundProduct);
-            console.log('Product found:', foundProduct.name);
 
             // Set default variant if exists
             if (foundProduct.variants && foundProduct.variants.length > 0) {
@@ -78,7 +77,6 @@ export default function ProductSinglePage() {
             }
             setError(null);
           } else {
-            console.log('Product not found for slug:', slug);
             setError('Product not found');
           }
         }
@@ -199,7 +197,6 @@ export default function ProductSinglePage() {
           url: window.location.href,
         });
       } catch (error) {
-        console.log('Sharing cancelled');
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
