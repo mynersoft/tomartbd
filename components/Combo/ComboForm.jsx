@@ -26,7 +26,7 @@ import toast from 'react-hot-toast';
 const uploadToCloudinary = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_PRESET);
+  formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
   formData.append('folder', 'combos');
 
   try {
