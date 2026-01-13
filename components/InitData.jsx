@@ -5,14 +5,15 @@ import { useBlogs } from './../hooks/useBlog';
 import { useInitializeCart } from '@/hooks/useCart';
 import useLoginUser from '@/hooks/useAuth';
 import { useStatCard } from '@/hooks/useStatCard';
+import { useCombos } from '@/hooks/useCombo';
 import { useEffect } from 'react';
 
 export default function InitData() {
   const { user } = useLoginUser();
   useInitializeCart(user?.id);
   useProducts();
+  useCombos();
   useBlogs();
-
   useStatCard();
   useEffect(() => {
     fetch('/api/visitor', {

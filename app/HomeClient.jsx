@@ -4,16 +4,23 @@ import FeaturedVendors from '@/components/FeaturedVendors';
 import ProductCardNew from '../components/Product/ProductCardNew';
 import { useSelector } from 'react-redux';
 import ProductGrid from '../components/Product/ProductGrid';
+import ComboOffer from '../components/Home/ComboOffer';
 
 export default function Home() {
   const { products } = useSelector((state) => state.product);
-  
+  const { combos, isLoading } = useSelector((state) => state.combo);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto">
+        <div className="w-1/2">
+          {combos.length > 0 &&
+            combos.map((combo, index) => (
+              <ComboOffer key={index} combo={combo} />
+            ))}
+        </div>
         <CategoriesSection />
-        <ProductGrid products={products}/>
+        <ProductGrid products={products} />
 
         <FeaturedVendors />
       </main>

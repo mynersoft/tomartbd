@@ -12,10 +12,13 @@ import statcardReducer from './slices/statCardSlice';
 import authRecoveryReducer from './slices/authRecoverySlice';
 import notificationReducer from './slices/notificationSlice';
 import questionsReducer from './slices/questionsSlice';
+import comboReducer from './slices/comboSlice';
+import uiReducer from './slices/uiSlice'; 
 
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
+    ui: uiReducer,
     product: productReducer,
     cart: cartReducer,
     wishlist: wishlistReducer,
@@ -26,6 +29,7 @@ export const store = configureStore({
     questions: questionsReducer,
     notification: notificationReducer,
     blog: blogReducer,
+    combo: comboReducer,
     authRecovery: authRecoveryReducer,
     auth: authReducer,
   },
