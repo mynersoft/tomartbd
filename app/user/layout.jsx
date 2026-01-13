@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { toggleSidebar } from '@/store/uiSlice';
+import { toggleSidebar } from '@/store/slices/uiSlice';
 import {
   LayoutDashboard,
   Package,
