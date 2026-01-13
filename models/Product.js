@@ -33,6 +33,30 @@ const VariantSchema = new mongoose.Schema(
   { _id: false }
 );
 
+
+
+
+const offerSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ["NONE", "BOGO", "DISCOUNT"],
+    default: "NONE"
+  },
+  buyQty: {
+    type: Number,
+    default: 0 // BOGO হলে 1
+  },
+  getQty: {
+    type: Number,
+    default: 0 // BOGO হলে 1
+  },
+  discountPercent: {
+    type: Number,
+    default: 0
+  }
+}, { _id: false })
+
+
 /* ---------- Product Schema ---------- */
 const ProductSchema = new mongoose.Schema(
   {
@@ -77,7 +101,7 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-
+  offer: offerSchema,
     variants: [VariantSchema],
 
     description: String,
@@ -94,7 +118,10 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-
+freeDelivery: {
+    type: Boolean,
+    default: false
+  },
     reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,
