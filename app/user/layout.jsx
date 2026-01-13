@@ -12,7 +12,7 @@ import {
   ShoppingCart
 } from 'lucide-react';
 
-export const Layout = ({ children }) => {
+ const Layout = ({ children }) => {
   const dispatch = useDispatch();
   const { sidebarOpen } = useSelector((state) => state.ui);
 
@@ -110,3 +110,6 @@ const NavItem = ({ icon, label, active, isOpen }) => (
     {isOpen && <span className="font-medium">{label}</span>}
   </div>
 );
+
+
+export default Layout;
