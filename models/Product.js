@@ -34,7 +34,7 @@ const VariantSchema = new mongoose.Schema(
 );
 
 
-
+// BOGO - buy one get one
 
 const offerSchema = new mongoose.Schema({
   type: {
