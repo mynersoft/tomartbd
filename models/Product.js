@@ -53,7 +53,12 @@ const offerSchema = new mongoose.Schema({
   discountPercent: {
     type: Number,
     default: 0
-  }
+  },
+freeItem: {
+type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+
+}
 }, { _id: false })
 
 
