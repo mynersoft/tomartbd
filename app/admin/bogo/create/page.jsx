@@ -1,10 +1,4 @@
-<think>
-The user has provided code for a CreateBogoPage component in React, and then the Bogo model in Mongoose. They say "make bogo create page as bogo model." It seems like they want me to adjust the CreateBogoPage to match the Bogo model.
 
-
-## Examining User Request
-- The user provided code for a CreateBogoPage component in React and the Bogo model in Mongoose.
-</think>```jsx
 'use client';
 
 import { useState } from 'react';
