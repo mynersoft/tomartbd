@@ -27,7 +27,21 @@ const VariantSchema = new mongoose.Schema(
       },
       value: Number,
     },
+    startDate: {
+      type: Date,
 
+      default: Date.now,
+    },
+    vendor: {
+      type: mongoose.Schema.Types.ObjectId,
+
+      ref: 'User',
+
+      required: true, // BOGOs belong to vendors
+    },
+    endDate: {
+      type: Date,
+    },
     images: [String],
   },
   { _id: false }
