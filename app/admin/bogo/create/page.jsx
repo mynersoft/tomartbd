@@ -1,3 +1,10 @@
+<think>
+The user has provided code for a CreateBogoPage component in React, and then the Bogo model in Mongoose. They say "make bogo create page as bogo model." It seems like they want me to adjust the CreateBogoPage to match the Bogo model.
+
+
+## Examining User Request
+- The user provided code for a CreateBogoPage component in React and the Bogo model in Mongoose.
+</think>```jsx
 'use client';
 
 import { useState } from 'react';
@@ -11,24 +18,33 @@ export default function CreateBogoPage() {
 
   const [data, setData] = useState({
     name: '',
+    featureImage: '',
     mainItem: '',
     freeItem: '',
     buyQty: 1,
     getQty: 1,
     sameProductOnly: true,
+    startDate: '',
+    endDate: '',
     isActive: true,
   });
 
   const submitHandler = async () => {
-    if (!data.name || !data.mainItem) {
+    if (!data.name || !data.featureImage || !data.mainItem) {
       toast.error('Required fields missing');
       return;
     }
 
+    // If sameProductOnly is true, set freeItem to mainItem
+    const payload = {
+      ...data,
+      freeItem: data.sameProductOnly ? data.mainItem : data.freeItem,
+    };
+
     const res = await fetch('/api/bogo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
     if (res.ok) {
@@ -48,6 +64,13 @@ export default function CreateBogoPage() {
         placeholder="Offer Title (Buy 1 Get 1)"
         value={data.name}
         onChange={(e) => setData({ ...data, name: e.target.value })}
+      />
+
+      <input
+        className="input"
+        placeholder="Feature Image URL"
+        value={data.featureImage}
+        onChange={(e) => setData({ ...data, featureImage: e.target.value })}
       />
 
       <select
@@ -110,9 +133,38 @@ export default function CreateBogoPage() {
         />
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <input
+          type="date"
+          className="input"
+          value={data.startDate}
+          onChange={(e) => setData({ ...data, startDate: e.target.value })}
+          placeholder="Start Date"
+        />
+        <input
+          type="date"
+          className="input"
+          value={data.endDate}
+          onChange={(e) => setData({ ...data, endDate: e.target.value })}
+          placeholder="End Date"
+        />
+      </div>
+
+      <label className="flex gap-2 items-center">
+        <input
+          type="checkbox"
+          checked={data.isActive}
+          onChange={(e) =>
+            setData({ ...data, isActive: e.target.checked })
+          }
+        />
+        Is Active
+      </label>
+
       <button onClick={submitHandler} className="btn-primary w-full">
         Create BOGO
       </button>
     </div>
   );
 }
+```
