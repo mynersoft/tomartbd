@@ -1,51 +1,55 @@
+// models/Bogo.js
 import mongoose from 'mongoose';
-
-/* ---------- Product Schema ---------- */
 
 const BogoSchema = new mongoose.Schema(
   {
-name: {
+    name: {
       type: String,
+      required: true,
+      trim: true,
     },
-    getQty: {
-      type: Number,
-      default: 1, // For BOGO, get 1 free
-    },
+
     featureImage: {
       type: String,
+      required: true,
     },
-    price: {
-      type: Number,
-    },
-    salePrice: {
-      type: Number,
-    },
-    discountPercent: {
-      type: Number,
-      default: 0,
-    },
-    discountAmount:{
-      type:Number
-    },
+
     mainItem: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
+      required: true,
     },
+
     freeItem: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
+      required: true,
     },
-    // Optional: If you want BOGO on the same product or different
+
+    buyQty: {
+      type: Number,
+      default: 1, // Buy 1
+    },
+
+    getQty: {
+      type: Number,
+      default: 1, // Get 1 Free
+    },
+
     sameProductOnly: {
+      type: Boolean,
+      default: true, // Buy X Get X
+    },
+
+    startDate: Date,
+    endDate: Date,
+
+    isActive: {
       type: Boolean,
       default: true,
     },
   },
-
-  {
-    timestamps: true,
-    strict: true, // 🔒 blocks unknown fields
-  }
+  { timestamps: true }
 );
 
 export default mongoose.models.Bogo || mongoose.model('Bogo', BogoSchema);
