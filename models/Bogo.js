@@ -4,9 +4,8 @@ import mongoose from 'mongoose';
 
 const BogoSchema = new mongoose.Schema(
   {
-    buyQty: {
-      type: Number,
-      default: 1, // For BOGO, typically buy 1 get 1 free
+name: {
+      type: String,
     },
     getQty: {
       type: Number,
@@ -21,12 +20,12 @@ const BogoSchema = new mongoose.Schema(
     salePrice: {
       type: Number,
     },
-    salePrice: {
-      type: Number,
-    },
     discountPercent: {
       type: Number,
       default: 0,
+    },
+    discountAmount:{
+      type:Number
     },
     mainItem: {
       type: mongoose.Schema.Types.ObjectId,
