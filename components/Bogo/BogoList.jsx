@@ -7,24 +7,22 @@ import {
   Trash2,
   Plus,
   Package,
-  ArrowUpRight,
   Eye,
-  ToggleLeft,
-  ToggleRight,
   Search,
   Filter,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useCombos, useDeleteCombo } from '@/hooks/useCombo';
+import { useBogo, useDeleteBogo } from '@/hooks/useBogo';
+import Image from 'next/image';
 
-export const ComboList = () => {
- 
-  const { combos, isLoading } = useSelector((state) => state.combo);
-  console.log(combos);
-  
-  const deleteMutation = useDeleteCombo();
+const BogoList = () => {
+  const { bogos, isLoading } = useSelector((state) => state.bogo);
+
+  console.log(bogos[0]);
+
+  const deleteMutation = useDeleteBogo();
 
   // State for search and pagination
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,17 +31,17 @@ export const ComboList = () => {
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'inactive'
 
   // Handle edit
-  const handleEdit = (combo) => {
+  const handleEdit = (bogo) => {
     // Replace with your modal dispatch logic
-    console.log('Edit combo:', combo);
-    // dispatch(setModal({ type: UI_MODAL_TYPE.EDIT, combo }));
+    console.log('Edit bogo:', bogo);
+    // dispatch(setModal({ type: UI_MODAL_TYPE.EDIT, bogo }));
   };
 
   // Handle delete
   const handleDelete = (id) => {
     if (
       window.confirm(
-        'Are you sure you want to delete this combo? This action cannot be undone.'
+        'Are you sure you want to delete this bogo? This action cannot be undone.'
       )
     ) {
       deleteMutation.mutate(id);
@@ -56,24 +54,24 @@ export const ComboList = () => {
     console.log('Toggle status for:', id, 'to', !currentStatus);
   };
 
-  // Filter combos based on search and status
-  const filteredCombos = combos.filter((combo) => {
+  // Filter bogo based on search and status
+  const filteredBogo = bogos.filter((bogo) => {
     const matchesSearch =
-      combo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      combo.description.toLowerCase().includes(searchTerm.toLowerCase());
+      bogo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bogo.description.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === 'all' ||
-      (statusFilter === 'active' && combo.isActive) ||
-      (statusFilter === 'inactive' && !combo.isActive);
+      (statusFilter === 'active' && bogo.isActive) ||
+      (statusFilter === 'inactive' && !bogo.isActive);
 
     return matchesSearch && matchesStatus;
   });
 
   // Pagination
-  const totalPages = Math.ceil(filteredCombos.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredBogo.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCombos = filteredCombos.slice(
+  const paginatedBogo = filteredBogo.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -98,17 +96,17 @@ export const ComboList = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Combo Offers</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Bogo Offers</h1>
           <p className="text-slate-500">
             Manage your product bundles and special promotions
           </p>
         </div>
         <Link
-          href="/admin/combos/create"
+          href="/admin/bogo/create"
           className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-bold transition-all shadow-lg shadow-emerald-200 self-start md:self-auto"
         >
           <Plus className="w-5 h-5" />
-          Create Combo
+          Create Bogo
         </Link>
       </div>
 
@@ -120,7 +118,7 @@ export const ComboList = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search combos by title or description..."
+                placeholder="Search bogo by title or description..."
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -165,37 +163,34 @@ export const ComboList = () => {
         </div>
       </div>
 
-      {combos.length > 0 && (
+      {bogos.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white rounded-xl border border-slate-200 p-4">
-            <div className="text-sm text-slate-500">Total Combos</div>
+            <div className="text-sm text-slate-500">Total Bogo</div>
             <div className="text-2xl font-bold text-slate-800">
-              {combos.length}
+              {bogos.length}
             </div>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4">
-            <div className="text-sm text-slate-500">Active Combos</div>
+            <div className="text-sm text-slate-500">Active Bogo</div>
             <div className="text-2xl font-bold text-emerald-600">
-              {combos.filter((c) => c.isActive).length}
+              {bogos.filter((c) => c.isActive).length}
             </div>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4">
-            <div className="text-sm text-slate-500">
-              Total Products in Combos
-            </div>
+            <div className="text-sm text-slate-500">Total Products in Bogo</div>
             <div className="text-2xl font-bold text-slate-800">
-              {combos.reduce((sum, combo) => sum + combo.products.length, 0)}
+              {/* {bogos.reduce((sum, bogo) => sum + bogo.products.length, 0)} */}
+              something cal
             </div>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4">
             <div className="text-sm text-slate-500">Average Discount</div>
             <div className="text-2xl font-bold text-orange-600">
-              {combos.length > 0
+              {bogos.length > 0
                 ? Math.round(
-                    combos.reduce(
-                      (sum, combo) => sum + combo.discountPercent,
-                      0
-                    ) / combos.length
+                    bogos.reduce((sum, bogo) => sum + bogo.discountPercent, 0) /
+                      bogos.length
                   ) + '%'
                 : '0%'}
             </div>
@@ -204,23 +199,21 @@ export const ComboList = () => {
       )}
 
       {/* Empty State */}
-      {combos.length === 0 ? (
+      {bogos.length === 0 ? (
         <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-20 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-4">
             <Package className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-bold text-slate-800">No combos found</h3>
+          <h3 className="text-lg font-bold text-slate-800">No bogo found</h3>
           <p className="text-slate-500 max-w-sm mx-auto mt-1">
             Start by creating your first product bundle to boost your store
             sales.
           </p>
         </div>
-      ) : filteredCombos.length === 0 ? (
+      ) : filteredBogo.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-xl p-12 flex flex-col items-center justify-center text-center">
           <Package className="w-12 h-12 text-slate-300 mb-3" />
-          <h3 className="text-lg font-bold text-slate-700">
-            No matching combos
-          </h3>
+          <h3 className="text-lg font-bold text-slate-700">No matching bogo</h3>
           <p className="text-slate-500 mt-1">
             Try adjusting your search or filters
           </p>
@@ -233,7 +226,7 @@ export const ComboList = () => {
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th className="text-left p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Combo Details
+                    Bogo Details
                   </th>
                   <th className="text-left p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Products
@@ -253,26 +246,28 @@ export const ComboList = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {paginatedCombos.map((combo) => (
+                {paginatedBogo.map((bogo) => (
                   <tr
-                    key={combo._id}
+                    key={bogo._id}
                     className="hover:bg-slate-50 transition-colors"
                   >
-                    {/* Combo Details */}
+                    {/* Bogo Details */}
                     <td className="p-4">
                       <div className="flex items-start gap-3">
-                        <img
-                          src={combo.featuredImage.url}
-                          alt={combo.title}
-                          className="w-14 h-14 rounded-lg object-cover border border-slate-200"
+                        <Image
+                          src={bogo.featuredImage.url || '/placeholder.png'}
+                          alt={bogo.name}
+                          width={40}
+                          height={40}
+                          className="w-10 h-10 rounded-lg object-cover border border-slate-200"
                         />
                         <div className="flex-1 min-w-0">
                           <h3 className="font-bold text-slate-800 truncate">
-                            {combo.title}
+                            {bogo.name}
                           </h3>
 
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {combo.tags?.slice(0, 2).map((tag, idx) => (
+                            {bogo.tags?.slice(0, 2).map((tag, idx) => (
                               <span
                                 key={idx}
                                 className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded"
@@ -280,9 +275,9 @@ export const ComboList = () => {
                                 {tag}
                               </span>
                             ))}
-                            {combo.tags?.length > 2 && (
+                            {bogo.tags?.length > 2 && (
                               <span className="text-[10px] text-slate-400">
-                                +{combo.tags.length - 2}
+                                +{bogo.tags.length - 2}
                               </span>
                             )}
                           </div>
@@ -294,7 +289,7 @@ export const ComboList = () => {
                     <td className="p-4">
                       <div className="flex items-center">
                         <div className="flex -space-x-2 mr-3">
-                          {combo.products.slice(0, 3).map((product, idx) => (
+                          {/* {bogo.products.slice(0, 3).map((product, idx) => (
                             <img
                               key={idx}
                               src={product.image}
@@ -302,18 +297,18 @@ export const ComboList = () => {
                               className="w-8 h-8 rounded-full border-2 border-white object-cover"
                               title={`${product.name} (x${product.quantity})`}
                             />
-                          ))}
+                          ))} */}
                         </div>
                         <div className="text-sm">
                           <p className="font-semibold text-slate-800">
-                            {combo.products.length} items
+                            {bogo.buyQty + bogo.getQty} items
                           </p>
                           <p className="text-xs text-slate-500">
-                            Total:{' '}
-                            {combo.products.reduce(
+                            Total:
+                            {/* {bogo.reduce(
                               (sum, p) => sum + p.quantity,
                               0
-                            )}{' '}
+                            )}{' '} */}
                             units
                           </p>
                         </div>
@@ -325,18 +320,18 @@ export const ComboList = () => {
                       <div className="space-y-1">
                         <div className="flex items-baseline gap-2">
                           <span className="text-sm font-bold text-emerald-700">
-                            ৳{combo.comboPrice}
+                            ৳{bogo.salePrice}
                           </span>
                           <span className="text-xs text-slate-400 line-through">
-                            ৳{combo.totalRegularPrice}
+                            ৳{bogo.regularPrice}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
-                            Save {combo.discountPercent}%
+                            Save {bogo.discountPercentage}%
                           </span>
                           <span className="text-xs text-red-500">
-                            ৳{combo.discountAmount}
+                            ৳{bogo.discountAmount}
                           </span>
                         </div>
                       </div>
@@ -347,18 +342,18 @@ export const ComboList = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() =>
-                            handleToggleStatus(combo._id, combo.isActive)
+                            handleToggleStatus(bogo._id, bogo.isActive)
                           }
-                          className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${combo.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                          className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${bogo.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`}
                         >
                           <span
-                            className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${combo.isActive ? 'translate-x-6' : 'translate-x-1'}`}
+                            className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${bogo.isActive ? 'translate-x-6' : 'translate-x-1'}`}
                           />
                         </button>
                         <span
-                          className={`text-sm font-medium ${combo.isActive ? 'text-emerald-700' : 'text-slate-500'}`}
+                          className={`text-sm font-medium ${bogo.isActive ? 'text-emerald-700' : 'text-slate-500'}`}
                         >
-                          {combo.isActive ? 'Active' : 'Inactive'}
+                          {bogo.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
                     </td>
@@ -368,12 +363,12 @@ export const ComboList = () => {
                       <div className="text-sm space-y-1">
                         <div className="flex items-center gap-1 text-slate-700">
                           <Calendar className="w-3 h-3" />
-                          {new Date(combo.startDate).toLocaleDateString()}
+                          {new Date(bogo.startDate).toLocaleDateString()}
                         </div>
-                        {combo.endDate && (
-                          <div className="text-xs text-slate-500">
-                            Expires:{' '}
-                            {new Date(combo.endDate).toLocaleDateString()}
+                        {bogo.endDate && (
+                          <div className="text-[12px] text-red-500">
+                            Expires:
+                            {new Date(bogo.endDate).toLocaleDateString()}
                           </div>
                         )}
                       </div>
@@ -383,21 +378,21 @@ export const ComboList = () => {
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <Link
-                          href={`/admin/combos/${combo._id}`}
+                          href={`/admin/bogo/${bogo._id}`}
                           className="p-2 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
                         </Link>
                         <button
-                          onClick={() => handleEdit(combo)}
+                          onClick={() => handleEdit(bogo)}
                           className="p-2 hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 rounded-lg transition-colors"
                           title="Edit"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(combo._id)}
+                          onClick={() => handleDelete(bogo._id)}
                           className="p-2 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-lg transition-colors"
                           title="Delete"
                           disabled={deleteMutation.isPending}
@@ -419,10 +414,9 @@ export const ComboList = () => {
                 Showing <span className="font-semibold">{startIndex + 1}</span>{' '}
                 to{' '}
                 <span className="font-semibold">
-                  {Math.min(startIndex + itemsPerPage, filteredCombos.length)}
+                  {Math.min(startIndex + itemsPerPage, filteredBogo.length)}
                 </span>{' '}
-                of{' '}
-                <span className="font-semibold">{filteredCombos.length}</span>{' '}
+                of <span className="font-semibold">{filteredBogo.length}</span>{' '}
                 results
               </div>
               <div className="flex items-center gap-1">
@@ -495,3 +489,5 @@ const Calendar = ({ className }) => (
     />
   </svg>
 );
+
+export default BogoList;

@@ -8,7 +8,7 @@ export async function GET() {
   try {
     await connectDB();
     const combos = await Combo.find().sort({ createdAt: -1 });
-    return NextResponse.json(combos);
+    return NextResponse.json({ combos }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -59,7 +59,12 @@ export async function POST(req) {
       endDate: new Date(body.endDate),
     });
 
-    return NextResponse.json(combo, { status: 201 });
+    return NextResponse.json(
+      {
+        combos: combo,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

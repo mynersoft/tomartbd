@@ -1,104 +1,33 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
 
-// Async thunks
-export const fetchBOGOProducts = createAsyncThunk(
-  'bogo/fetchBOGOProducts',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get('/api/products?offer=BOGO');
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
-
-export const createBOGOProduct = createAsyncThunk(
-  'bogo/createBOGOProduct',
-  async (productData, { rejectWithValue }) => {
-    try {
-      const response = await axios.post('/api/admin/products', productData);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
-
-export const applyBOGOToCart = createAsyncThunk(
-  'bogo/applyBOGOToCart',
-  async ({ cartItems }, { rejectWithValue }) => {
-    try {
-      const response = await axios.post('/api/cart/apply-bogo', { cartItems });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
-
-const bogoSlice = createSlice({
+/* ================= SLICE ================= */
+const bogoslice = createSlice({
   name: 'bogo',
   initialState: {
-    products: [],
     loading: false,
+    success: false,
     error: null,
-    cartWithBOGO: [],
+    bogos: [],
+    bogo: {},
   },
+
   reducers: {
-    clearBOGOError: (state) => {
-      state.error = null;
+    removeBogo: (state, action) => {
+      state.bogos = state.bogos.filter((bogo) => bogo._id !== action.payload);
     },
-    clearBOGOCart: (state) => {
-      state.cartWithBOGO = [];
+    setSingleBogo: (state, action) => {
+      state.bogo = action.payload;
+    },
+    setBogos(state, action) {
+      state.bogos = action.payload;
+    },
+    addBogo(state, action) {
+      state.bogos = [...state.bogos, action.payload];
     },
   },
-  extraReducers: (builder) => {
-    builder
-      // Fetch BOGO Products
-      .addCase(fetchBOGOProducts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchBOGOProducts.fulfilled, (state, action) => {
-        state.loading = false;
-        state.products = action.payload;
-      })
-      .addCase(fetchBOGOProducts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Create BOGO Product
-      .addCase(createBOGOProduct.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createBOGOProduct.fulfilled, (state, action) => {
-        state.loading = false;
-        state.products.push(action.payload);
-      })
-      .addCase(createBOGOProduct.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Apply BOGO to Cart
-      .addCase(applyBOGOToCart.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(applyBOGOToCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.cartWithBOGO = action.payload;
-      })
-      .addCase(applyBOGOToCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
-  },
+  extraReducers: () => {},
 });
 
-export const { clearBOGOError, clearBOGOCart } = bogoSlice.actions;
-export default bogoSlice.reducer;
+export const { setBogos, setSingleBogo, addBogo, removeBogo } =
+  bogoslice.actions;
+export default bogoslice.reducer;

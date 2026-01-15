@@ -1,4 +1,3 @@
-// models/Bogo.js
 import mongoose from 'mongoose';
 
 const BogoSchema = new mongoose.Schema(
@@ -8,42 +7,65 @@ const BogoSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
-    featureImage: {
+    description: {
       type: String,
       required: true,
     },
-
+    featuredImage: {
+      type: Object,
+      default: {
+        url: '',
+        publicId: '',
+      },
+    },
+    galleryImages: {
+      type: [Object],
+      default: [],
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
     mainItem: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
       required: true,
     },
-
     freeItem: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
       required: true,
     },
-
     buyQty: {
       type: Number,
-      default: 1, // Buy 1
+      default: 1,
     },
-
     getQty: {
       type: Number,
-      default: 1, // Get 1 Free
+      default: 1,
     },
-
-    sameProductOnly: {
+    isSameProduct: {
       type: Boolean,
-      default: true, // Buy X Get X
+      default: false,
     },
-
+    discountPercentage: {
+      type: Number,
+      default: 0,
+    },
+    discountAmount: {
+      type: Number,
+      default: 0,
+    },
+    regularPrice: {
+      type: Number,
+      default: 0,
+    },
+    salePrice: {
+      type: Number,
+      default: 0,
+    },
     startDate: Date,
     endDate: Date,
-
     isActive: {
       type: Boolean,
       default: true,

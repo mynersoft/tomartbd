@@ -6,6 +6,7 @@ import { useInitializeCart } from '@/hooks/useCart';
 import useLoginUser from '@/hooks/useAuth';
 import { useStatCard } from '@/hooks/useStatCard';
 import { useCombos } from '@/hooks/useCombo';
+import { useBogos } from '@/hooks/useBogo';
 import { useEffect } from 'react';
 
 export default function InitData() {
@@ -13,6 +14,7 @@ export default function InitData() {
   useInitializeCart(user?.id);
   useProducts();
   useCombos();
+  useBogos();
   useBlogs();
   useStatCard();
   useEffect(() => {

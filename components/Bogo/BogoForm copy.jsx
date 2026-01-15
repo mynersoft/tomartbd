@@ -19,15 +19,18 @@ import {
   Eye,
 } from 'lucide-react';
 import { setModal, UI_MODAL_TYPE } from '@/store/slices/uiSlice';
-import { useAddCombo } from '../../hooks/useCombo';
+import { useAddBogo } from '../../hooks/useBogo';
 import toast from 'react-hot-toast';
 
 // Cloudinary upload function
-const uploadToCloudinary = async (file) => {
+const uploadToCloudinary = async (file, folder = 'bogos') => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
-  formData.append('folder', 'combos');
+  formData.append(
+    'upload_preset',
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+  );
+  formData.append('folder', folder);
 
   try {
     const response = await fetch(
@@ -39,7 +42,8 @@ const uploadToCloudinary = async (file) => {
     );
 
     if (!response.ok) {
-      throw new Error('Upload failed');
+      const errorData = await response.text();
+      throw new Error(`Upload failed: ${errorData}`);
     }
 
     const data = await response.json();
@@ -53,10 +57,11 @@ const uploadToCloudinary = async (file) => {
   }
 };
 
-export const ComboForm = ({ selectedCombo, activeModal }) => {
-  const { mutate, isPending } = useAddCombo();
-
-  const { products: productsData } = useSelector((state) => state.product);
+const BogoForm = ({ selectedBogo, activeModal }) => {
+  const { mutate, isPending } = useAddBogo();
+  const { products: productsData = [] } = useSelector((state) => state.product);
+  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
 
   // File refs
   const featuredImageRef = useRef(null);
@@ -66,174 +71,217 @@ export const ComboForm = ({ selectedCombo, activeModal }) => {
   const [uploadingFeatured, setUploadingFeatured] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [totalRegularPrice, setTotalRegularPrice] = useState(0);
 
-  // Fix initial form state
+  // Fixed initial form state matching model structure
   const initialFormData = {
-    title: '',
+    name: '',
     description: '',
-    slug: '',
-    products: [],
-    comboPrice: 0,
-    totalRegularPrice: 0,
-    discountPercent: 0,
-    discountAmount: 0,
-    featuredImage: {
-      url: '',
-      publicId: '',
-    },
+    featuredImage: { url: '', publicId: '' },
     galleryImages: [],
-    isActive: true,
+    tags: [],
+    mainItem: null,
+    freeItem: null,
+    buyQty: 1,
+    getQty: 1,
+    isSameProduct: false,
+    discountPercentage: 0,
+    discountAmount: 0,
+    regularPrice: 0,
+    salePrice: 0,
     startDate: '',
     endDate: '',
-    tags: [],
+    isActive: true,
   };
 
   const [formData, setFormData] = useState(initialFormData);
+
+  console.log(formData);
+
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [newTag, setNewTag] = useState('');
 
-  // Initialize form with selected combo data
+  // Initialize form with selected bogo data
   useEffect(() => {
-    if (selectedCombo && activeModal === UI_MODAL_TYPE.EDIT) {
-      setFormData({
-        ...selectedCombo,
-        startDate: new Date(selectedCombo.startDate)
-          .toISOString()
-          .split('T')[0],
-        endDate: selectedCombo.endDate
-          ? new Date(selectedCombo.endDate).toISOString().split('T')[0]
-          : initialFormData.endDate,
-      });
+    if (selectedBogo && activeModal === UI_MODAL_TYPE.EDIT) {
+      // Transform selectedBogo to match form structure
+      const transformedData = {
+        ...initialFormData,
+        ...selectedBogo,
+        featuredImage:
+          typeof selectedBogo.featuredImage === 'string'
+            ? { url: selectedBogo.featuredImage, publicId: '' }
+            : selectedBogo.featuredImage || { url: '', publicId: '' },
+        galleryImages: Array.isArray(selectedBogo.galleryImages)
+          ? selectedBogo.galleryImages.map((img) =>
+              typeof img === 'string' ? { url: img, publicId: '' } : img
+            )
+          : [],
+        tags: Array.isArray(selectedBogo.tags) ? selectedBogo.tags : [],
+        startDate: selectedBogo.startDate
+          ? new Date(selectedBogo.startDate).toISOString().split('T')[0]
+          : '',
+        endDate: selectedBogo.endDate
+          ? new Date(selectedBogo.endDate).toISOString().split('T')[0]
+          : '',
+      };
+
+      setFormData(transformedData);
     } else {
       setFormData(initialFormData);
     }
-  }, [selectedCombo, activeModal]);
+  }, [selectedBogo, activeModal]);
 
+  // get total price
 
-  // Calculate regular price from products
-  const totalRegular = useMemo(() => {
-    return formData.products.reduce((acc, p) => acc + p.price * p.quantity, 0);
-  }, [formData.products]);
+  // Calculate sale price based on discount
+  const calculateSalePrice = useMemo(() => {
+    if (!formData.mainItem || !formData.freeItem) return 0;
 
-  // Update discount calculations
-useEffect(() => {
-  const totalReg = parseFloat(totalRegular) || 0;
-  const comboPrice = parseFloat(formData.comboPrice) || 0;
+    const mainPrice = formData.mainItem.price || 0;
+    const freePrice = formData.freeItem.price || 0;
 
-  // Ensure combo price doesn't exceed total regular price
-  const safeComboPrice = Math.min(comboPrice, totalReg);
+    const totalPrice = mainPrice + freePrice;
+    setTotalRegularPrice(totalPrice);
 
-  // Calculate discount amount
-  let discountAmount = 0;
-  let discountPercent = 0;
+    let offerPrice = formData.regularPrice - totalPrice;
 
-  if (totalReg > 0 && safeComboPrice >= 0) {
-    discountAmount = totalReg - safeComboPrice;
-    discountPercent = (discountAmount / totalReg) * 100;
-  }
-
-  // Ensure non-negative values
-  discountAmount = Math.max(0, discountAmount);
-  discountPercent = Math.max(0, discountPercent);
-
-  // Update form data only if values changed
-  if (
-    formData.totalRegularPrice !== totalReg ||
-    formData.discountAmount !== discountAmount ||
-    formData.discountPercent !== discountPercent
-  ) {
     setFormData((prev) => ({
       ...prev,
-      totalRegularPrice: parseFloat(totalReg.toFixed(2)),
-      discountAmount: parseFloat(discountAmount.toFixed(2)),
-      discountPercent: parseFloat(discountPercent.toFixed(2)),
-      comboPrice: parseFloat(safeComboPrice.toFixed(2)), // Update combo price if it was too high
+      discountAmount: offerPrice,
     }));
-  }
-}, [totalRegular, formData.comboPrice]);
 
-  // Get product price based on product structure
+    // if (formData.isSameProduct) {
+    //   // Buy X Get Y logic
+    //   const buyQty = formData.buyQty || 1;
+    //   const getQty = formData.getQty || 1;
+    //   const totalQty = buyQty + getQty;
+
+    //   if (formData.discountPercentage > 0) {
+    //     const discount =
+    //       (mainPrice * buyQty * formData.discountPercentage) / 100;
+    //     return mainPrice * buyQty - discount;
+    //   } else if (formData.discountAmount > 0) {
+    //     return mainPrice * buyQty - formData.discountAmount;
+    //   } else {
+    //     return mainPrice * buyQty; // Pay only for buy items
+    //   }
+    // } else {
+    //   // Regular BOGO: Pay for main item, get free item free
+    //   if (formData.discountPercentage > 0) {
+    //     const discount = (mainPrice * formData.discountPercentage) / 100;
+    //     return mainPrice - discount;
+    //   } else if (formData.discountAmount > 0) {
+    //     return mainPrice - formData.discountAmount;
+    //   } else {
+    //     return mainPrice; // Pay only for main item
+    //   }
+    // }
+  }, [formData]);
+
+  // Get product price
   const getProductPrice = (product) => {
-    // Check if product has variants
+    if (!product) return 0;
+
     if (product.variants && product.variants.length > 0) {
-      // Use regularPrice from variant or fallback to product regularPrice
       return product.variants[0].regularPrice || product.variants[0].price || 0;
     }
-    // For products without variants, use regularPrice or price
     return product.regularPrice || product.price || 0;
   };
 
+  const [bogoItems, setBogoItems] = useState({
+    mainItem: '',
+    freeItem: '',
+  });
 
-  const handleAddProduct = (product) => {
-    if (formData.products.find((item) => item.productId === product._id))
-      return;
+  // Handle selecting main item
+const handleSelectMainItem = (product) => {
+  if (!product) return;
 
+  const price = getProductPrice(product);
+  const image = product.images?.[0] || product.variants?.[0]?.images?.[0] || '';
+
+  // Check if mainItem already exists in formData
+  if (formData.mainItem) {
+    // If mainItem exists, set as freeItem
+    setBogoItems((prev) => ({
+      ...prev,
+      freeItem: {
+        _id: product._id,
+        name: product.name,
+        price: price,
+        image: image,
+      },
+    }));
+
+    setFormData((prev) => ({
+      ...prev,
+      freeItem: product._id, // Store only ID in formData
+    }));
+  } else {
+    // If mainItem doesn't exist, set as mainItem
+    setBogoItems((prev) => ({
+      ...prev,
+      mainItem: {
+        _id: product._id,
+        name: product.name,
+        price: price,
+        image: image,
+      },
+    }));
+
+    setFormData((prev) => ({
+      ...prev,
+      mainItem: product._id, // Store only ID in formData
+    }));
+  }
+};
+
+  // Handle selecting main item
+  const handleSelectFreeItem = (product) => {
+    if (!product) return;
     const price = getProductPrice(product);
     const image =
       product.images?.[0] || product.variants?.[0]?.images?.[0] || '';
 
-    const newComboProduct = {
-      productId: product._id,
-      name: product.name,
-      price: price,
-      quantity: 1,
-      image: image,
-    };
-
-    setFormData((prev) => ({
+    setBogoItems((prev) => ({
       ...prev,
-      products: [...prev.products, newComboProduct],
-    }));
-  };
-
-  
-  const updateQuantity = (id, q) => {
-    setFormData((prev) => ({
-      ...prev,
-      products: prev.products.map((p) =>
-        p.productId === id ? { ...p, quantity: Math.max(1, q) } : p
-      ),
-    }));
-  };
-
-  const removeProduct = (id) => {
-    setFormData((prev) => ({
-      ...prev,
-      products: prev.products.filter((p) => p.productId !== id),
+      freeItem: {
+        _id: product._id,
+        name: product.name,
+        price: price,
+        image: image,
+      },
     }));
   };
 
   const handleAiGenerate = async () => {
-    if (!formData.title || formData.products.length === 0) {
-      alert('Please enter a title and add products first.');
+    if (!formData.name) {
+      toast.error('Please enter a name first.');
       return;
     }
+
     setIsAiGenerating(true);
     try {
-      // Simulate AI generation - replace with actual API call
-      const text = await new Promise((resolve) =>
-        setTimeout(
-          () =>
-            resolve(
-              `Amazing bundle of ${formData.products.length} premium products! Save ${formData.discountPercent}% today.`
-            ),
-          1000
-        )
-      );
-      setFormData((prev) => ({ ...prev, description: text }));
+      const description = `Get amazing value with this BOGO offer! ${formData.name}. Limited time offer - don't miss out!`;
+      setFormData((prev) => ({ ...prev, description }));
+      toast.success('Description generated!');
     } catch (error) {
       console.error('AI generation failed:', error);
+      toast.error('Failed to generate description');
+    } finally {
+      setIsAiGenerating(false);
     }
-    setIsAiGenerating(false);
   };
 
   const addTag = (e) => {
     if (e.key === 'Enter' && newTag.trim()) {
       e.preventDefault();
-      if (!formData.tags.includes(newTag.trim())) {
+      const tag = newTag.trim();
+      if (!formData.tags.includes(tag)) {
         setFormData((prev) => ({
           ...prev,
-          tags: [...prev.tags, newTag.trim()],
+          tags: [...prev.tags, tag],
         }));
       }
       setNewTag('');
@@ -252,14 +300,12 @@ useEffect(() => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file (JPG, PNG, etc.)');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
       toast.error('Image size should be less than 5MB');
       return;
     }
@@ -291,7 +337,6 @@ useEffect(() => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    // Validate files
     const validFiles = files.filter((file) => {
       if (!file.type.startsWith('image/')) {
         toast.error(`${file.name} is not an image file`);
@@ -309,7 +354,6 @@ useEffect(() => {
     setUploadingGallery(true);
     const newGalleryImages = [...formData.galleryImages];
 
-    // Limit to 6 images total
     const remainingSlots = 6 - newGalleryImages.length;
     const filesToUpload = validFiles.slice(0, remainingSlots);
 
@@ -343,7 +387,6 @@ useEffect(() => {
 
     setUploadingGallery(false);
 
-    // Reset file input
     if (galleryImagesRef.current) {
       galleryImagesRef.current.value = '';
     }
@@ -355,10 +398,7 @@ useEffect(() => {
 
     setFormData((prev) => ({
       ...prev,
-      featuredImage: {
-        url: '',
-        publicId: '',
-      },
+      featuredImage: { url: '', publicId: '' },
     }));
     toast.success('Featured image removed');
   };
@@ -375,29 +415,68 @@ useEffect(() => {
   };
 
   const handleSubmit = () => {
-    if (formData.products.length === 0) {
-      toast.error('Please add at least one product to the combo.');
-      return;
-    }
-    if (!formData.title.trim()) {
-      toast.error('Please enter a title for the combo.');
-      return;
-    }
-    if (!formData.featuredImage.url) {
-      toast.error('Please upload a featured image.');
+    // Validation
+    if (!formData.name.trim()) {
+      toast.error('Please enter a name for the BOGO.');
       return;
     }
 
-    mutate(formData, {
+    if (!formData.description.trim()) {
+      toast.error('Please enter a description.');
+      return;
+    }
+
+    // if (!formData.featuredImage.url) {
+    //   toast.error('Please upload a featured image.');
+    //   return;
+    // }
+
+    if (!formData.mainItem) {
+      toast.error('Please select a main item.');
+      return;
+    }
+
+    if (!formData.freeItem) {
+      toast.error('Please select a free item.');
+      return;
+    }
+
+    // Prepare data for submission
+    const submitData = {
+      name: formData.name,
+      description: formData.description,
+      featuredImage: formData.featuredImage,
+      galleryImages: formData.galleryImages,
+      tags: formData.tags,
+      mainItem: formData.mainItem._id,
+      freeItem: formData.freeItem._id,
+      buyQty: formData.buyQty,
+      getQty: formData.getQty,
+      isSameProduct: formData.isSameProduct,
+      discountPercentage: formData.discountPercentage,
+      discountAmount: formData.discountAmount,
+      regularPrice:
+        (formData.mainItem.price || 0) + (formData.freeItem.price || 0),
+      salePrice: calculateSalePrice,
+      startDate: formData.startDate || null,
+      endDate: formData.endDate || null,
+      isActive: formData.isActive,
+    };
+
+    mutate(submitData, {
       onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['bogos'] });
         setFormData(initialFormData);
-        toast.success('Combo added successfully');
-        // Close modal if you have modal functionality
-        // dispatch(setModal({ type: UI_MODAL_TYPE.NONE }));
+        toast.success(
+          activeModal === UI_MODAL_TYPE.EDIT
+            ? 'BOGO updated successfully'
+            : 'BOGO created successfully'
+        );
+        dispatch(setModal({ type: UI_MODAL_TYPE.NONE }));
       },
       onError: (error) => {
-        console.error('Error adding combo:', error);
-        toast.error('Failed to add combo');
+        console.error('Error saving BOGO:', error);
+        toast.error(`Failed to save BOGO: ${error.message || 'Unknown error'}`);
       },
     });
   };
@@ -438,20 +517,20 @@ useEffect(() => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
-                  Bundle Title
+                  BOGO Name *
                 </label>
                 <input
                   type="text"
-                  value={formData.title}
+                  value={formData.name}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      title: e.target.value,
-                      slug: e.target.value.toLowerCase().replace(/ /g, '-'),
+                      name: e.target.value,
                     })
                   }
-                  placeholder="e.g., Breakfast Essentials Pack"
+                  placeholder="e.g., Buy 1 Get 1 Free - Summer Special"
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                  required
                 />
               </div>
 
@@ -477,6 +556,7 @@ useEffect(() => {
                           }
                           className="p-2 bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 transition-transform"
                           title="Preview"
+                          type="button"
                         >
                           <Eye className="w-4 h-4 text-slate-700" />
                         </button>
@@ -484,6 +564,7 @@ useEffect(() => {
                           onClick={() => featuredImageRef.current?.click()}
                           className="p-2 bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 transition-transform"
                           title="Change"
+                          type="button"
                         >
                           <Upload className="w-4 h-4 text-emerald-600" />
                         </button>
@@ -491,6 +572,7 @@ useEffect(() => {
                           onClick={removeFeaturedImage}
                           className="p-2 bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 transition-transform"
                           title="Remove"
+                          type="button"
                         >
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </button>
@@ -545,7 +627,6 @@ useEffect(() => {
                   <Image className="w-4 h-4" /> Gallery Images
                 </label>
                 <div className="space-y-2">
-                  {/* Gallery Preview Grid */}
                   <div className="grid grid-cols-3 gap-2">
                     {formData.galleryImages.map((image, index) => (
                       <div key={index} className="relative group">
@@ -561,6 +642,7 @@ useEffect(() => {
                             onClick={() => setPreviewImage(image.url)}
                             className="p-1.5 bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 transition-transform"
                             title="Preview"
+                            type="button"
                           >
                             <Eye className="w-3 h-3 text-slate-700" />
                           </button>
@@ -568,6 +650,7 @@ useEffect(() => {
                             onClick={() => removeGalleryImage(index)}
                             className="p-1.5 bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 transition-transform"
                             title="Remove"
+                            type="button"
                           >
                             <Trash2 className="w-3 h-3 text-red-500" />
                           </button>
@@ -612,7 +695,7 @@ useEffect(() => {
               <div className="md:col-span-2">
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-sm font-semibold text-slate-700">
-                    Description
+                    Description *
                   </label>
                   <button
                     onClick={handleAiGenerate}
@@ -635,7 +718,8 @@ useEffect(() => {
                     setFormData({ ...formData, description: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none resize-none transition-all"
-                  placeholder="Write a compelling story for your bundle..."
+                  placeholder="Describe this BOGO offer..."
+                  required
                 />
               </div>
 
@@ -653,6 +737,7 @@ useEffect(() => {
                       <button
                         onClick={() => removeTag(tag)}
                         className="text-slate-300 group-hover:text-red-500"
+                        type="button"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -663,7 +748,7 @@ useEffect(() => {
                     value={newTag}
                     onKeyDown={addTag}
                     onChange={(e) => setNewTag(e.target.value)}
-                    placeholder="Add tag..."
+                    placeholder="Add tag and press Enter..."
                     className="bg-transparent outline-none text-xs font-medium flex-1 px-1 min-w-[80px]"
                   />
                 </div>
@@ -700,81 +785,154 @@ useEffect(() => {
             </div>
           </section>
 
+          {/* Product Selection Section */}
           <section className="space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center justify-between">
-              Bundle Items ({formData.products.length})
-              <span className="text-[10px] font-normal lowercase italic text-slate-400">
-                Total items impact total price
-              </span>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+              Product Selection
             </h3>
 
-            <div className="grid grid-cols-1 gap-3">
-              {formData.products.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                  <Package className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-                  <p className="text-slate-400 font-medium">
-                    Search and select items from the sidebar
-                  </p>
-                </div>
-              ) : (
-                formData.products.map((p) => (
-                  <div
-                    key={p.productId}
-                    className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-emerald-200 transition-colors"
-                  >
-                    <div className="relative group">
-                      <img
-                        src={p.image}
-                        className="w-14 h-14 rounded-xl object-cover ring-2 ring-slate-100"
-                      />
-                      <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <ImageIcon className="w-4 h-4 text-white" />
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-800 truncate">
-                        {p.name}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Main Item */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-100">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  Buy Item (Main Product) *
+                </label>
+                {formData.mainItem ? (
+                  <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                    <img
+                      src={formData.mainItem.image}
+                      alt={formData.mainItem.name}
+                      className="w-12 h-12 rounded-lg object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-slate-800">
+                        {formData.mainItem.name}
                       </p>
                       <p className="text-xs text-emerald-600 font-semibold">
-                        ৳{p.price}
+                        ৳{formData.mainItem.price}
                       </p>
                     </div>
-                    <div className="flex items-center bg-slate-100 rounded-xl p-1">
-                      <button
-                        onClick={() =>
-                          updateQuantity(p.productId, p.quantity - 1)
-                        }
-                        className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors font-bold text-slate-600"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 text-sm font-black text-slate-800">
-                        {p.quantity}
-                      </span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(p.productId, p.quantity + 1)
-                        }
-                        className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors font-bold text-slate-600"
-                      >
-                        +
-                      </button>
-                    </div>
                     <button
-                      onClick={() => removeProduct(p.productId)}
-                      className="p-2.5 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      onClick={() =>
+                        setFormData((prev) => ({ ...prev, mainItem: null }))
+                      }
+                      className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                      type="button"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                ))
-              )}
+                ) : (
+                  <div className="text-center py-6 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+                    <Package className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">
+                      Select buy item from list
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Free Item */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-100">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  Get Item (Free Product) *
+                </label>
+                {formData.freeItem ? (
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                    <img
+                      src={formData.freeItem.image}
+                      alt={formData.freeItem.name}
+                      className="w-12 h-12 rounded-lg object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-slate-800">
+                        {formData.freeItem.name}
+                      </p>
+                      <p className="text-xs text-blue-600 font-semibold">
+                        ৳{formData.freeItem.price}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setFormData((prev) => ({ ...prev, freeItem: null }))
+                      }
+                      className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                      type="button"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+                    <Package className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">
+                      Select free item from list
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {formData.mainItem && formData.freeItem && (
+              <div className="bg-slate-50 p-4 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-slate-700">
+                      BOGO Type:
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      {formData.isSameProduct
+                        ? `Buy ${formData.buyQty} Get ${formData.getQty}`
+                        : 'Buy 1 Get 1 (Different Products)'}
+                    </p>
+                  </div>
+                  {formData.isSameProduct && (
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <label className="text-xs text-slate-600 block mb-1">
+                          Buy Qty
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.buyQty}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              buyQty: parseInt(e.target.value) || 1,
+                            }))
+                          }
+                          className="w-20 px-3 py-1 border border-slate-300 rounded-lg text-center"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-600 block mb-1">
+                          Get Qty
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.getQty}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              getQty: parseInt(e.target.value) || 1,
+                            }))
+                          }
+                          className="w-20 px-3 py-1 border border-slate-300 rounded-lg text-center"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </section>
         </div>
 
         {/* Right Column */}
         <div className="lg:col-span-4 space-y-8">
+          {/* Pricing Section */}
           <section className="bg-emerald-950 text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-emerald-800 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
 
@@ -789,7 +947,7 @@ useEffect(() => {
                     Regular Total
                   </span>
                   <span className="text-lg font-bold line-through text-emerald-100/40">
-                    ৳{totalRegular}
+                    ৳{totalRegularPrice}
                   </span>
                 </div>
 
@@ -803,11 +961,11 @@ useEffect(() => {
                     </span>
                     <input
                       type="number"
-                      value={formData.comboPrice}
+                      value={formData.regularPrice}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          comboPrice: Number(e.target.value),
+                          regularPrice: Number(e.target.value),
                         })
                       }
                       className="w-full bg-emerald-900 border border-emerald-800 rounded-2xl pl-10 pr-4 py-4 text-2xl font-black text-white focus:ring-2 focus:ring-emerald-400 outline-none transition-all"
@@ -829,67 +987,93 @@ useEffect(() => {
                       Discount
                     </p>
                     <p className="text-lg font-black">
-                      {formData.discountPercent}%
+                      {formData.discountPercentage}%
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-
           </section>
 
+          {/* Product List */}
           <section className="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col h-[400px]">
             <div className="p-5 border-b bg-slate-50 flex items-center justify-between">
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Inventory List
+                Product List
               </h3>
               <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 {productsData?.length || 0} items
               </span>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {productsData?.map((product) => {
-                const isAdded = formData.products.some(
-                  (item) => item.productId === product._id
-                );
+                const isMainItem = formData.mainItem?._id === product._id;
+                const isFreeItem = formData.freeItem?._id === product._id;
                 const price = getProductPrice(product);
 
                 return (
                   <button
                     key={product._id}
-                    onClick={() => handleAddProduct(product)}
-                    disabled={isAdded}
+                    onClick={() => {
+                      if (!formData.mainItem) {
+                        handleSelectMainItem(product);
+                      } else if (!formData.freeItem) {
+                        handleSelectFreeItem(product);
+                      } else {
+                        // Replace logic
+                        const confirm = window.confirm(
+                          isMainItem
+                            ? 'Replace main item?'
+                            : isFreeItem
+                              ? 'Replace free item?'
+                              : 'Select as which item?'
+                        );
+                        if (confirm) {
+                          if (isMainItem) {
+                            handleSelectMainItem(product);
+                          } else if (isFreeItem) {
+                            handleSelectFreeItem(product);
+                          } else {
+                            handleSelectMainItem(product);
+                          }
+                        }
+                      }
+                    }}
                     className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-left transition-all group ${
-                      isAdded
-                        ? 'opacity-50 cursor-not-allowed bg-slate-50'
-                        : 'hover:bg-emerald-50 hover:shadow-sm active:scale-[0.98]'
+                      isMainItem || isFreeItem
+                        ? 'bg-emerald-50 border border-emerald-200'
+                        : 'hover:bg-slate-50 hover:shadow-sm'
                     }`}
+                    type="button"
                   >
                     <img
                       src={
                         product.images?.[0] ||
                         product.variants?.[0]?.images?.[0] ||
-                        ''
+                        '/placeholder-image.jpg'
                       }
-                      className="w-11 h-11 rounded-xl object-cover shadow-sm group-hover:rotate-3 transition-transform"
+                      alt={product.name}
+                      className="w-11 h-11 rounded-xl object-cover shadow-sm"
                     />
                     <div className="flex-1">
-                      <p className="text-xs font-black text-slate-800 leading-tight">
+                      <p className="text-xs font-bold text-slate-800 leading-tight">
                         {product.name}
                       </p>
                       <p className="text-[10px] text-slate-500 font-bold mt-0.5">
                         ৳{price}
                       </p>
                     </div>
-                    <div
-                      className={`p-1.5 rounded-lg transition-colors ${isAdded ? 'bg-slate-200 text-slate-400' : 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white'}`}
-                    >
-                      {isAdded ? (
-                        <CheckCircle className="w-4 h-4" />
-                      ) : (
-                        <Plus className="w-4 h-4" />
-                      )}
-                    </div>
+                    {(isMainItem || isFreeItem) && (
+                      <div
+                        className={`p-1.5 rounded-lg ${isMainItem ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}
+                      >
+                        {isMainItem ? (
+                          <span className="text-[10px] font-bold">BUY</span>
+                        ) : (
+                          <span className="text-[10px] font-bold">GET</span>
+                        )}
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -913,30 +1097,44 @@ useEffect(() => {
               <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
             </div>
             <span className="text-sm font-bold text-slate-700">
-              Publish Offer
+              Publish BOGO
             </span>
           </label>
           <div className="h-6 w-px bg-slate-200"></div>
-          <p className="text-xs text-slate-400 font-medium">
-            Auto-calculated:{' '}
-            <span className="text-slate-600 font-bold">
-              Total Savings ৳{formData.discountAmount}
-            </span>
-          </p>
+          {formData.mainItem && formData.freeItem && (
+            <p className="text-xs text-slate-400 font-medium">
+              Savings:{' '}
+              <span className="text-slate-600 font-bold">
+                ৳
+                {(
+                  formData.mainItem.price +
+                  formData.freeItem.price -
+                  calculateSalePrice
+                ).toFixed(2)}
+              </span>
+            </p>
+          )}
         </div>
 
-        <div className=" ">
+        <div className="">
           <button
             onClick={handleSubmit}
-            disabled={isPending || uploadingFeatured || uploadingGallery}
+            disabled={
+              isPending ||
+              uploadingFeatured ||
+              uploadingGallery ||
+              !formData.mainItem ||
+              !formData.freeItem
+            }
             className="px-10 py-3 rounded-2xl bg-emerald-600 text-white font-black hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200 active:scale-95 flex items-center gap-3 disabled:opacity-50 disabled:shadow-none"
+            type="button"
           >
             {isPending ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <Save className="w-5 h-5" />
             )}
-            Create Combo
+            {activeModal === UI_MODAL_TYPE.EDIT ? 'Update BOGO' : 'Create BOGO'}
           </button>
         </div>
       </div>
@@ -951,3 +1149,5 @@ useEffect(() => {
     </>
   );
 };
+
+export default BogoForm;

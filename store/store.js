@@ -13,11 +13,14 @@ import authRecoveryReducer from './slices/authRecoverySlice';
 import notificationReducer from './slices/notificationSlice';
 import questionsReducer from './slices/questionsSlice';
 import comboReducer from './slices/comboSlice';
-import uiReducer from './slices/uiSlice'; 
+import bogoReducer from './slices/bogoSlice';
+import uiReducer from './slices/uiSlice';
 
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
+    authRecovery: authRecoveryReducer,
+    auth: authReducer,
     ui: uiReducer,
     product: productReducer,
     cart: cartReducer,
@@ -30,8 +33,7 @@ export const store = configureStore({
     notification: notificationReducer,
     blog: blogReducer,
     combo: comboReducer,
-    authRecovery: authRecoveryReducer,
-    auth: authReducer,
+    bogo: bogoReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),
