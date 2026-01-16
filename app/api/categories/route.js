@@ -1,4 +1,4 @@
-import {connectDB} from "@/utils/db";
+import {connectDB} from "@/lib/db";
 import Category from "@/models/Category";
 import { slugify } from "@/utils/slugify";
 
