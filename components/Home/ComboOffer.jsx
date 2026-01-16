@@ -221,13 +221,6 @@ const ComboOffer = ({ combo }) => {
               Add to Cart
               <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
             </motion.button>
-
-            <button className="px-4 py-3 border-2 border-slate-200 text-slate-700 rounded-xl font-bold hover:border-emerald-300 hover:bg-emerald-50 transition-colors">
-              ৳{combo.comboPrice / 3}
-              <span className="text-xs block font-normal text-slate-500">
-                /month
-              </span>
-            </button>
           </div>
         </div>
       </div>

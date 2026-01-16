@@ -36,7 +36,17 @@ export async function POST(req) {
     await connectDB();
 
     const data = await req.json();
-    const bogo = await Bogo.create(data);
+
+    const { regularPrice, discountPercentage } = data;
+
+    const salePrice = regularPrice - regularPrice * (discountPercentage / 100);
+
+
+    const bogo = await Bogo.create({
+      ...data,
+      salePrice,
+    });
+
 
     return Response.json({ bogo }, { status: 201 });
   } catch (error) {

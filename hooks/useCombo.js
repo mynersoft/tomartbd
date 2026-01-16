@@ -16,7 +16,7 @@ export function useCombos() {
     queryKey: ['combos'],
     queryFn: async () => {
       const res = await axios.get('/api/admin/combos');     
-      dispatch(setCombos(res.data));
+      dispatch(setCombos(res.data.combos));
       return res.data.combos;
     },
     onError: (error) => {
