@@ -6,6 +6,8 @@ import { useSelector } from 'react-redux';
 import ProductGrid from '../components/Product/ProductGrid';
 import ComboOffer from '../components/Home/ComboOffer';
 
+import  CategorySidebar from "@/Components/Home/CategorySidebar;
+
 export default function Home() {
   const { products } = useSelector((state) => state.product);
   const { combos, isLoading } = useSelector((state) => state.combo);
@@ -14,12 +16,23 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       
       <main className="container mx-auto">
-        <div className="w-1/2">
-          {combos.length > 0 &&
+     
+
+   <div className="grid grid-cols-12 gap-4">
+        
+        {/* Left Categories */}
+        <div className="col-span-12 md:col-span-3">
+          <CategorySidebar />
+        </div>
+
+        {/* Right Banner */}
+        <div className="col-span-12 md:col-span-9">
+         {combos.length > 0 &&
             combos.map((combo, index) => (
               <ComboOffer key={index} combo={combo} />
             ))}
         </div>
+
         <CategoriesSection />
         <ProductGrid products={products} />
 
