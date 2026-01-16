@@ -1,12 +1,12 @@
 'use client';
 import CategoriesSection from '@/components/Home/CategoriesSection';
 import FeaturedVendors from '@/components/FeaturedVendors';
-import ProductCardNew from '../components/Product/ProductCardNew';
+import ProductCardNew from '@/components/Product/ProductCardNew';
 import { useSelector } from 'react-redux';
-import ProductGrid from '../components/Product/ProductGrid';
-import ComboOffer from '../components/Home/ComboOffer';
+import ProductGrid from '@/components/Product/ProductGrid';
+import ComboOffer from '@/components/Home/ComboOffer';
 
-import  CategorySidebar from "@/Components/Home/CategorySidebar;
+import  CategorySidebar from "@/components/Home/CategorySidebar;
 
 export default function Home() {
   const { products } = useSelector((state) => state.product);
