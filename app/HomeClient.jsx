@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import ProductGrid from '@/components/Product/ProductGrid';
 import ComboOffer from '@/components/Home/ComboOffer';
 
-import  CategorySidebar from "@/components/Home/CategorySidebar;
+import  CategorySidebar from "@/components/Home/CategorySidebar";
 
 export default function Home() {
   const { products } = useSelector((state) => state.product);
