@@ -272,16 +272,17 @@ export default function Header() {
           {/* Main Header Row */}
           <div className="h-16 flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" aria-label="Go to homepage">
-              <Image
-                className="h-[50px] w-[80px]"
-                src="https://res.cloudinary.com/dxdrjruzm/image/upload/v1766971732/Logo/gtvdw2drcxv5bmmeqnzc.png"
-                alt="Tomartbd Logo"
-                width={160}
-                height={40}
-                priority
-              />
-            </Link>
+            <Link href="/" className="flex items-center gap-2 mb-6">
+							<div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+								<span className="text-white font-bold text-xl">
+									T
+								</span>
+							</div>
+							<span className="text-2xl font-bold">
+								Tomart
+								<span className="text-orange-500">BD</span>
+							</span>
+						</Link>
 
             {/* Search Bar - Desktop */}
             <div className="hidden lg:block flex-1 max-w-2xl mx-8">
