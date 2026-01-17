@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import  {socailMediLinks}  from "@/constants";
 
 const Footer = () => {
 	const [openSection, setOpenSection] = useState(null);
@@ -71,17 +72,24 @@ const Footer = () => {
 							Quality products, amazing prices.
 						</p>
 						<div className="flex gap-3 md:gap-4">
-							{[Facebook, Twitter, Instagram, Youtube].map(
-								(Icon, idx) => (
-									<a
-										key={idx}
-										href="#"
-										className="w-8 h-8 md:w-10 md:h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors duration-200"
-										aria-label={`Follow us on ${Icon.name}`}>
-										<Icon className="w-4 h-4 md:w-5 md:h-5" />
-									</a>
-								)
-							)}
+							
+								
+
+// In your component
+{socailMediLinks.map(({ name, Icon, link, ariaLabel }) => (
+  <a
+    key={name}
+    href={link}
+    className="w-8 h-8 md:w-10 md:h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors duration-200"
+    aria-label={ariaLabel}
+  >
+    <Icon className="w-4 h-4 md:w-5 md:h-5" />
+  </a>
+))}
+
+
+
+
 						</div>
 					</div>
 
