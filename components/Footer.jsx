@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
-import  {socailMediLinks}  from "@/constants";
+import  {socailMediaLinks, contactInfo}  from "@/constants";
 
 const Footer = () => {
 	const [openSection, setOpenSection] = useState(null);
@@ -74,9 +74,9 @@ const Footer = () => {
 						<div className="flex gap-3 md:gap-4">
 							
 								
+  
 
-// In your component
-{socailMediLinks.map(({ name, Icon, link, ariaLabel }) => (
+{socailMediaLinks.map(({ name, Icon, link, ariaLabel }) => (
   <a
     key={name}
     href={link}
@@ -197,7 +197,7 @@ const Footer = () => {
 							<div className="flex items-start gap-3">
 								<MapPin className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
 								<span className="text-gray-400 text-sm md:text-base">
-									Madhupur, Tangail
+									{contactInfo.location}
 								</span>
 							</div>
 							<div className="flex items-center gap-3">
@@ -205,7 +205,7 @@ const Footer = () => {
 								<a 
 									href="tel:01868944080"
 									className="text-gray-400 hover:text-white transition-colors duration-200 text-sm md:text-base">
-									01868944080
+									{contactInfo.phone}
 								</a>
 							</div>
 							<div className="flex items-center gap-3">
@@ -213,7 +213,7 @@ const Footer = () => {
 								<a 
 									href="mailto:support@tomartbd.com"
 									className="text-gray-400 hover:text-white transition-colors duration-200 text-sm md:text-base break-all">
-									support@tomartbd.com
+									{contactInfo.mail}
 								</a>
 							</div>
 						</div>
@@ -244,17 +244,17 @@ const Footer = () => {
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
 					<div className="flex flex-col md:flex-row justify-between items-center gap-4">
 						<p className="text-gray-400 text-xs md:text-sm text-center md:text-left">
-							© 2024 TomartBD. All rights reserved.
+							© {new Date().getFullYear()} TomartBD. All rights reserved.
 						</p>
 						<div className="flex flex-wrap justify-center items-center gap-4 md:gap-6">
 							<img
-								src="/ssl-secure.svg"
+								src="/secure.svg"
 								alt="SSL Secure"
 								className="h-6 md:h-8"
 								loading="lazy"
 							/>
 							<img
-								src="/visa-mastercard.svg"
+								src="/mastercard.svg"
 								alt="Payment Methods"
 								className="h-6 md:h-8"
 								loading="lazy"
