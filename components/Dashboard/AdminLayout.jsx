@@ -25,6 +25,7 @@ export default function AdminLayout({ children }) {
   return (
     <>
       <AdminTopBar />
+      
       <div className="flex h-screen bg-gray-100 overflow-hidden">
         {/* Mobile Overlay */}
         {sidebarOpen && isMobile && (

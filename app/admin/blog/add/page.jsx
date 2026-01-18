@@ -1,5 +1,5 @@
 import React from 'react'
-import BlogPostForm from '../BlogPostForm'
+import BlogPostForm from '@/components/Blog/BlogPostForm'
 
 const page = () => {
   return (

@@ -470,7 +470,7 @@ export default function BlogPostForm() {
             {/* TinyMCE Editor */}
             <div className="border border-gray-300 rounded-xl overflow-hidden mb-4">
               <Editor
-                apiKey={process.env.NEXT_PUBLIC_TINY_MMC}
+                apiKey={process.env.NEXT_PUBLIC_TINY_MCE}
                 onInit={(evt, editor) => editorRef.current = editor}
                 value={content}
                 onEditorChange={(newContent) => setContent(newContent)}
