@@ -183,7 +183,7 @@ export default function Header() {
 
   return (
     <>
-      {/* ================= TOP ANNOUNCEMENT BAR ================= */}
+    
 
       <TopBar />
 

@@ -1,100 +1,90 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { useDispatch } from 'react-redux';
-import toast from 'react-hot-toast';
-import {
-  setCategories,
-  addCategory,
-  updateCategory,
-  removeCategory,
-} from '@/store/slices/categorySlice';
 
-// Fetch categories
-export function useCategories() {
-  const dispatch = useDispatch();
+const API_URL = '/api/categories';
 
+// Get all categories with subcategories
+export const useCategories = () => {
   return useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await axios.get('/api/categories');
-      dispatch(setCategories(res.data));
-      return res.data;
+      try {
+        const { data } = await axios.get(API_URL);
+        return data;
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // Return empty array on error
+        return [];
+      }
     },
-    onError: (err) => toast.error(`Failed to fetch categories: ${err.message}`),
-    onSuccess: () => toast.success('Categories fetched successfully'),
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
   });
-}
+};
 
-// Add category
-export function useAddCategory() {
+// Add main category
+export const useAddCategory = () => {
   const queryClient = useQueryClient();
-  const dispatch = useDispatch();
-
   return useMutation({
     mutationFn: async (categoryData) => {
-      const res = await axios.post('/api/categories', categoryData);
-      return res.data;
+      const { data } = await axios.post(API_URL, categoryData);
+      return data;
     },
-    onMutate: () => toast.loading('Adding category...', { id: 'add-cat' }),
-    onSuccess: (newCategory) => {
-      dispatch(addCategory(newCategory));
+    onSuccess: () => {
       queryClient.invalidateQueries(['categories']);
-      toast.success('Category added successfully', { id: 'add-cat' });
-    },
-    onError: (err) => {
-      let message = 'Failed to add category';
-      if (axios.isAxiosError(err)) {
-        message = err.response?.data?.message || err.message;
-      } else if (err instanceof Error) message = err.message;
-      toast.error(message, { id: 'add-cat' });
-    },
+    }
   });
-}
+};
 
-// Update category
-export function useUpdateCategory() {
+// Add subcategory (this can also handle nested subcategories)
+export const useAddSubCategory = () => {
   const queryClient = useQueryClient();
-  const dispatch = useDispatch();
-
   return useMutation({
-    mutationFn: async ({ id, data }) => {
-      const res = await axios.put(`/api/categories/${id}`, data);
-      return res.data;
+    mutationFn: async ({ parentId, subCategoryData }) => {
+      const { data } = await axios.post(`${API_URL}/${parentId}/subcategories`, subCategoryData);
+      return data;
     },
-    onMutate: () => toast.loading('Updating category...', { id: 'update-cat' }),
-    onSuccess: (updatedCategory) => {
-      dispatch(updateCategory(updatedCategory));
+    onSuccess: () => {
       queryClient.invalidateQueries(['categories']);
-      toast.success('Category updated successfully', { id: 'update-cat' });
-    },
-    onError: (err) => {
-      let message = 'Failed to update category';
-      if (axios.isAxiosError(err)) {
-        message = err.response?.data?.message || err.message;
-      } else if (err instanceof Error) message = err.message;
-      toast.error(message, { id: 'update-cat' });
-    },
+    }
   });
-}
+};
 
 // Delete category
-export function useDeleteCategory() {
+export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
-  const dispatch = useDispatch();
-
   return useMutation({
     mutationFn: async (id) => {
-      const res = await axios.delete(`/api/categories/${id}`);
-      return res.data;
+      await axios.delete(`${API_URL}/${id}`);
     },
-    onMutate: () => toast.loading('Deleting category...', { id: 'delete-cat' }),
-    onSuccess: (_, id) => {
-      dispatch(removeCategory(id));
+    onSuccess: () => {
       queryClient.invalidateQueries(['categories']);
-      toast.success('Category deleted successfully', { id: 'delete-cat' });
-    },
-    onError: (err) => toast.error('Failed to delete category: ' + err.message, { id: 'delete-cat' }),
+    }
   });
-}
+};
+
+// Delete subcategory
+export const useDeleteSubCategory = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ slug, parentId }) => {
+      await axios.delete(`${API_URL}/subcategories/${slug}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['categories']);
+    }
+  });
+};
+
+// Update category (if needed)
+export const useUpdateCategory = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }) => {
+      const response = await axios.put(`${API_URL}/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['categories']);
+    }
+  });
+};
