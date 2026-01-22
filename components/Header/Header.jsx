@@ -17,17 +17,21 @@ import {
   LogOut,
   Settings,
   PackageOpen,
-  MapPin,
   CreditCard,
   Bell,
   HelpCircle,
   History,
   UserCircle,
+  MapPin,
+  Truck,
+  Shield,
+  Phone,
+  Tag,
+  Zap,
 } from 'lucide-react';
 
 import useLoginUser from '@/hooks/useAuth';
 import TopBar from './TopBar';
-
 import { useRouter } from 'next/navigation';
 import CardDrawer from './CardDrawer';
 
@@ -43,21 +47,25 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   const userMenuRef = useRef(null);
   const cartRef = useRef(null);
+  const headerRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => setMounted(true), []);
 
-  // handle Scroll
+  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
@@ -71,181 +79,234 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Auto-focus search when opened
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  }, [isSearchOpen]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
       setIsSearchOpen(false);
+      setIsMenuOpen(false);
       setSearchQuery('');
     }
   };
 
+  const handleQuickSearch = (term) => {
+    setSearchQuery(term);
+    router.push(`/search?q=${encodeURIComponent(term)}`);
+    setIsSearchOpen(false);
+    setIsMenuOpen(false);
+  };
+
   const navigationLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Shop', href: '/shop', hasDropdown: true },
-    { name: 'Categories', href: '/categories', hasDropdown: true },
-    { name: 'Deals', href: '/deals', badge: 'Hot' },
-    { name: 'New Arrivals', href: '/new-arrivals' },
+    { 
+      name: 'Shop', 
+      href: '/shop', 
+      hasDropdown: true,
+      dropdownItems: [
+        { name: 'All Products', href: '/shop/all' },
+        { name: 'Bestsellers', href: '/shop/bestsellers', icon: '🔥' },
+        { name: 'Featured', href: '/shop/featured', icon: '⭐' },
+        { name: 'Sale Items', href: '/shop/sale', highlight: true },
+        { name: 'New Collections', href: '/shop/new' },
+        { name: 'Gift Cards', href: '/shop/gift-cards' },
+      ]
+    },
+    { 
+      name: 'Categories', 
+      href: '/categories', 
+      hasDropdown: true,
+      dropdownItems: [
+        { name: 'Electronics', href: '/category/electronics', icon: '📱' },
+        { name: 'Fashion', href: '/category/fashion', icon: '👕' },
+        { name: 'Home & Living', href: '/category/home-living', icon: '🏠' },
+        { name: 'Beauty', href: '/category/beauty', icon: '💄' },
+        { name: 'Sports', href: '/category/sports', icon: '⚽' },
+        { name: 'Books', href: '/category/books', icon: '📚' },
+        { name: 'Toys & Games', href: '/category/toys', icon: '🎮' },
+        { name: 'Automotive', href: '/category/automotive', icon: '🚗' },
+      ]
+    },
+    { name: 'Deals', href: '/deals', badge: 'Hot', icon: <Tag size={16} /> },
+    { name: 'New Arrivals', href: '/new-arrivals', badge: 'New' },
     { name: 'Brands', href: '/brands' },
   ];
 
-  const userMenuItems =
-    user?.role === 'admin'
-      ? [
-          {
-            icon: <Package size={18} />,
-            label: 'Admin Panel',
-            href: '/admin',
-          },
-          {
-            icon: <Settings size={18} />,
-            label: 'Settings',
-            href: '/settings',
-          },
-          {
-            icon: <Bell size={18} />,
-            label: 'Notifications',
-            href: '/notifications',
-          },
-          { divider: true },
-          {
-            icon: <LogOut size={18} />,
-            label: 'Logout',
-            action: () => signOut({ callbackUrl: '/' }),
-          },
-        ]
-      : [
-          {
-            icon: <UserCircle size={18} />,
-            label: 'My Profile',
-            href:
-              {
-                admin: '/admin',
-                seller: '/seller',
-                user: '/user',
-              }[user?.role] || '/user', // Default fallback
-          },
-          {
-            icon: <PackageOpen size={18} />,
-            label: 'My Orders',
-            href: '/orders',
-          },
-          {
-            icon: <Heart size={18} />,
-            label: 'Wishlist',
-            href: '/wishlist',
-          },
-          {
-            icon: <History size={18} />,
-            label: 'Order History',
-            href: '/order-history',
-          },
-          {
-            icon: <CreditCard size={18} />,
-            label: 'Payment Methods',
-            href: '/payments',
-          },
-
-          {
-            icon: <Settings size={18} />,
-            label: 'Settings',
-            href: '/settings',
-          },
-          { divider: true },
-          {
-            icon: <HelpCircle size={18} />,
-            label: 'Help Center',
-            href: '/help',
-          },
-          {
-            icon: <Package size={18} />,
-            label: 'Track Order',
-            href: '/track-order',
-          },
-          { divider: true },
-          {
-            icon: <LogOut size={18} />,
-            label: 'Logout',
-            action: () => signOut({ callbackUrl: '/' }),
-          },
-        ];
+  const userMenuItems = user?.role === 'admin'
+    ? [
+        {
+          icon: <Package size={18} />,
+          label: 'Admin Panel',
+          href: '/admin',
+          badge: 'Admin'
+        },
+        {
+          icon: <Settings size={18} />,
+          label: 'Settings',
+          href: '/settings',
+        },
+        {
+          icon: <Bell size={18} />,
+          label: 'Notifications',
+          href: '/notifications',
+          badge: '3'
+        },
+        { divider: true },
+        {
+          icon: <LogOut size={18} />,
+          label: 'Logout',
+          action: () => signOut({ callbackUrl: '/' }),
+        },
+      ]
+    : [
+        {
+          icon: <UserCircle size={18} />,
+          label: 'My Profile',
+          href: '/user/profile',
+        },
+        {
+          icon: <PackageOpen size={18} />,
+          label: 'My Orders',
+          href: '/orders',
+          badge: '2'
+        },
+        {
+          icon: <Heart size={18} />,
+          label: 'Wishlist',
+          href: '/wishlist',
+          badge: '3'
+        },
+        {
+          icon: <History size={18} />,
+          label: 'Order History',
+          href: '/order-history',
+        },
+        {
+          icon: <CreditCard size={18} />,
+          label: 'Payment Methods',
+          href: '/payments',
+        },
+        {
+          icon: <Settings size={18} />,
+          label: 'Settings',
+          href: '/settings',
+        },
+        { divider: true },
+        {
+          icon: <HelpCircle size={18} />,
+          label: 'Help Center',
+          href: '/help',
+        },
+        {
+          icon: <Truck size={18} />,
+          label: 'Track Order',
+          href: '/track-order',
+        },
+        { divider: true },
+        {
+          icon: <LogOut size={18} />,
+          label: 'Logout',
+          action: () => signOut({ callbackUrl: '/' }),
+        },
+      ];
 
   const categories = [
-    'Electronics',
-    'Fashion',
-    'Home & Living',
-    'Beauty',
-    'Sports',
-    'Books',
-    'Toys',
-    'Automotive',
+    { name: 'Smartphones', icon: '📱', href: '/category/smartphones' },
+    { name: 'Laptops', icon: '💻', href: '/category/laptops' },
+    { name: 'Fashion', icon: '👗', href: '/category/fashion' },
+    { name: 'Home Appliances', icon: '🏠', href: '/category/home-appliances' },
+    { name: 'Beauty', icon: '💄', href: '/category/beauty' },
+    { name: 'Sports', icon: '⚽', href: '/category/sports' },
+    { name: 'Books', icon: '📚', href: '/category/books' },
+    { name: 'Toys', icon: '🎮', href: '/category/toys' },
   ];
 
   return (
     <>
-    
-
       <TopBar />
-
+      
       {/* ================= SEARCH OVERLAY ================= */}
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-white">
-          <div className="max-w-3xl mx-auto px-4 pt-20">
+        <div className="fixed inset-0 z-50 bg-white animate-fadeIn">
+          <div className="max-w-4xl mx-auto px-4 pt-20 pb-8">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold">What are you looking for?</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                What are you looking for?
+              </h2>
               <button
                 onClick={() => setIsSearchOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-full"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 aria-label="Close search"
               >
-                <X size={24} />
+                <X size={28} className="text-gray-600" />
               </button>
             </div>
 
-            <form onSubmit={handleSearch} className="relative">
+            <form onSubmit={handleSearch} className="relative mb-10">
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products, brands, and categories..."
-                className="w-full p-4 pl-12 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[#004488]"
+                className="w-full p-4 pl-14 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                 autoFocus
               />
               <Search
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400"
                 size={24}
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#004488] text-white px-6 py-2 rounded-lg hover:bg-[#003366]"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 Search
               </button>
             </form>
 
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-4">Popular Searches</h3>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  'Smartphone',
-                  'Laptop',
-                  'Headphones',
-                  'Watch',
-                  'Shoes',
-                  'Backpack',
-                ].map((term) => (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold mb-4 text-gray-800">Trending Searches</h3>
+              <div className="flex flex-wrap gap-3">
+                {['iPhone 15', 'Laptop Gaming', 'Headphones', 'Smart Watch', 'Running Shoes', 'Backpack'].map((term) => (
                   <button
                     key={term}
-                    onClick={() => {
-                      setSearchQuery(term);
-                      router.push(`/search?q=${encodeURIComponent(term)}`);
-                      setIsSearchOpen(false);
-                    }}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full"
+                    onClick={() => handleQuickSearch(term)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-700"
                   >
+                    <Search size={14} />
                     {term}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold mb-3 text-gray-700">Popular Categories</h4>
+                <div className="space-y-2">
+                  {categories.slice(0, 5).map((cat) => (
+                    <button
+                      key={cat.name}
+                      onClick={() => handleQuickSearch(cat.name)}
+                      className="flex items-center gap-3 w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      <span className="text-xl">{cat.icon}</span>
+                      <span className="text-gray-700">{cat.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-3 text-gray-700">Recently Viewed</h4>
+                <div className="space-y-2 text-gray-600">
+                  <p className="p-3">No recent searches</p>
+                </div>
               </div>
             </div>
           </div>
@@ -253,7 +314,6 @@ export default function Header() {
       )}
 
       {/* ================= CART DRAWER ================= */}
-
       <CardDrawer
         items={items}
         isCartOpen={isCartOpen}
@@ -264,33 +324,40 @@ export default function Header() {
 
       {/* ================= MAIN HEADER ================= */}
       <header
-        className={`sticky top-0 z-40 bg-white transition-shadow duration-300 ${
-          scrolled ? 'shadow-lg border-b' : 'border-b'
+        ref={headerRef}
+        className={`sticky top-0 z-40 bg-white transition-all duration-300 ${
+          scrolled 
+            ? 'shadow-lg border-b border-gray-200 py-2' 
+            : 'border-b border-gray-100 py-3'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Header Row */}
-          <div className="h-16 flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 mb-6">
-							<div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-								<span className="text-white font-bold text-xl">
-									T
-								</span>
-							</div>
-							<span className="text-2xl font-bold">
-								Tomart
-								<span className="text-orange-500">BD</span>
-							</span>
-						</Link>
+            <Link 
+              href="/" 
+              className="flex-shrink-0 flex items-center gap-3 group"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                <span className="text-white font-bold text-xl">T</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-2xl font-bold text-gray-900 leading-tight">
+                  Tomart<span className="text-orange-500">BD</span>
+                </span>
+                <span className="text-xs text-gray-500 -mt-1">Online Shopping</span>
+              </div>
+            </Link>
 
             {/* Search Bar - Desktop */}
-            <div className="hidden lg:block flex-1 max-w-2xl mx-8">
-              <form onSubmit={handleSearch} className="relative">
+            <div className="hidden lg:flex flex-1 max-w-2xl mx-8">
+              <form onSubmit={handleSearch} className="w-full relative">
                 <input
                   type="text"
-                  placeholder="Search products, brands, and categories..."
-                  className="w-full p-3 pl-12 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-[#004488]"
+                  placeholder="Search for products, brands, and more..."
+                  className="w-full p-3.5 pl-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-gray-700 placeholder-gray-400"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -300,7 +367,7 @@ export default function Header() {
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#004488] text-white px-6 py-2 rounded hover:bg-[#003366]"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   Search
                 </button>
@@ -308,83 +375,86 @@ export default function Header() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-4 md:gap-6">
+            <div className="flex items-center gap-2 sm:gap-4">
               {/* Search - Mobile */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-full"
+                className="lg:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
                 aria-label="Search"
               >
-                <Search size={22} />
+                <Search size={22} className="text-gray-600" />
               </button>
 
               {/* Wishlist */}
               <Link
                 href="/wishlist"
-                className="hidden md:flex items-center gap-2 hover:text-[#004488] group relative"
+                className="hidden sm:flex items-center gap-2 p-2.5 hover:bg-gray-50 rounded-xl transition-colors group relative"
                 aria-label="Wishlist"
               >
                 <div className="relative">
-                  <Heart size={22} className="group-hover:fill-[#C0A460]" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#C0A460] rounded-full flex items-center justify-center">
-                    <span className="text-[10px] text-white font-bold">3</span>
+                  <Heart size={22} className="text-gray-600 group-hover:text-red-500 group-hover:fill-red-500 transition-colors" />
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <span className="text-xs text-white font-bold">3</span>
                   </div>
                 </div>
-                <span className="text-sm hidden xl:inline">Wishlist</span>
+                <span className="text-sm font-medium text-gray-700 hidden xl:inline">Wishlist</span>
               </Link>
 
               {/* Cart */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg"
+                className="relative flex items-center gap-2 p-2.5 hover:bg-gray-50 rounded-xl transition-colors group"
                 aria-label="Open cart"
               >
-                <ShoppingCart size={22} className="hover:stroke-[#004488]" />
-                <span className="text-sm hidden xl:inline">Cart</span>
-                {mounted && qty > 0 && (
-                  <div className="absolute top-0 right-0 w-4 h-4 bg-[#C0A460] rounded-full flex items-center justify-center">
-                    <span className="text-[10px] text-white font-bold">
-                      {qty}
-                    </span>
-                  </div>
-                )}
+                <div className="relative">
+                  <ShoppingCart size={22} className="text-gray-600 group-hover:text-blue-600 transition-colors" />
+                  {mounted && qty > 0 && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center border-2 border-white">
+                      <span className="text-xs text-white font-bold">{qty}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="hidden xl:block text-left">
+                  <span className="text-sm font-medium text-gray-700">Cart</span>
+                  <p className="text-xs text-gray-500">${items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}</p>
+                </div>
               </button>
 
-              {/* User Account with Dropdown */}
+              {/* User Account */}
               <div className="relative" ref={userMenuRef}>
                 {user ? (
                   <>
                     <button
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className="hidden md:flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg group"
+                      className="hidden sm:flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors group"
                       aria-label="Account menu"
                     >
-                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#C0A460]">
+                      <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-transparent group-hover:border-blue-200 transition-colors">
                         {user.image ? (
                           <Image
                             src={user.image}
                             alt={user.name}
-                            width={32}
-                            height={32}
+                            width={36}
+                            height={36}
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-[#f8f5ec] flex items-center justify-center">
-                            <User size={18} className="text-[#C0A460]" />
+                          <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                            <User size={18} className="text-blue-600" />
                           </div>
                         )}
                       </div>
                       <div className="hidden xl:block text-left">
-                        <p className="text-sm font-medium">My Account</p>
+                        <p className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
+                          Hi, {user.name?.split(' ')[0]}
+                        </p>
                         <p className="text-xs text-gray-500">
-                          {user.role === 'admin'
-                            ? 'Administrator'
-                            : 'Premium Member'}
+                          {user.role === 'admin' ? 'Administrator' : 'Premium Member'}
                         </p>
                       </div>
                       <ChevronDown
                         size={16}
-                        className={`transition-transform ${
+                        className={`text-gray-400 transition-transform ${
                           isUserMenuOpen ? 'rotate-180' : ''
                         }`}
                       />
@@ -392,20 +462,41 @@ export default function Header() {
 
                     {/* User Dropdown */}
                     {isUserMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                      <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 animate-fadeIn">
                         <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="font-semibold text-gray-900">
-                            {user.name}
-                          </p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
-                          <span className="inline-block mt-1 px-2 py-1 bg-[#f8f5ec] text-[#C0A460] text-xs rounded-full">
-                            {user.role === 'admin'
-                              ? 'Administrator'
-                              : 'Premium Member'}
-                          </span>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100">
+                              {user.image ? (
+                                <Image
+                                  src={user.image}
+                                  alt={user.name}
+                                  width={40}
+                                  height={40}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <User size={20} className="text-blue-600" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-900 truncate">
+                                {user.name}
+                              </p>
+                              <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                            </div>
+                          </div>
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+                              <Shield size={10} />
+                              {user.role === 'admin' ? 'Administrator' : 'Premium'}
+                            </span>
+                            <span className="text-xs text-gray-500">Member since 2024</span>
+                          </div>
                         </div>
 
-                        <div className="py-2">
+                        <div className="py-2 max-h-[60vh] overflow-y-auto">
                           {userMenuItems.map((item, index) => (
                             <div key={index}>
                               {item.divider ? (
@@ -413,11 +504,20 @@ export default function Header() {
                               ) : item.href ? (
                                 <Link
                                   href={item.href}
-                                  className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#004488] transition-colors"
+                                  className="flex items-center justify-between gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors group/item"
                                   onClick={() => setIsUserMenuOpen(false)}
                                 >
-                                  {item.icon}
-                                  <span>{item.label}</span>
+                                  <div className="flex items-center gap-3">
+                                    <div className="text-gray-400 group-hover/item:text-blue-600">
+                                      {item.icon}
+                                    </div>
+                                    <span className="font-medium">{item.label}</span>
+                                  </div>
+                                  {item.badge && (
+                                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                      {item.badge}
+                                    </span>
+                                  )}
                                 </Link>
                               ) : (
                                 <button
@@ -425,10 +525,12 @@ export default function Header() {
                                     item.action?.();
                                     setIsUserMenuOpen(false);
                                   }}
-                                  className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#004488] transition-colors text-left"
+                                  className="flex items-center justify-between w-full px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors text-left"
                                 >
-                                  {item.icon}
-                                  <span>{item.label}</span>
+                                  <div className="flex items-center gap-3">
+                                    {item.icon}
+                                    <span className="font-medium">{item.label}</span>
+                                  </div>
                                 </button>
                               )}
                             </div>
@@ -439,23 +541,26 @@ export default function Header() {
 
                     {/* Mobile User Button */}
                     <Link
-                      href="/user"
-                      className="md:hidden p-2 hover:bg-gray-100 rounded-full"
+                      href="/user/profile"
+                      className="sm:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
                       aria-label="User account"
                     >
-                      <User size={22} />
+                      <User size={22} className="text-gray-600" />
                     </Link>
                   </>
                 ) : (
                   <Link
                     href="/auth/login"
-                    className="hidden md:flex items-center gap-2 hover:text-[#004488]"
+                    className="hidden sm:flex items-center gap-2.5 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 rounded-xl transition-all duration-300 group"
                     aria-label="Login"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#f8f5ec] flex items-center justify-center">
-                      <User size={18} className="text-[#C0A460]" />
+                    <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center group-hover:border-blue-300 transition-colors">
+                      <User size={16} className="text-blue-600" />
                     </div>
-                    <span className="text-sm hidden xl:inline">Login</span>
+                    <div className="hidden xl:block text-left">
+                      <p className="text-sm font-medium text-gray-900">Sign In</p>
+                      <p className="text-xs text-gray-500">Account & Orders</p>
+                    </div>
                   </Link>
                 )}
               </div>
@@ -463,75 +568,74 @@ export default function Header() {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-full"
+                className="lg:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
                 aria-label="Menu"
               >
-                {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+                {isMenuOpen ? (
+                  <X size={22} className="text-gray-600" />
+                ) : (
+                  <Menu size={22} className="text-gray-600" />
+                )}
               </button>
             </div>
           </div>
 
           {/* Navigation Menu (Desktop) */}
-          <nav className="hidden lg:flex items-center justify-between py-3 border-t border-gray-100">
-            <div className="flex items-center gap-8">
+          <nav className="hidden lg:flex items-center justify-between py-3 mt-2 border-t border-gray-100">
+            <div className="flex items-center gap-1">
               {navigationLinks.map((link) => (
-                <div key={link.name} className="relative group">
+                <div 
+                  key={link.name} 
+                  className="relative group"
+                  onMouseEnter={() => link.hasDropdown && setActiveDropdown(link.name)}
+                  onMouseLeave={() => setActiveDropdown(null)}
+                >
                   <Link
                     href={link.href}
-                    className="flex items-center gap-1 text-gray-700 hover:text-[#004488] transition-colors font-medium py-2"
+                    className="flex items-center gap-2 px-4 py-2.5 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
                   >
+                    {link.icon && <span className="opacity-80">{link.icon}</span>}
                     {link.name}
                     {link.badge && (
-                      <span className="ml-1 px-2 py-0.5 bg-[#C0A460] text-white text-xs rounded-full">
+                      <span className={`ml-1 px-2 py-1 text-xs rounded-full font-semibold ${
+                        link.badge === 'Hot' 
+                          ? 'bg-red-500 text-white' 
+                          : 'bg-green-500 text-white'
+                      }`}>
                         {link.badge}
                       </span>
                     )}
-                    {link.hasDropdown && <ChevronDown size={16} />}
+                    {link.hasDropdown && (
+                      <ChevronDown 
+                        size={16} 
+                        className={`transition-transform ${
+                          activeDropdown === link.name ? 'rotate-180' : ''
+                        }`} 
+                      />
+                    )}
                   </Link>
 
-                  {/* Dropdown for Shop */}
-                  {link.hasDropdown && link.name === 'Shop' && (
-                    <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-40">
-                      <Link
-                        href="/shop/all"
-                        className="block px-4 py-2 hover:bg-gray-50"
-                      >
-                        All Products
-                      </Link>
-                      <Link
-                        href="/shop/bestsellers"
-                        className="block px-4 py-2 hover:bg-gray-50"
-                      >
-                        Bestsellers
-                      </Link>
-                      <Link
-                        href="/shop/featured"
-                        className="block px-4 py-2 hover:bg-gray-50"
-                      >
-                        Featured
-                      </Link>
-                      <div className="border-t border-gray-100 my-2" />
-                      <Link
-                        href="/shop/sale"
-                        className="block px-4 py-2 text-[#C0A460] font-medium"
-                      >
-                        Sale Items
-                      </Link>
-                    </div>
-                  )}
-
-                  {/* Dropdown for Categories */}
-                  {link.hasDropdown && link.name === 'Categories' && (
-                    <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-40 grid grid-cols-2">
-                      {categories.slice(0, 8).map((cat) => (
+                  {/* Dropdown Menus */}
+                  {link.hasDropdown && link.dropdownItems && (
+                    <div 
+                      className={`absolute left-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-200 py-3 min-w-[240px] transition-all duration-200 z-40 ${
+                        activeDropdown === link.name
+                          ? 'opacity-100 visible translate-y-0'
+                          : 'opacity-0 invisible translate-y-2'
+                      }`}
+                    >
+                      {link.dropdownItems.map((item, idx) => (
                         <Link
-                          key={cat}
-                          href={`/category/${cat
-                            .toLowerCase()
-                            .replace(/\s+/g, '-')}`}
-                          className="px-4 py-2 hover:bg-gray-50 text-sm"
+                          key={idx}
+                          href={item.href}
+                          className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
+                            item.highlight 
+                              ? 'text-orange-600 font-semibold bg-orange-50 mx-2 rounded-lg' 
+                              : 'text-gray-700'
+                          }`}
                         >
-                          {cat}
+                          {item.icon && <span className="text-lg">{item.icon}</span>}
+                          <span>{item.name}</span>
                         </Link>
                       ))}
                     </div>
@@ -540,121 +644,150 @@ export default function Header() {
               ))}
             </div>
 
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-6 text-sm">
+              <div className="flex items-center gap-2 text-blue-600">
+                <Phone size={16} />
+                <span className="font-medium">Support: 09678-123456</span>
+              </div>
               <Link
-                href="/user/tracking-order"
-                className="text-[#004488] hover:underline"
+                href="/track-order"
+                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
               >
-                Track Order
+                <Truck size={16} />
+                <span>Track Order</span>
               </Link>
-              <Link href="/help" className="text-[#004488] hover:underline">
-                Help Center
+              <Link
+                href="/help"
+                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <HelpCircle size={16} />
+                <span>Help Center</span>
               </Link>
             </div>
           </nav>
+        </div>
 
-          {/* Mobile Menu */}
-          {isMenuOpen && (
-            <div className="lg:hidden border-t border-gray-200 py-4">
-              {/* Mobile Search */}
-              <form onSubmit={handleSearch} className="mb-4 px-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search products..."
-                    className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg"
-                  />
-                  <Search
-                    className="absolute left-4 top-3.5 text-gray-400"
-                    size={20}
-                  />
+        {/* Mobile Menu */}
+        <div className={`lg:hidden fixed inset-0 z-30 bg-white transform transition-transform duration-300 ease-in-out ${
+          isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}>
+          <div className="flex flex-col h-full overflow-y-auto">
+            {/* Mobile Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <Link 
+                href="/" 
+                className="flex items-center gap-3"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">T</span>
                 </div>
-              </form>
+                <span className="text-xl font-bold">
+                  Tomart<span className="text-orange-500">BD</span>
+                </span>
+              </Link>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
-              {/* User Section in Mobile Menu */}
-              {user ? (
-                <div className="p-4 bg-gray-50 rounded-lg mb-4 mx-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#C0A460]">
-                      {user.image ? (
-                        <Image
-                          src={user.image}
-                          alt={user.name}
-                          width={48}
-                          height={48}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-[#f8f5ec] flex items-center justify-center">
-                          <User size={24} className="text-[#C0A460]" />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-semibold">{user.name}</p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
-                      <span className="inline-block mt-1 px-2 py-1 bg-[#f8f5ec] text-[#C0A460] text-xs rounded-full">
-                        {user.role === 'admin'
-                          ? 'Administrator'
-                          : 'Premium Member'}
+            {/* User Section */}
+            {user ? (
+              <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow">
+                    {user.image ? (
+                      <Image
+                        src={user.image}
+                        alt={user.name}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                        <User size={28} className="text-blue-600" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 text-lg">{user.name}</h3>
+                    <p className="text-gray-600 text-sm">{user.email}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="px-2 py-1 bg-white text-blue-600 text-xs font-medium rounded-full border">
+                        {user.role === 'admin' ? 'Administrator' : 'Premium'}
                       </span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 mt-3">
-                    <Link
-                      href="/orders"
-                      className="text-center py-2 bg-white border rounded-lg text-sm font-medium"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      My Orders
-                    </Link>
-                    <button
-                      onClick={() => {
-                        signOut({ callbackUrl: '/' });
-                        setIsMenuOpen(false);
-                      }}
-                      className="text-center py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
                 </div>
-              ) : (
-                <div className="p-4 bg-gray-50 rounded-lg mb-4 mx-4">
-                  <p className="font-medium mb-2">Welcome to TomartBD</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href="/auth/login"
-                      className="text-center py-2 bg-[#004488] text-white rounded-lg text-sm font-medium"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      href="/auth/register"
-                      className="text-center py-2 bg-white border border-[#004488] text-[#004488] rounded-lg text-sm font-medium"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Register
-                    </Link>
-                  </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/orders"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-white rounded-lg border hover:border-blue-300 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <PackageOpen size={18} />
+                    <span className="font-medium">My Orders</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      signOut({ callbackUrl: '/' });
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    <LogOut size={18} />
+                    <span className="font-medium">Sign Out</span>
+                  </button>
                 </div>
-              )}
+              </div>
+            ) : (
+              <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200">
+                <h3 className="font-bold text-gray-900 mb-4">Welcome to TomartBD</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/auth/login"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User size={18} />
+                    <span className="font-medium">Sign In</span>
+                  </Link>
+                  <Link
+                    href="/auth/register"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <UserCircle size={18} />
+                    <span className="font-medium">Register</span>
+                  </Link>
+                </div>
+              </div>
+            )}
 
-              {/* Mobile Navigation */}
-              <div className="space-y-1 px-4">
+            {/* Mobile Navigation */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4">
                 {navigationLinks.map((link) => (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className="flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between px-4 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors mb-1"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <span>{link.name}</span>
+                    <div className="flex items-center gap-3">
+                      {link.icon && link.icon}
+                      <span className="font-medium">{link.name}</span>
+                    </div>
                     {link.badge && (
-                      <span className="px-2 py-1 bg-[#C0A460] text-white text-xs rounded-full">
+                      <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
+                        link.badge === 'Hot' 
+                          ? 'bg-red-500 text-white' 
+                          : 'bg-green-500 text-white'
+                      }`}>
                         {link.badge}
                       </span>
                     )}
@@ -662,80 +795,130 @@ export default function Header() {
                 ))}
               </div>
 
-              {/* Quick Categories in Mobile */}
-              <div className="mt-6 px-4">
-                <h3 className="font-semibold mb-3 text-gray-700">Categories</h3>
-                <div className="grid grid-cols-2 gap-2">
+              {/* Quick Categories */}
+              <div className="p-4 border-t border-gray-200">
+                <h4 className="font-semibold text-gray-900 mb-4 px-2">Shop by Category</h4>
+                <div className="grid grid-cols-2 gap-3">
                   {categories.map((cat) => (
                     <Link
-                      key={cat}
-                      href={`/category/${cat
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')}`}
-                      className="px-3 py-2 border rounded-lg hover:bg-gray-50 text-sm"
+                      key={cat.name}
+                      href={cat.href}
+                      className="flex flex-col items-center p-4 bg-gray-50 hover:bg-white border border-gray-200 hover:border-blue-300 rounded-xl transition-all hover:shadow-sm"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      {cat}
+                      <span className="text-2xl mb-2">{cat.icon}</span>
+                      <span className="text-sm font-medium text-gray-700 text-center">{cat.name}</span>
                     </Link>
                   ))}
                 </div>
               </div>
 
-              {/* Quick Links in Mobile */}
-              <div className="mt-6 pt-4 border-t space-y-3 px-4">
-                <Link
-                  href="/track-order"
-                  className="flex items-center gap-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  📦 Track Order
-                </Link>
-                <Link
-                  href="/help"
-                  className="flex items-center gap-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  ❓ Help Center
-                </Link>
+              {/* Quick Links */}
+              <div className="p-4 border-t border-gray-200">
+                <div className="space-y-2">
+                  <Link
+                    href="/track-order"
+                    className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Truck size={20} />
+                    <span className="font-medium">Track Order</span>
+                  </Link>
+                  <Link
+                    href="/help"
+                    className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <HelpCircle size={20} />
+                    <span className="font-medium">Help Center</span>
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Phone size={20} />
+                    <span className="font-medium">Contact Support</span>
+                  </Link>
+                </div>
               </div>
             </div>
-          )}
+
+            {/* Mobile Footer */}
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
+              <div className="flex items-center justify-center gap-6 mb-4">
+                <Link href="/about" className="text-sm text-gray-600 hover:text-blue-600">
+                  About Us
+                </Link>
+                <Link href="/careers" className="text-sm text-gray-600 hover:text-blue-600">
+                  Careers
+                </Link>
+                <Link href="/blog" className="text-sm text-gray-600 hover:text-blue-600">
+                  Blog
+                </Link>
+              </div>
+              <p className="text-center text-xs text-gray-500">
+                © 2024 TomartBD. All rights reserved.
+              </p>
+            </div>
+          </div>
         </div>
       </header>
 
       {/* ================= QUICK CATEGORIES BAR ================= */}
-      <div className="hidden lg:block bg-gray-50 border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between overflow-x-auto py-2">
-            <div className="flex space-x-8">
+      <div className="hidden lg:block bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="flex items-center justify-between py-3">
+            <div className="flex items-center gap-6">
               {categories.map((cat) => (
                 <Link
-                  key={cat}
-                  href={`/category/${cat.toLowerCase().replace(/\s+/g, '-')}`}
-                  className="text-sm text-gray-600 hover:text-[#004488] whitespace-nowrap py-1 px-2 hover:bg-white rounded transition-colors"
+                  key={cat.name}
+                  href={cat.href}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-white px-3 py-2 rounded-lg transition-all hover:shadow-sm"
                 >
-                  {cat}
+                  <span className="text-lg">{cat.icon}</span>
+                  <span className="font-medium">{cat.name}</span>
                 </Link>
               ))}
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-500">Daily Deals:</span>
               <Link
                 href="/deals/flash"
-                className="text-sm text-red-600 font-semibold hover:underline"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:shadow-md transition-shadow"
               >
-                ⚡ Flash Sale
+                <Zap size={16} />
+                <span className="font-semibold">Flash Sale</span>
+                <span className="text-xs bg-white text-red-500 px-2 py-1 rounded-full font-bold">
+                  50% OFF
+                </span>
               </Link>
               <Link
                 href="/deals/clearance"
                 className="text-sm text-green-600 font-semibold hover:underline"
               >
-                🛒 Clearance
+                🛍️ Clearance Sale
               </Link>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Add this to your global CSS or tailwind config */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+      `}</style>
     </>
   );
 }
