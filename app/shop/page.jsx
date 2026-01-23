@@ -17,21 +17,22 @@ import {
 } from "lucide-react";
 
 export default function ShopPage() {
-  const { data: products, isLoading, isError } = useProducts();
+  const { data: products = [], isLoading, isError } = useProducts();
+  
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [sort, setSort] = useState("default");
   const [currentPage, setCurrentPage] = useState(1);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
+  const [viewMode, setViewMode] = useState("grid");
   const [isMobile, setIsMobile] = useState(false);
   const itemsPerPage = 12;
 
   // Check if mobile on mount and resize
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+      setIsMobile(window.innerWidth < 1024);
     };
     
     checkMobile();
@@ -40,20 +41,34 @@ export default function ShopPage() {
   }, []);
 
   // Extract unique categories from products
-  const categories = products ? [
+  const categories = [
     "all",
-    ...new Set(products.map(p => p.category).filter(Boolean))
-  ] : ["all"];
+    ...new Set(
+      Array.isArray(products) 
+        ? products
+            .map(p => p?.category)
+            .filter(Boolean)
+            .filter((cat, index, self) => self.indexOf(cat) === index)
+        : []
+    )
+  ];
 
   // Calculate price range from products
   useEffect(() => {
-    if (products && products.length > 0) {
-      const prices = products.map(p => 
-        p.price - (p.discount ? p.price * (p.discount / 100) : 0)
-      );
-      const minPrice = Math.floor(Math.min(...prices));
-      const maxPrice = Math.ceil(Math.max(...prices));
-      setPriceRange([minPrice, maxPrice]);
+    if (Array.isArray(products) && products.length > 0) {
+      const prices = products
+        .filter(p => p?.price != null)
+        .map(p => {
+          const basePrice = p.price || 0;
+          const discount = p.discount || 0;
+          return basePrice - (basePrice * (discount / 100));
+        });
+      
+      if (prices.length > 0) {
+        const minPrice = Math.floor(Math.min(...prices));
+        const maxPrice = Math.ceil(Math.max(...prices));
+        setPriceRange([Math.max(0, minPrice), Math.min(5000, maxPrice)]);
+      }
     }
   }, [products]);
 
@@ -68,7 +83,7 @@ export default function ShopPage() {
     );
   }
 
-  if (isError) {
+  if (isError || !Array.isArray(products)) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center max-w-md">
@@ -93,54 +108,67 @@ export default function ShopPage() {
   }
 
   // Filter products
-  let filteredProducts = products.filter((p) => {
-    const finalPrice = p.price - (p.discount ? p.price * (p.discount / 100) : 0);
+  const filteredProducts = products.filter((p) => {
+    if (!p || typeof p !== 'object') return false;
     
-    return (
-      (p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.description?.toLowerCase().includes(search.toLowerCase()) ||
-        p.tags?.some((tag) =>
-          tag.toLowerCase().includes(search.toLowerCase())
-        )) &&
-      (categoryFilter === "all" || p.category === categoryFilter) &&
-      finalPrice >= priceRange[0] &&
-      finalPrice <= priceRange[1]
-    );
+    const basePrice = p.price || 0;
+    const discount = p.discount || 0;
+    const finalPrice = basePrice - (basePrice * (discount / 100));
+    
+    // Search filter
+    const searchMatch = search === "" || 
+      (p.name && p.name.toLowerCase().includes(search.toLowerCase())) ||
+      (p.description && p.description.toLowerCase().includes(search.toLowerCase())) ||
+      (Array.isArray(p.tags) && p.tags.some(tag => 
+        tag && tag.toLowerCase().includes(search.toLowerCase())
+      ));
+    
+    // Category filter
+    const categoryMatch = categoryFilter === "all" || p.category === categoryFilter;
+    
+    // Price filter
+    const priceMatch = finalPrice >= priceRange[0] && finalPrice <= priceRange[1];
+    
+    return searchMatch && categoryMatch && priceMatch;
   });
 
   // Sort products
-  if (sort === "price-low") {
-    filteredProducts.sort(
-      (a, b) => {
-        const priceA = a.price - (a.discount ? a.price * (a.discount / 100) : 0);
-        const priceB = b.price - (b.discount ? b.price * (b.discount / 100) : 0);
-        return priceA - priceB;
-      }
-    );
-  } else if (sort === "price-high") {
-    filteredProducts.sort(
-      (a, b) => {
-        const priceA = a.price - (a.discount ? a.price * (a.discount / 100) : 0);
-        const priceB = b.price - (b.discount ? b.price * (b.discount / 100) : 0);
-        return priceB - priceA;
-      }
-    );
-  } else if (sort === "newest") {
-    filteredProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  } else if (sort === "popular") {
-    filteredProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-  }
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (!a || !b) return 0;
+    
+    const getFinalPrice = (product) => {
+      const price = product.price || 0;
+      const discount = product.discount || 0;
+      return price - (price * (discount / 100));
+    };
+
+    switch (sort) {
+      case "price-low":
+        return getFinalPrice(a) - getFinalPrice(b);
+      case "price-high":
+        return getFinalPrice(b) - getFinalPrice(a);
+      case "newest":
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+        return dateB - dateA;
+      case "popular":
+        return (b.rating || 0) - (a.rating || 0);
+      default:
+        return 0;
+    }
+  });
 
   // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = filteredProducts.slice(
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / itemsPerPage));
+  const paginatedProducts = sortedProducts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   // Handle page change
   const goToPage = (page) => {
-    setCurrentPage(page);
+    const validPage = Math.max(1, Math.min(page, totalPages));
+    setCurrentPage(validPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -162,9 +190,34 @@ export default function ShopPage() {
   const resetFilters = () => {
     setSearch("");
     setCategoryFilter("all");
-    setPriceRange([0, 5000]);
+    if (Array.isArray(products) && products.length > 0) {
+      const prices = products
+        .filter(p => p?.price != null)
+        .map(p => {
+          const basePrice = p.price || 0;
+          const discount = p.discount || 0;
+          return basePrice - (basePrice * (discount / 100));
+        });
+      
+      if (prices.length > 0) {
+        const minPrice = Math.floor(Math.min(...prices));
+        const maxPrice = Math.ceil(Math.max(...prices));
+        setPriceRange([Math.max(0, minPrice), Math.min(5000, maxPrice)]);
+      } else {
+        setPriceRange([0, 5000]);
+      }
+    } else {
+      setPriceRange([0, 5000]);
+    }
     setSort("default");
     setCurrentPage(1);
+  };
+
+  // Count products per category
+  const getCategoryCount = (category) => {
+    if (!Array.isArray(products)) return 0;
+    if (category === "all") return products.length;
+    return products.filter(p => p?.category === category).length;
   };
 
   return (
@@ -181,7 +234,7 @@ export default function ShopPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Mobile Filter Toggle - Only on Mobile */}
+        {/* Mobile Filter Toggle */}
         {isMobile && (
           <div className="mb-6">
             <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
@@ -198,9 +251,9 @@ export default function ShopPage() {
                   <>
                     <SlidersHorizontal className="w-5 h-5" />
                     <span>Show Filters</span>
-                    {Object.keys(filteredProducts).length !== products.length && (
+                    {filteredProducts.length !== products.length && (
                       <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {Object.keys(filteredProducts).length}
+                        {filteredProducts.length}
                       </span>
                     )}
                   </>
@@ -210,13 +263,13 @@ export default function ShopPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "text-gray-600"}`}
+                  className={`p-2 rounded ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "text-gray-600 hover:bg-gray-100"}`}
                 >
                   <Grid3x3 className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 rounded ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "text-gray-600"}`}
+                  className={`p-2 rounded ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "text-gray-600 hover:bg-gray-100"}`}
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -226,7 +279,7 @@ export default function ShopPage() {
         )}
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar - Always visible on Desktop, conditional on Mobile */}
+          {/* Sidebar */}
           <aside className={`lg:w-1/4 ${!isMobile || showMobileFilters ? "block" : "hidden"}`}>
             <div className="bg-white rounded-xl shadow-lg p-6 lg:sticky lg:top-6">
               {/* Header */}
@@ -262,7 +315,10 @@ export default function ShopPage() {
                     placeholder="Search by name or keyword..."
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setCurrentPage(1);
+                    }}
                   />
                 </div>
               </div>
@@ -291,7 +347,7 @@ export default function ShopPage() {
                             ? "bg-blue-500" 
                             : "bg-gray-100 text-gray-600"
                         }`}>
-                          {products.filter(p => cat === "all" || p.category === cat).length}
+                          {getCategoryCount(cat)}
                         </span>
                       </div>
                     </button>
@@ -501,17 +557,19 @@ export default function ShopPage() {
                   </div>
                 )}
 
-                <div className={`grid gap-6 ${
+                <div className={`gap-6 ${
                   viewMode === "grid" 
-                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                    : "grid-cols-1"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    : "flex flex-col"
                 }`}>
                   {paginatedProducts.map((product) => (
-                    <ProductCard 
-                      key={product._id}
-                      product={product}
-                      viewMode={viewMode}
-                    />
+                    product && (
+                      <ProductCard 
+                        key={product._id || Math.random()}
+                        product={product}
+                        viewMode={viewMode}
+                      />
+                    )
                   ))}
                 </div>
 
@@ -519,7 +577,7 @@ export default function ShopPage() {
                 {totalPages > 1 && (
                   <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="text-sm text-gray-600">
-                      Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                      Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredProducts.length)} to{" "}
                       {Math.min(currentPage * itemsPerPage, filteredProducts.length)} of{" "}
                       {filteredProducts.length} products
                     </div>

@@ -22,9 +22,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto py-6">
 
-        {/* Top Grid: Left Categories + Right Combos */}
-       
-          {/* Left Categories */}
+    
           
           
           

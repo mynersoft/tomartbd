@@ -80,7 +80,7 @@ export default function VendorRegistrationPage() {
       // Remove confirmPassword before sending
       const { confirmPassword, ...vendorData } = data;
 
-      const response = await fetch('/api/auth/register/vendor', {
+      const response = await fetch('/api/auth/vendor/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(vendorData),
