@@ -9,6 +9,7 @@ import ComboOffer from '@/components/Home/ComboOffer';
 import CategorySidebar from "@/components/Home/CategorySidebar";
 
 import FeaturedProductsSlider from './FeaturedProductsSlider';
+import ProductSlider from "@/components/Product/ProductSlider"
 
 export default function Home() {
   
@@ -24,6 +25,10 @@ export default function Home() {
         {/* Top Grid: Left Categories + Right Combos */}
        
           {/* Left Categories */}
+          
+          
+          
+          <ProductSlider products={products} />
 
 
           {/* Right Combo Offers */}

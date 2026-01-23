@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { signOut } from 'next-auth/react';
 import {
@@ -55,6 +55,25 @@ export default function Header() {
   const searchInputRef = useRef(null);
 
   useEffect(() => setMounted(true), []);
+
+  // Safe cart total calculation that won't cause hydration errors
+  const cartTotal = useMemo(() => {
+    if (!mounted || !items || !Array.isArray(items) || items.length === 0) {
+      return '0.00';
+    }
+    
+    try {
+      const total = items.reduce((sum, item) => {
+        const price = Number(item.price) || 0;
+        const quantity = Number(item.quantity) || 0;
+        return sum + (price * quantity);
+      }, 0);
+      
+      return total.toFixed(2);
+    } catch (error) {
+      return '0.00';
+    }
+  }, [items, mounted]);
 
   // Handle scroll effect
   useEffect(() => {
@@ -340,14 +359,12 @@ export default function Header() {
               className="flex-shrink-0 flex items-center gap-3 group"
               onClick={() => setIsMenuOpen(false)}
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
-                <span className="text-white font-bold text-xl">T</span>
-              </div>
+
               <div className="flex flex-col">
                 <span className="text-2xl font-bold text-gray-900 leading-tight">
                   Tomart<span className="text-orange-500">BD</span>
                 </span>
-                <span className="text-xs text-gray-500 -mt-1">Online Shopping</span>
+              
               </div>
             </Link>
 
@@ -393,14 +410,16 @@ export default function Header() {
               >
                 <div className="relative">
                   <Heart size={22} className="text-gray-600 group-hover:text-red-500 group-hover:fill-red-500 transition-colors" />
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-white">
-                    <span className="text-xs text-white font-bold">3</span>
-                  </div>
+                  {mounted && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-white">
+                      <span className="text-xs text-white font-bold">3</span>
+                    </div>
+                  )}
                 </div>
                 <span className="text-sm font-medium text-gray-700 hidden xl:inline">Wishlist</span>
               </Link>
 
-              {/* Cart */}
+              {/* Cart - FIXED: Safe cart total display */}
               <button
                 onClick={() => setIsCartOpen(true)}
                 className="relative flex items-center gap-2 p-2.5 hover:bg-gray-50 rounded-xl transition-colors group"
@@ -416,7 +435,7 @@ export default function Header() {
                 </div>
                 <div className="hidden xl:block text-left">
                   <span className="text-sm font-medium text-gray-700">Cart</span>
-                  <p className="text-xs text-gray-500">${items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}</p>
+                  <p className="text-xs text-gray-500">${cartTotal}</p>
                 </div>
               </button>
 
@@ -902,23 +921,6 @@ export default function Header() {
           </div>
         </div>
       </div>
-
-      {/* Add this to your global CSS or tailwind config */}
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-      `}</style>
     </>
   );
 }
