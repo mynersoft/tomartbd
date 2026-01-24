@@ -3,6 +3,7 @@ import { generateMetadata } from '@/lib/seo';
 import HeroBanner from '@/components/Home/HeroBanner';
 
 
+
 export const metadata = generateMetadata({
   title: 'Buy Quality Products Online On Tomart BD',
   path: '/',
@@ -21,12 +22,9 @@ export default function HomePage() {
       <header className="sr-only">
         <h1>Buy Quality Products Online from TomartBD, Stay connected</h1>
       </header>
-    
-
-
-      <div className="mt-14"></div>
-
       <HomeClient />
     </>
   );
 }
+
+

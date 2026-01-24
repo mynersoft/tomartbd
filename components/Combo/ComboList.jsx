@@ -22,7 +22,7 @@ import { useCombos, useDeleteCombo } from '@/hooks/useCombo';
 export const ComboList = () => {
  
   const { combos, isLoading } = useSelector((state) => state.combo);
-  console.log(combos);
+
   
   const deleteMutation = useDeleteCombo();
 

@@ -33,7 +33,7 @@ import { useTheme } from 'next-themes';
 import { useSession, signOut } from 'next-auth/react';
 import { useSelector } from 'react-redux';
 
-const AdminTopBar = ({ onMenuClick, sidebarOpen }) => {
+const AdminTopBar = ({ onMenuClick, sidebarOpen , setSidebarOpen }) => {
   const { data: session } = useSession();
   const user = session?.user;
   const router = useRouter();
@@ -45,7 +45,6 @@ const AdminTopBar = ({ onMenuClick, sidebarOpen }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const dropdownRef = useRef(null);
@@ -66,6 +65,7 @@ const AdminTopBar = ({ onMenuClick, sidebarOpen }) => {
     router.push('/auth/login');
   };
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const closeAllDropdowns = useCallback(() => {
     setIsDropdownOpen(false);
     setIsNotificationsOpen(false);
@@ -173,14 +173,18 @@ const AdminTopBar = ({ onMenuClick, sidebarOpen }) => {
                 {isMessagesOpen && (
                   <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50">
                     <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">Messages</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                        Messages
+                      </h3>
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                       {messages.map((msg) => (
                         <div
                           key={msg.id}
                           className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-l-2 ${
-                            msg.unread ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : 'border-transparent'
+                            msg.unread
+                              ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20'
+                              : 'border-transparent'
                           }`}
                         >
                           <div className="flex items-start gap-3">
@@ -239,7 +243,9 @@ const AdminTopBar = ({ onMenuClick, sidebarOpen }) => {
                   <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50">
                     <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                          Notifications
+                        </h3>
                         <button className="text-xs text-blue-600 font-medium hover:text-blue-800">
                           Mark all read
                         </button>
@@ -366,17 +372,17 @@ const AdminTopBar = ({ onMenuClick, sidebarOpen }) => {
       </header>
 
       {/* Mobile Menu */}
-      {isMobileMenuOpen && (
+      {sidebarOpen && (
         <>
-          <div 
+          <div
             className="lg:hidden fixed inset-0 z-40 bg-black/50"
-            onClick={() => setIsMobileMenuOpen(false)}
+            onClick={() => setSidebarOpen(false)}
           />
           <div className="lg:hidden fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-900 shadow-xl z-50 transform transition-transform duration-300">
             <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
               <h2 className="text-lg font-semibold">Menu</h2>
               <button
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => setSidebarOpen(false)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <X className="w-5 h-5" />
@@ -389,7 +395,7 @@ const AdminTopBar = ({ onMenuClick, sidebarOpen }) => {
                     key={item.href}
                     href={item.href}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => setSidebarOpen(false)}
                   >
                     {item.icon}
                     <span>{item.name}</span>

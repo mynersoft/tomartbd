@@ -9,7 +9,6 @@ import {
   AlertCircle,
   Clock,
 } from 'lucide-react';
-import { useRecentActivities } from '../../hooks/useVendorQuery';
 import { formatDate } from '../../utils/formatters';
 
 const RecentActivity = ({ limit = 10 }) => {

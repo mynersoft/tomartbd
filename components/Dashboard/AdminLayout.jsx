@@ -2,52 +2,38 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import AdminSidebar from './AdminSidebar';
-import AdminTopBar from '../Header/AdminTopBar';
+import AdminTopBar from './Admin/AdminTopBar';
 
 export default function AdminLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
   const checkMobile = useCallback(() => {
-    const mobile = window.innerWidth < 768;
-    setIsMobile(mobile);
-    
-    // Auto-close sidebar on mobile when resizing
-    if (mobile && sidebarOpen) {
-      setSidebarOpen(false);
-    } else if (!mobile && !sidebarOpen) {
-      setSidebarOpen(true);
-    }
-  }, [sidebarOpen]);
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
   useEffect(() => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
   }, [checkMobile]);
 
   const toggleSidebar = useCallback(() => {
-    setSidebarOpen(prev => !prev);
+    setSidebarOpen((prev) => !prev);
   }, []);
 
   return (
-<<<<<<< HEAD
-    <>
-      <AdminTopBar />
-      
-      <div className="flex h-screen bg-gray-100 overflow-hidden">
-=======
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <AdminTopBar 
-        onMenuClick={toggleSidebar} 
+      <AdminTopBar
+        onMenuClick={toggleSidebar}
         sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
       />
-      
+
       <div className="flex flex-1 overflow-hidden pt-16">
->>>>>>> df7b6111019570a53bd71875115c7701408b38e7
         {/* Mobile Overlay */}
         {sidebarOpen && isMobile && (
           <div
@@ -64,16 +50,16 @@ export default function AdminLayout({ children }) {
         />
 
         {/* Main Content */}
-        <main className={`
+        <main
+          className={`
           flex-1 overflow-y-auto transition-all duration-300 ease-in-out
-          ${sidebarOpen && !isMobile ? 'ml-64' : 'ml-0'}
+          ${sidebarOpen && !isMobile ? '' : 'ml-0'}
           p-4 md:p-6
           bg-gradient-to-br from-gray-50 to-gray-100
           min-h-[calc(100vh-4rem)]
-        `}>
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+        `}
+        >
+          <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
     </div>

@@ -9,7 +9,6 @@ import {
   TrendingDown,
 } from 'lucide-react';
 import { FaBoxOpen, FaExchangeAlt } from 'react-icons/fa';
-import { useVendorStats } from '../../hooks/useVendorQuery';
 
 const StatCard = ({ title, value, icon, change, isPositive, loading }) => {
   if (loading) {

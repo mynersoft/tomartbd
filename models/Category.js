@@ -68,8 +68,6 @@ const categorySchema = new mongoose.Schema(
 );
 
 // Create indexes
-categorySchema.index({ slug: 1 });
-subCategorySchema.index({ slug: 1 });
 subCategorySchema.index({ parentCategory: 1 });
 subCategorySchema.index({ parentSubCategory: 1 });
 subCategorySchema.index({ path: 1 });

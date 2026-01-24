@@ -10,6 +10,7 @@ import CategorySidebar from "@/components/Home/CategorySidebar";
 
 import FeaturedProductsSlider from './FeaturedProductsSlider';
 import ProductSlider from "@/components/Product/ProductSlider"
+import { HeroComboSection } from '../components/Home/HeroComboBanner';
 
 export default function Home() {
   
@@ -21,23 +22,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto py-6">
+        <ProductSlider products={products} />
 
-    
-          
-          
-          
-          <ProductSlider products={products} />
-
-
-          {/* Right Combo Offers */}
-          <div className="col-span-12 md:col-span-9 space-y-4">
-            {combos.length > 0 && combos.map((combo, index) => (
-              <ComboOffer key={index} combo={combo} />
-            ))}
-          </div>
-        
-
-
+        <HeroComboSection combos={combos || []} />
         {/* Categories Section */}
         <div className="mb-6">
           <CategoriesSection />
@@ -47,19 +34,15 @@ export default function Home() {
         <div className="mb-6">
           <ProductGrid products={products} />
         </div>
-     
+
         <div className="container mx-auto">
-      <FeaturedProductsSlider products={products} />
-    </div>
-          
-        
-        
+          <FeaturedProductsSlider products={products} />
+        </div>
 
         {/* Featured Vendors */}
         <div className="mb-6">
           <FeaturedVendors />
         </div>
-
       </main>
     </div>
   );

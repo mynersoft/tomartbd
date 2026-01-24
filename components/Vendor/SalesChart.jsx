@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import { useSalesData } from '../../hooks/useVendorQuery';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 const SalesChart = ({ period = 'monthly', chartType = 'line' }) => {

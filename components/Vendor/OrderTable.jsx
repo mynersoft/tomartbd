@@ -10,7 +10,6 @@ import {
   MoreVertical,
   Filter,
 } from 'lucide-react';
-import { useOrders, useUpdateOrderStatus } from '../../hooks/useVendorQuery';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 
 const OrderTable = () => {
