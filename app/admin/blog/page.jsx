@@ -87,8 +87,9 @@ const mockPosts = [
   },
 ];
 
+
 export default function BlogPage() {
-	// const [posts, setPosts] = useState(mockPosts);
+	// const [posts, setPosts] = useState(mockPosts); 
 	const { posts } = useSelector( state => state.blog);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');

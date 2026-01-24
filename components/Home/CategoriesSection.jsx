@@ -6,12 +6,15 @@ export default function CategoriesSection() {
   const categories = [
     { name: 'Electronics', icon: '📱', products: '10K+', color: 'bg-blue-50' },
     { name: 'Fashion', icon: '👕', products: '25K+', color: 'bg-pink-50' },
+        { name: 'Hardware', icon: '⚙️', products: '8K+', color: 'bg-pink-50' },
+            { name: 'Kitchen', icon: '🔪', products: '25K+', color: 'bg-pink-50' },
     {
-      name: 'Home & Kitchen',
+      name: 'Home',
       icon: '🏠',
       products: '15K+',
       color: 'bg-emerald-50',
     },
+        { name: 'Health', icon: '🩺', products: '25K+', color: 'bg-pink-50' },
     { name: 'Beauty', icon: '💄', products: '8K+', color: 'bg-purple-50' },
     { name: 'Sports', icon: '⚽', products: '5K+', color: 'bg-orange-50' },
     { name: 'Books', icon: '📚', products: '12K+', color: 'bg-red-50' },
@@ -37,7 +40,7 @@ export default function CategoriesSection() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
           {categories.map((category, index) => (
             <div
               key={index}

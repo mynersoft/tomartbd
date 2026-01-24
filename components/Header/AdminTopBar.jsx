@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import {
@@ -17,287 +17,128 @@ import {
   Sun,
   HelpCircle,
   Shield,
-  Database,
-  BarChart3,
-  Globe,
-  Package,
+  Home,
   Users,
   ShoppingCart,
-  Home,
+  Package,
+  BarChart3,
+  MessageCircle,
+  Mail,
   Calendar,
   FileText,
-  CreditCard,
   TrendingUp,
-  BellRing,
-  MessageCircle,
+  CreditCard,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import useLoginUser from '@/hooks/useAuth';
-import  {useNotifications} from "@/hooks/useNotifications";
+import { useSession, signOut } from 'next-auth/react';
+import { useSelector } from 'react-redux';
 
-import  {useSelector} from "react-redux";
-
-const AdminTopBar = () => {
-  const { user } = useLoginUser();
-useNotifications();
-
-const {notifications} = useSelector((state) => state.notification);
-
-console.log(notifications);
+const AdminTopBar = ({ onMenuClick, sidebarOpen }) => {
+  const { data: session } = useSession();
+  const user = session?.user;
   const router = useRouter();
-
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+  
+  const { notifications = [] } = useSelector((state) => state.notification || {});
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] =useState(false);
-    
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      name: 'John Doe',
-      message: 'Hey, can we schedule a meeting?',
-      time: '10 min ago',
-      unread: true,
-      avatar: 'JD',
-    },
-    {
-      id: 2,
-      name: 'Sarah Smith',
-      message: 'Thanks for the quick response!',
-      time: '1 hour ago',
-      unread: false,
-      avatar: 'SS',
-    },
-    {
-      id: 3,
-      name: 'Alex Johnson',
-      message: 'I need help with the dashboard',
-      time: '3 hours ago',
-      unread: true,
-      avatar: 'AJ',
-    },
-  ]);
+  const dropdownRef = useRef(null);
+  const notificationsRef = useRef(null);
+  const messagesRef = useRef(null);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const messages = [
+    { id: 1, name: 'John Doe', message: 'Meeting scheduled', time: '10 min ago', unread: true, avatar: 'JD' },
+    { id: 2, name: 'Sarah Smith', message: 'Thanks!', time: '1 hour ago', unread: false, avatar: 'SS' },
+    { id: 3, name: 'Alex Johnson', message: 'Need help', time: '3 hours ago', unread: true, avatar: 'AJ' },
+  ];
 
-  // Quick stats for header
-  const stats = {
-    orders: 128,
-    revenue: '$12,580',
-    users: 856,
-    growth: '+12%',
-  };
+  const unreadNotifications = notifications?.filter(n => !n.read)?.length || 0;
+  const unreadMessages = messages.filter(m => m.unread).length;
 
-  // Search functionality
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    if (query.trim() === '') {
-      setSearchResults([]);
-      return;
-    }
-
-    // Mock search results
-    const results = [
-      {
-        id: 1,
-        title: 'Dashboard',
-        path: '/admin',
-        icon: <Home className="h-4 w-4" />,
-      },
-      {
-        id: 2,
-        title: 'Users Management',
-        path: '/admin/users',
-        icon: <Users className="h-4 w-4" />,
-      },
-      {
-        id: 3,
-        title: 'Orders',
-        path: '/admin/orders',
-        icon: <ShoppingCart className="h-4 w-4" />,
-      },
-      {
-        id: 4,
-        title: 'Products',
-        path: '/admin/products',
-        icon: <Package className="h-4 w-4" />,
-      },
-      {
-        id: 5,
-        title: 'Analytics',
-        path: '/admin/analytics',
-        icon: <BarChart3 className="h-4 w-4" />,
-      },
-      {
-        id: 6,
-        title: 'Settings',
-        path: '/admin/settings',
-        icon: <Settings className="h-4 w-4" />,
-      },
-    ].filter((item) => item.title.toLowerCase().includes(query.toLowerCase()));
-
-    setSearchResults(results);
-  };
-
-  // Mark notification as read
-  const markNotificationAsRead = (id) => {
-    setNotifications(
-      notifications.map((notif) =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
-  };
-
-  // Mark all notifications as read
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((notif) => ({ ...notif, read: true })));
-  };
-
-  // Mark message as read
-  const markMessageAsRead = (id) => {
-    setMessages(
-      messages.map((msg) => (msg.id === id ? { ...msg, unread: false } : msg))
-    );
-  };
-
-  // Get unread counts
-  const unreadNotifications = notifications.filter((n) => !n.read).length;
-  const unreadMessages = messages.filter((m) => m.unread).length;
-
-  // Handle logout
-  const handleLogout = () => {
-    // Your logout logic here
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
     router.push('/auth/login');
   };
 
-  // Close dropdowns when clicking outside
+  const closeAllDropdowns = useCallback(() => {
+    setIsDropdownOpen(false);
+    setIsNotificationsOpen(false);
+    setIsMessagesOpen(false);
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.dropdown-container')) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
-        setIsNotificationsOpen(false);
-        setIsMessagesOpen(false);
       }
-      if (!event.target.closest('.search-container')) {
-        setIsSearchOpen(false);
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false);
+      }
+      if (messagesRef.current && !messagesRef.current.contains(event.target)) {
+        setIsMessagesOpen(false);
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    closeAllDropdowns();
+  }, [pathname, closeAllDropdowns]);
+
+  const navigationItems = [
+    { name: 'Dashboard', href: '/admin', icon: <Home className="w-4 h-4" /> },
+    { name: 'Users', href: '/admin/users', icon: <Users className="w-4 h-4" /> },
+    { name: 'Orders', href: '/admin/orders', icon: <ShoppingCart className="w-4 h-4" /> },
+    { name: 'Products', href: '/admin/products', icon: <Package className="w-4 h-4" /> },
+    { name: 'Analytics', href: '/admin/analytics', icon: <BarChart3 className="w-4 h-4" /> },
+    { name: 'Settings', href: '/admin/settings', icon: <Settings className="w-4 h-4" /> },
+  ];
+
+  if (!mounted) return null;
 
   return (
     <>
-      {/* Top Bar Header */}
-      <header className="sticky top-0 z-51 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800 shadow-sm">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left: Logo & Mobile Menu */}
-            <div className="flex items-center">
-              {/* Mobile Menu Button */}
+            {/* Left: Logo & Menu Button */}
+            <div className="flex items-center gap-4">
               <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mr-2"
+                onClick={onMenuClick}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Toggle sidebar"
               >
-                {isMobileMenuOpen ? (
-                  <X className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                {sidebarOpen ? (
+                  <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                 ) : (
-                  <Menu className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                  <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                 )}
               </button>
 
-              {/* Logo & Brand */}
-              <div className="flex items-center space-x-3">
-                <Link href="/admin" className="flex items-center space-x-2">
-                  <div>
-                    <h1 className="text-xl font-bold text-primary bg-linear-to-r from-primary-600 to-primary-800 bg-clip-text">
-                      Tomartbd
-                    </h1>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      Admin panel
-                    </span>
-                  </div>
-                </Link>
-              </div>
+              <Link href="/admin" className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                  <span className="text-white font-bold">T</span>
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Tomartbd
+                </span>
+              </Link>
             </div>
 
-            {/* Right: Search, Notifications, User Menu */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Search Bar */}
-              <div className="relative search-container hidden md:block">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    onFocus={() => setIsSearchOpen(true)}
-                    className="w-48 lg:w-64 pl-10 pr-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                  />
-                  <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-
-                  {/* Search Results Dropdown */}
-                  {isSearchOpen && searchResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50 max-h-96 overflow-y-auto">
-                      {searchResults.map((result) => (
-                        <Link
-                          key={result.id}
-                          href={result.path}
-                          className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                          onClick={() => {
-                            setSearchQuery('');
-                            setIsSearchOpen(false);
-                          }}
-                        >
-                          <div className="text-gray-500 dark:text-gray-400">
-                            {result.icon}
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">
-                              {result.title}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {result.path}
-                            </p>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Mobile Search Button */}
-              <button
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <Search className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-              </button>
-
-              {/* Mobile Search Bar (Full Width) */}
-              {isSearchOpen && (
-                <div className="md:hidden absolute top-16 left-0 right-0 px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-40">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => handleSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                    <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-              )}
-
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1 sm:gap-2">
               {/* Theme Toggle */}
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -305,87 +146,68 @@ console.log(notifications);
                 aria-label="Toggle theme"
               >
                 {theme === 'dark' ? (
-                  <Sun className="h-5 w-5 text-yellow-500" />
+                  <Sun className="w-5 h-5 text-yellow-500" />
                 ) : (
-                  <Moon className="h-5 w-5 text-gray-600" />
+                  <Moon className="w-5 h-5 text-gray-600" />
                 )}
               </button>
 
-              {/* Messages Dropdown */}
-              <div className="relative dropdown-container">
+              {/* Messages */}
+              <div className="relative" ref={messagesRef}>
                 <button
                   onClick={() => {
                     setIsMessagesOpen(!isMessagesOpen);
                     setIsNotificationsOpen(false);
                   }}
                   className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  aria-label="Messages"
                 >
-                  <MessageCircle className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  <MessageCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   {unreadMessages > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
                       {unreadMessages > 9 ? '9+' : unreadMessages}
                     </span>
                   )}
                 </button>
 
-                {/* Messages Dropdown Content */}
                 {isMessagesOpen && (
                   <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50">
-                    <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                          Messages
-                        </h3>
-                        <span className="text-xs text-primary-600 font-medium cursor-pointer hover:text-primary-800">
-                          Mark all as read
-                        </span>
-                      </div>
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">Messages</h3>
                     </div>
-
                     <div className="max-h-96 overflow-y-auto">
-                      {messages.map((message) => (
+                      {messages.map((msg) => (
                         <div
-                          key={message.id}
-                          className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer border-l-2 ${
-                            message.unread
-                              ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/20'
-                              : 'border-transparent'
+                          key={msg.id}
+                          className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-l-2 ${
+                            msg.unread ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : 'border-transparent'
                           }`}
-                          onClick={() => markMessageAsRead(message.id)}
                         >
-                          <div className="flex items-start space-x-3">
-                            <div className="flex-shrink-0">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-semibold">
-                                {message.avatar}
-                              </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                              {msg.avatar}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
                                 <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                                  {message.name}
+                                  {msg.name}
                                 </p>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  {message.time}
+                                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                  {msg.time}
                                 </span>
                               </div>
                               <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
-                                {message.message}
+                                {msg.message}
                               </p>
                             </div>
-                            {message.unread && (
-                              <div className="flex-shrink-0">
-                                <div className="w-2 h-2 rounded-full bg-primary-500"></div>
-                              </div>
-                            )}
                           </div>
                         </div>
                       ))}
                     </div>
-
-                    <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-800">
+                    <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800">
                       <Link
                         href="/admin/messages"
-                        className="text-center block text-primary-600 hover:text-primary-800 font-medium text-sm py-1"
+                        className="text-center block text-blue-600 hover:text-blue-800 font-medium text-sm py-1"
                         onClick={() => setIsMessagesOpen(false)}
                       >
                         View all messages
@@ -395,91 +217,63 @@ console.log(notifications);
                 )}
               </div>
 
-              {/* Notifications Dropdown */}
-              <div className="relative dropdown-container">
+              {/* Notifications */}
+              <div className="relative" ref={notificationsRef}>
                 <button
                   onClick={() => {
                     setIsNotificationsOpen(!isNotificationsOpen);
                     setIsMessagesOpen(false);
                   }}
                   className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  aria-label="Notifications"
                 >
-                  <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   {unreadNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
                       {unreadNotifications > 9 ? '9+' : unreadNotifications}
                     </span>
                   )}
                 </button>
 
-                {/* Notifications Dropdown Content */}
                 {isNotificationsOpen && (
                   <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50">
-                    <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                          Notifications
-                        </h3>
-                        <button
-                          onClick={markAllAsRead}
-                          className="text-xs text-primary-600 font-medium hover:text-primary-800"
-                        >
-                          Mark all as read
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
+                        <button className="text-xs text-blue-600 font-medium hover:text-blue-800">
+                          Mark all read
                         </button>
                       </div>
                     </div>
-
                     <div className="max-h-96 overflow-y-auto">
-                      {notifications.map((notification) => (
+                      {notifications.slice(0, 5).map((notification) => (
                         <div
                           key={notification._id}
-                          className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer border-l-2 ${
-                            !notification.read
-                              ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/20'
-                              : 'border-transparent'
-                          }`}
-                          onClick={() =>
-                            markNotificationAsRead(notification._id)
-                          }
+                          className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                         >
-                          <div className="flex items-start space-x-3">
-                            <div className="flex-shrink-0">
-                              <div
-                                className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                  !notification?.read
-                                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600'
-                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
-                                }`}
-                              >
-                                {notification.icon}
-                              </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                              <Bell className="w-5 h-5 text-gray-500" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between">
-                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                  {notification.title}
-                                </p>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  {notification.time}
-                                </span>
-                              </div>
-                              <div className="flex items-center space-x-2 mt-1">
-                                {!notification.read && (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
-                                    New
-                                  </span>
-                                )}
-                              </div>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">
+                                {notification.title || 'Notification'}
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                {notification.message}
+                              </p>
+                              <span className="text-xs text-gray-500 dark:text-gray-400 mt-2 block">
+                                {notification.time || 'Just now'}
+                              </span>
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
-
-                    <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-800">
+                    <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800">
                       <Link
                         href="/admin/notifications"
-                        className="text-center block text-primary-600 hover:text-primary-800 font-medium text-sm py-1"
+                        className="text-center block text-blue-600 hover:text-blue-800 font-medium text-sm py-1"
                         onClick={() => setIsNotificationsOpen(false)}
                       >
                         View all notifications
@@ -489,125 +283,77 @@ console.log(notifications);
                 )}
               </div>
 
-              {/* Quick Stats (Desktop) */}
-              <div className="hidden lg:flex items-center space-x-4">
-                <div className="h-6 w-px bg-gray-300 dark:bg-gray-700"></div>
-              </div>
-
-              {/* User Menu Dropdown */}
-              <div className="relative dropdown-container">
+              {/* User Menu */}
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-2 p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  aria-label="User menu"
                 >
-                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary-600 to-primary-800 flex items-center justify-center text-white font-semibold">
-                    avatar
-                  </div>
-                  <div className="hidden lg:block text-left">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {user.name}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {user.role}
-                    </p>
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold">
+                    {user?.name?.charAt(0) || 'U'}
                   </div>
                   <ChevronDown
-                    className={`h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform ${
+                    className={`w-5 h-5 text-gray-500 transition-transform ${
                       isDropdownOpen ? 'rotate-180' : ''
                     }`}
                   />
                 </button>
 
-                {/* User Dropdown Menu */}
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50">
-                    {/* User Info */}
                     <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary-600 to-primary-800 flex items-center justify-center text-white font-semibold text-lg">
-                          avatar
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
+                          {user?.name?.charAt(0) || 'U'}
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-900 dark:text-gray-100">
-                            {user.name}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                            {user?.name || 'Admin User'}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {user.email}
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            {user?.email || 'admin@example.com'}
                           </p>
-                          <div className="flex items-center space-x-1 mt-1">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
-                              {user.role}
-                            </span>
-                          </div>
+                          <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                            {user?.role || 'Admin'}
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Menu Items */}
                     <div className="py-2">
                       <Link
                         href="/admin/profile"
-                        className="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         onClick={() => setIsDropdownOpen(false)}
                       >
-                        <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                        <span className="text-gray-700 dark:text-gray-300">
-                          My Profile
-                        </span>
+                        <User className="w-5 h-5" />
+                        <span>My Profile</span>
                       </Link>
-
                       <Link
                         href="/admin/settings"
-                        className="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         onClick={() => setIsDropdownOpen(false)}
                       >
-                        <Settings className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                        <span className="text-gray-700 dark:text-gray-300">
-                          Settings
-                        </span>
+                        <Settings className="w-5 h-5" />
+                        <span>Settings</span>
                       </Link>
-
                       <Link
                         href="/admin/help"
-                        className="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         onClick={() => setIsDropdownOpen(false)}
                       >
-                        <HelpCircle className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                        <span className="text-gray-700 dark:text-gray-300">
-                          Help & Support
-                        </span>
+                        <HelpCircle className="w-5 h-5" />
+                        <span>Help & Support</span>
                       </Link>
-
-                      <div className="px-4 py-2.5 border-t border-gray-200 dark:border-gray-800">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Dark Mode
-                          </span>
-                          <button
-                            onClick={() =>
-                              setTheme(theme === 'dark' ? 'light' : 'dark')
-                            }
-                            className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 dark:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                theme === 'dark'
-                                  ? 'translate-x-6'
-                                  : 'translate-x-1'
-                              }`}
-                            />
-                          </button>
-                        </div>
-                      </div>
                     </div>
 
-                    {/* Logout */}
-                    <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-800">
+                    <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800">
                       <button
                         onClick={handleLogout}
-                        className="flex items-center justify-center w-full space-x-2 px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                        className="flex items-center justify-center w-full gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                       >
-                        <LogOut className="h-5 w-5" />
+                        <LogOut className="w-5 h-5" />
                         <span className="font-medium">Logout</span>
                       </button>
                     </div>
@@ -617,99 +363,42 @@ console.log(notifications);
             </div>
           </div>
         </div>
-
-        {/* Mobile Stats Bar */}
-        <div className="lg:hidden bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
-          <div className="px-4 py-2">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center">
-                <div className="flex items-center justify-center space-x-2">
-                  <ShoppingCart className="h-4 w-4 text-primary-600 dark:text-primary-400" />
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    {stats.orders}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Orders
-                </p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center">
-                <div className="flex items-center justify-center space-x-2">
-                  <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    {stats.revenue}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Revenue
-                </p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center">
-                <div className="flex items-center justify-center space-x-2">
-                  <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    {stats.users}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Users
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </header>
 
-      {/* Mobile Side Menu */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-black/50">
-          <div className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-900 shadow-xl">
+        <>
+          <div 
+            className="lg:hidden fixed inset-0 z-40 bg-black/50"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div className="lg:hidden fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-900 shadow-xl z-50 transform transition-transform duration-300">
             <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Menu
-              </h2>
+              <h2 className="text-lg font-semibold">Menu</h2>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <X className="h-5 w-5" />
+                <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-4 overflow-y-auto h-[calc(100vh-4rem)]">
-              {/* Add your mobile menu items here */}
               <div className="space-y-1">
-                <Link
-                  href="/admin"
-                  className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <Home className="h-5 w-5" />
-                  <span>Dashboard</span>
-                </Link>
-                <Link
-                  href="/admin/users"
-                  className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <Users className="h-5 w-5" />
-                  <span>Users</span>
-                </Link>
-                <Link
-                  href="/admin/orders"
-                  className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  <span>Orders</span>
-                </Link>
-                <Link
-                  href="/admin/products"
-                  className="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <Package className="h-5 w-5" />
-                  <span>Products</span>
-                </Link>
+                {navigationItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {item.icon}
+                    <span>{item.name}</span>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );

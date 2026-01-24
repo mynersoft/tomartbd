@@ -8,20 +8,26 @@ import ProductGrid from '@/components/Product/ProductGrid';
 import ComboOffer from '@/components/Home/ComboOffer';
 import CategorySidebar from "@/components/Home/CategorySidebar";
 
+import FeaturedProductsSlider from './FeaturedProductsSlider';
+import ProductSlider from "@/components/Product/ProductSlider"
+
 export default function Home() {
+  
   const { products } = useSelector((state) => state.product);
+  const featuredProducts = products.filter(product => product.type === "featured");
+  
   const { combos, isLoading } = useSelector((state) => state.combo);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto py-6">
 
-        {/* Top Grid: Left Categories + Right Combos */}
-        <div className="grid grid-cols-12 gap-4 mb-6">
-          {/* Left Categories */}
-          <div className="col-span-12 md:col-span-3">
-            <CategorySidebar />
-          </div>
+    
+          
+          
+          
+          <ProductSlider products={products} />
+
 
           {/* Right Combo Offers */}
           <div className="col-span-12 md:col-span-9 space-y-4">
@@ -29,7 +35,8 @@ export default function Home() {
               <ComboOffer key={index} combo={combo} />
             ))}
           </div>
-        </div>
+        
+
 
         {/* Categories Section */}
         <div className="mb-6">
@@ -40,6 +47,13 @@ export default function Home() {
         <div className="mb-6">
           <ProductGrid products={products} />
         </div>
+     
+        <div className="container mx-auto">
+      <FeaturedProductsSlider products={products} />
+    </div>
+          
+        
+        
 
         {/* Featured Vendors */}
         <div className="mb-6">

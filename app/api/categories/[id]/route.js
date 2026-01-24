@@ -1,9 +1,9 @@
 import {connectDB} from "@/lib/db";
-import Category from "@/models/Category";
+import {Category} from "@/models/Category";
 import { slugify } from "@/utils/slugify";
 
 export async function PUT(req, { params }) {
-  await dbConnect();
+  await connectDB();
   const body = await req.json();
   const category = await Category.findByIdAndUpdate(
     params.id,
@@ -23,7 +23,7 @@ export async function PUT(req, { params }) {
 }
 
 export async function DELETE(req, { params }) {
-  await dbConnect();
+  await connectDB();
   await Category.findByIdAndDelete(params.id);
   return new Response(JSON.stringify({ message: "Category deleted" }), { status: 200 });
 }

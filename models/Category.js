@@ -10,9 +10,31 @@ const subCategorySchema = new mongoose.Schema(
     slug: {
       type: String,
       required: true,
+      lowercase: true,
+    },
+    parentCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: true
+    },
+    level: {
+      type: Number,
+      default: 1
+    },
+    parentSubCategory: {
+      type: String,
+      default: null
+    },
+    path: {
+      type: String,
+      required: true
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
-  { _id: false }
+  { timestamps: true }
 );
 
 const categorySchema = new mongoose.Schema(
@@ -22,27 +44,37 @@ const categorySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
     slug: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
     },
-
     icon: {
-      type: String, // lucide icon name (ShoppingBasket etc.)
+      type: String,
       required: true,
     },
-
-    subCategories: [subCategorySchema],
-
     isActive: {
       type: Boolean,
       default: true,
     },
+    hierarchy: {
+      type: String,
+      enum: ['category', 'subcategory', 'sub-subcategory'],
+      default: 'category'
+    }
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Category", categorySchema);
+// Create indexes
+categorySchema.index({ slug: 1 });
+subCategorySchema.index({ slug: 1 });
+subCategorySchema.index({ parentCategory: 1 });
+subCategorySchema.index({ parentSubCategory: 1 });
+subCategorySchema.index({ path: 1 });
+
+const Category = mongoose.models.Category || mongoose.model("Category", categorySchema);
+const SubCategory = mongoose.models.SubCategory || mongoose.model("SubCategory", subCategorySchema);
+
+export { Category, SubCategory };

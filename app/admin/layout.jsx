@@ -1,82 +1,79 @@
-'use client';
+"use client";
 
-import { usePathname, useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
-import { useEffect, useRef } from 'react';
-import toast from 'react-hot-toast';
-import { useNotifications } from '@/hooks/useNotifications';
-import AdminLayout from '@/components/Dashboard/AdminLayout';
-import UserLayout from '@/components/Dashboard/UserLayout';
-import { useStatCard } from '@/hooks/useStatCard';
-import { useSelector } from 'react-redux';
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
+import AdminLayout from "@/components/Dashboard/AdminLayout";
+import UserLayout from "@/components/Dashboard/UserLayout";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function DashboardLayout({ children }) {
- 
+    const pathname = usePathname();
+    const router = useRouter();
+    const { data: session, status } = useSession();
+    const hasLoggedOut = useRef(false);
 
+    // 🔐 Route detection
+    const isAdminRoute = pathname.startsWith("/admin");
+    const isUserRoute = pathname.startsWith("/user");
+    const isSellerRoute = pathname.startsWith("/seller");
 
+    const forceLogout = async message => {
+        if (hasLoggedOut.current) return;
+        hasLoggedOut.current = true;
 
-  const pathname = usePathname();
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  const hasLoggedOut = useRef(false);
+        toast.error(message);
+        await signOut({ redirect: false });
+        router.replace("/auth/login");
+    };
 
-  // 🔐 ROLE PATH CHECK (covers /dashboard/admin/*)
-  const isAdminRoute = pathname.startsWith('/admin');
-  const isUserRoute = pathname.startsWith('/user');
-  const isSellerRoute = pathname.startsWith('/seller');
+    useEffect(() => {
+        // Not authenticated
+        if (status === "unauthenticated") {
+            forceLogout("Please login to continue");
+            return;
+        }
 
-  const forceLogout = async (message) => {
-    if (hasLoggedOut.current) return;
-    hasLoggedOut.current = true;
+        // Wrong role access
+        if (status === "authenticated") {
+            const role = session?.user?.role;
 
-    toast.error(message);
+            if (isAdminRoute && role !== "admin") {
+                forceLogout("Admin access only");
+            }
+            if (isUserRoute && role !== "user") {
+                forceLogout("User access only");
+            }
+            if (isSellerRoute && role !== "seller") {
+                forceLogout("Seller access only");
+            }
+        }
+    }, [status, pathname, session, router]);
 
-    await signOut({ redirect: false });
-    router.replace('/auth/login');
-  };
-
-  useEffect(() => {
-    // ❌ Not authenticated
-    if (status === 'unauthenticated') {
-      forceLogout('Please login to continue');
-      return;
+    // Loading state
+    if (status === "loading") {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <LoadingSpinner size="lg" />
+            </div>
+        );
     }
 
-    // ❌ Wrong role
-    if (status === 'authenticated') {
-      const role = session?.user?.role;
-
-      if (isAdminRoute && role !== 'admin') {
-        forceLogout('Admin access only');
-      }
-
-      if (isUserRoute && role !== 'user') {
-        forceLogout('User access only');
-      }
-
-      if (isSellerRoute && role !== 'seller') {
-        forceLogout('Seller access only');
-      }
+    // Layout selection
+    if (isAdminRoute) {
+        return <AdminLayout>{children}</AdminLayout>;
     }
-  }, [status, pathname, session]);
+    if (isUserRoute) {
+        return <UserLayout>{children}</UserLayout>;
+    }
+    if (isSellerRoute) {
+        return (
+            <div className="min-h-screen bg-gray-50">
+                Seller Layout {children}
+            </div>
+        );
+    }
 
-  // ⏳ Loading
-  if (status === 'loading') {
-    return <div className="p-6">Checking access...</div>;
-  }
-
-  // 🎨 Layout Switch
-  if (isAdminRoute) {
-    return <AdminLayout>{children}</AdminLayout>;
-  }
-
-  if (isUserRoute) {
-    return <UserLayout>{children}</UserLayout>;
-  }
-
-  if (isSellerRoute) {
-    return <div>Seller Layout {children}</div>;
-  }
-
-  return <>{children}</>;
+    return <div className="min-h-screen bg-gray-50">{children}</div>;
 }

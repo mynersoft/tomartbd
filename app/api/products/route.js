@@ -5,26 +5,12 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
-
-
 // GET
 export async function GET() {
   await connectDB();
   const products = await Product.find().sort({ createdAt: -1 });
   return Response.json(products);
 }
-
-// POST======================
-
-/**
- * Calculate sale price based on price and discount
- * @param {Number} price - regular or variant price
- * @param {Object} discount - { type: 'percentage'|'fixed', value: Number }
- * @returns {Number} salePrice
- */
-
-
-
 
 // -------------------- SALE PRICE CALC --------------------
 function calculateSalePrice(regularPrice, discount) {
@@ -46,15 +32,14 @@ function calculateSalePrice(regularPrice, discount) {
   return regularPrice;
 }
 
-
 // -------------------- POST API --------------------
 export async function POST(req) {
   try {
     await connectDB();
 
     const data = await req.json();
-    console.log(data.variants.images, '===========================================');
-    
+    console.log('Received data variants:', data.variants); // Fixed: removed .images
+
     const {
       name,
       description,
@@ -159,21 +144,17 @@ export async function POST(req) {
       description,
       brand,
       category,
-
       slug,
       sku,
-
       regularPrice,
       salePrice,
       stock,
-
       variants,
       images: data.images || [],
       keywords,
       metaTitle,
       metaDescription,
       type,
-
       ...(discountData && { discount: discountData }),
     });
 
@@ -182,41 +163,42 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (err) {
-    console.error(err);
+    console.error('Error creating product:', err);
     return NextResponse.json(
-      { success: false, error: err.message || 'Something went wrong' },
+      { 
+        success: false, 
+        error: err.message || 'Something went wrong',
+        details: err.errors ? Object.values(err.errors).map(e => e.message) : null
+      },
       { status: 500 }
     );
   }
 }
 
-
-
-
 // PUT (Admin only)
 export async function PUT(req) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== 'admin') {
-    return Response.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   await connectDB();
   const { id, ...data } = await req.json();
   const product = await Product.findByIdAndUpdate(id, data, { new: true });
 
-  return Response.json(product);
+  return NextResponse.json(product);
 }
 
 // DELETE (Admin only)
 export async function DELETE(req) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== 'admin') {
-    return Response.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   await connectDB();
   const { id } = await req.json();
   await Product.findByIdAndDelete(id);
 
-  return Response.json({ message: 'Deleted' });
+  return NextResponse.json({ message: 'Deleted' });
 }

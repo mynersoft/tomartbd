@@ -60,6 +60,7 @@ export default function AddProductPage() {
     const files = e.target.files;
     if (!files || !files.length) return;
 
+    setIsUploading(true);
     toast.loading('Uploading images...');
     const uploaded = [];
 
@@ -68,18 +69,33 @@ export default function AddProductPage() {
       formData.append('file', file);
       formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_PRESET);
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: 'POST', body: formData }
-      );
+      try {
+        const res = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          { method: 'POST', body: formData }
+        );
 
-      const data = await res.json();
-      uploaded.push(data.secure_url);
+        const data = await res.json();
+        uploaded.push(data.secure_url);
+      } catch (error) {
+        console.error('Upload error:', error);
+        toast.error(`Failed to upload ${file.name}`);
+      }
     }
 
     toast.dismiss();
-    toast.success('Images uploaded!');
-    setForm(prev => ({ ...prev, images: uploaded }));
+    if (uploaded.length > 0) {
+      toast.success('Images uploaded!');
+      setForm(prev => ({ ...prev, images: [...prev.images, ...uploaded] }));
+    }
+    setIsUploading(false);
+  };
+
+  const removeImage = (index) => {
+    setForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const addVariant = () => {
@@ -87,7 +103,15 @@ export default function AddProductPage() {
       ...prev,
       variants: [
         ...prev.variants,
-        { size: '', color: '', price: '', stock: '', discount: { type: '', value: '' }, salePrice: 0, images: [] },
+        { 
+          size: '', 
+          color: '', 
+          price: '', 
+          stock: '', 
+          discount: { type: '', value: '' }, 
+          salePrice: 0, 
+          images: [] 
+        },
       ],
     }));
   };
@@ -102,9 +126,9 @@ export default function AddProductPage() {
       const discountValue = Number(newVariants[index].discount.value || 0);
       
       if (newVariants[index].discount.type === 'percentage') {
-        newVariants[index].salePrice = price - (price * discountValue) / 100;
+        newVariants[index].salePrice = Math.max(0, price - (price * discountValue) / 100);
       } else if (newVariants[index].discount.type === 'fixed') {
-        newVariants[index].salePrice = price - discountValue;
+        newVariants[index].salePrice = Math.max(0, price - discountValue);
       } else {
         newVariants[index].salePrice = price;
       }
@@ -120,19 +144,11 @@ export default function AddProductPage() {
     const price = Number(newVariants[index].price || 0);
     const discountValue = Number(newVariants[index].discount.value || 0);
 
-    if (field === 'value') {
+    if (field === 'value' || field === 'type') {
       if (newVariants[index].discount.type === 'percentage') {
-        newVariants[index].salePrice = price - (price * discountValue) / 100;
+        newVariants[index].salePrice = Math.max(0, price - (price * discountValue) / 100);
       } else if (newVariants[index].discount.type === 'fixed') {
-        newVariants[index].salePrice = price - discountValue;
-      } else {
-        newVariants[index].salePrice = price;
-      }
-    } else if (field === 'type') {
-      if (value === 'percentage') {
-        newVariants[index].salePrice = price - (price * discountValue) / 100;
-      } else if (value === 'fixed') {
-        newVariants[index].salePrice = price - discountValue;
+        newVariants[index].salePrice = Math.max(0, price - discountValue);
       } else {
         newVariants[index].salePrice = price;
       }
@@ -162,24 +178,30 @@ export default function AddProductPage() {
         process.env.NEXT_PUBLIC_CLOUDINARY_PRESET
       );
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: 'POST', body: formData }
-      );
+      try {
+        const res = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          { method: 'POST', body: formData }
+        );
 
-      const data = await res.json();
-      uploaded.push(data.secure_url);
+        const data = await res.json();
+        uploaded.push(data.secure_url);
+      } catch (error) {
+        console.error('Upload error:', error);
+        toast.error(`Failed to upload ${file.name}`);
+      }
     }
 
     toast.dismiss();
-    toast.success('Variant images uploaded');
-
-    const newVariants = [...form.variants];
-    newVariants[index].images = [
-      ...(newVariants[index].images || []),
-      ...uploaded,
-    ];
-    setForm((prev) => ({ ...prev, variants: newVariants }));
+    if (uploaded.length > 0) {
+      toast.success('Variant images uploaded');
+      const newVariants = [...form.variants];
+      newVariants[index].images = [
+        ...(newVariants[index].images || []),
+        ...uploaded,
+      ];
+      setForm((prev) => ({ ...prev, variants: newVariants }));
+    }
 
     setIsUploading(false);
   };
@@ -194,30 +216,57 @@ export default function AddProductPage() {
   const handleAddProduct = (e) => {
     e.preventDefault();
 
+    // Validate required fields
+    if (!form.name.trim()) {
+      toast.error('Product name is required');
+      return;
+    }
+
+    if (!form.category) {
+      toast.error('Category is required');
+      return;
+    }
+
+    // If no variants, check for regular price
+    if (!hasVariants && (!form.regularPrice || Number(form.regularPrice) <= 0)) {
+      toast.error('Regular price is required when there are no variants');
+      return;
+    }
+
     const hasDiscount = form.discount.type && Number(form.discount.value) > 0;
 
     const variants = form.variants.map(v => ({
       size: v.size,
       color: v.color,
       price: Number(v.price),
-      stock: Number(v.stock),
+      stock: Number(v.stock || 0),
       salePrice: Number(v.salePrice),
       images: v.images || [],
-      ...(v.discount?.value && { discount: { type: v.discount.type, value: Number(v.discount.value) } }),
+      ...(v.discount?.value && { 
+        discount: { 
+          type: v.discount.type, 
+          value: Number(v.discount.value) 
+        } 
+      }),
     }));
 
     const productData = {
-      name: form.name,
+      name: form.name.trim(),
       description: form.description,
       category: form.category,
       brand: form.brand,
-      stock: Number(form.stock),
+      stock: hasVariants ? 0 : Number(form.stock || 0), // Stock is sum of variants if variants exist
       images: form.images,
-      tags: form.tags ? form.tags.split(',').map(t => t.trim()) : [],
+      tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(t => t) : [],
       featured: form.featured,
       bestseller: form.bestseller,
       newArrival: form.newArrival,
-      ...(hasDiscount && { discount: { type: form.discount.type, value: Number(form.discount.value) } }),
+      ...(hasDiscount && { 
+        discount: { 
+          type: form.discount.type, 
+          value: Number(form.discount.value) 
+        } 
+      }),
     };
 
     // Add regularPrice only if there are no variants
@@ -271,307 +320,374 @@ export default function AddProductPage() {
 
       <form className="space-y-4" onSubmit={handleAddProduct}>
         {/* Product Name */}
-        <input
-          type="text"
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Product Name"
-          className="w-full border px-3 py-2 rounded"
-          required
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Product Name *</label>
+          <input
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Product Name"
+            className="w-full border px-3 py-2 rounded"
+            required
+          />
+        </div>
 
         {/* Main Images */}
         <div>
+          <label className="block text-sm font-medium mb-1">Product Images</label>
           <input
             type="file"
             multiple
             accept="image/*"
             onChange={handleUploadImages}
             className="w-full border px-3 py-2 rounded"
+            disabled={isUploading}
           />
           {form.images.length > 0 && (
             <div className="flex gap-2 mt-2 flex-wrap">
               {form.images.map((img, index) => (
-                <img
-                  key={index}
-                  src={img}
-                  alt="product"
-                  className="w-16 h-16 object-cover rounded border"
-                />
+                <div key={index} className="relative">
+                  <img
+                    src={img}
+                    alt="product"
+                    className="w-16 h-16 object-cover rounded border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                  >
+                    ✕
+                  </button>
+                </div>
               ))}
             </div>
           )}
         </div>
 
         {/* Description */}
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Description"
-          className="w-full border px-3 py-2 rounded"
-          required
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Description</label>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="Description"
+            rows="4"
+            className="w-full border px-3 py-2 rounded"
+          />
+        </div>
 
         {/* Brand & Category */}
-        <input
-          type="text"
-          name="brand"
-          value={form.brand}
-          onChange={handleChange}
-          placeholder="Brand"
-          className="w-full border px-3 py-2 rounded"
-        />
-
-        <select
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          className="w-full border px-3 py-2 rounded"
-        >
-          <option value="">Select Category</option>
-          <option value="electronics">Electronics</option>
-          <option value="mobile">Mobile</option>
-          <option value="fashion">Fashion</option>
-          <option value="hardware">Hardware</option>
-          <option value="other">Other</option>
-        </select>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Brand</label>
+            <input
+              type="text"
+              name="brand"
+              value={form.brand}
+              onChange={handleChange}
+              placeholder="Brand"
+              className="w-full border px-3 py-2 rounded"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Category *</label>
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 rounded"
+              required
+            >
+              <option value="">Select Category</option>
+              <option value="electronics">Electronics</option>
+              <option value="mobile">Mobile</option>
+              <option value="fashion">Fashion</option>
+              <option value="hardware">Hardware</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
 
         {/* Variants Section */}
         <div className="border-t pt-4">
-          <h2 className="text-lg font-semibold mb-2">Variants</h2>
+          <h2 className="text-lg font-semibold mb-2">Variants (Optional)</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Add variants if your product comes in different sizes/colors. 
+            If no variants, use the main price and stock fields below.
+          </p>
 
           {form.variants.map((variant, index) => (
             <div key={index} className="border p-4 rounded mb-4 space-y-3">
-              <div className="flex gap-2 flex-wrap items-center">
-                <input
-                  type="text"
-                  value={variant.size}
-                  onChange={(e) => updateVariant(index, 'size', e.target.value)}
-                  placeholder="Size"
-                  className="border px-2 py-1 rounded w-1/4"
-                />
-                <select
-                  value={variant.color}
-                  onChange={(e) =>
-                    updateVariant(index, "color", e.target.value)
-                  }
-                  className="border px-2 py-1 rounded w-1/4"
+              <div className="flex justify-between items-center">
+                <h3 className="font-medium">Variant #{index + 1}</h3>
+                <button
+                  type="button"
+                  onClick={() => removeVariant(index)}
+                  className="bg-red-500 text-white px-3 py-1 rounded text-sm"
                 >
-                  <option value="">Select Color</option>
-                  {colors.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                  Remove
+                </button>
+              </div>
 
-                <input
-                  type="number"
-                  value={variant.price}
-                  onChange={(e) =>
-                    updateVariant(index, 'price', e.target.value)
-                  }
-                  placeholder="Price"
-                  className="border px-2 py-1 rounded w-1/4"
-                />
-                <input
-                  type="number"
-                  value={variant.stock}
-                  onChange={(e) =>
-                    updateVariant(index, 'stock', e.target.value)
-                  }
-                  placeholder="Stock"
-                  className="border px-2 py-1 rounded w-1/4"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Size</label>
+                  <input
+                    type="text"
+                    value={variant.size}
+                    onChange={(e) => updateVariant(index, 'size', e.target.value)}
+                    placeholder="e.g., M, L, XL"
+                    className="w-full border px-2 py-1 rounded"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Color</label>
+                  <select
+                    value={variant.color}
+                    onChange={(e) => updateVariant(index, 'color', e.target.value)}
+                    className="w-full border px-2 py-1 rounded"
+                  >
+                    <option value="">Select Color</option>
+                    {colors.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Price *</label>
+                  <input
+                    type="number"
+                    value={variant.price}
+                    onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                    placeholder="Price"
+                    className="w-full border px-2 py-1 rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Stock *</label>
+                  <input
+                    type="number"
+                    value={variant.stock}
+                    onChange={(e) => updateVariant(index, 'stock', e.target.value)}
+                    placeholder="Stock"
+                    className="w-full border px-2 py-1 rounded"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Discount & Sale Price */}
-              <div className="flex gap-2">
-                <select
-                  value={variant.discount.type}
-                  onChange={(e) =>
-                    updateVariantDiscount(index, 'type', e.target.value)
-                  }
-                  className="border px-2 py-1 rounded w-1/3"
-                >
-                  <option value="">Discount Type</option>
-                  <option value="percentage">Percentage</option>
-                  <option value="fixed">Fixed</option>
-                </select>
-
-                <input
-                  type="number"
-                  value={variant.discount.value}
-                  onChange={(e) =>
-                    updateVariantDiscount(index, 'value', e.target.value)
-                  }
-                  placeholder="Discount Value"
-                  className="border px-2 py-1 rounded w-1/3"
-                />
-
-                <input
-                  type="number"
-                  value={variant.salePrice || 0}
-                  readOnly
-                  placeholder="Sale Price"
-                  className="border px-2 py-1 rounded w-1/3 bg-gray-100"
-                />
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Discount Type</label>
+                  <select
+                    value={variant.discount.type}
+                    onChange={(e) => updateVariantDiscount(index, 'type', e.target.value)}
+                    className="w-full border px-2 py-1 rounded"
+                  >
+                    <option value="">No Discount</option>
+                    <option value="percentage">Percentage</option>
+                    <option value="fixed">Fixed</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Discount Value</label>
+                  <input
+                    type="number"
+                    value={variant.discount.value}
+                    onChange={(e) => updateVariantDiscount(index, 'value', e.target.value)}
+                    placeholder="0"
+                    className="w-full border px-2 py-1 rounded"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Sale Price</label>
+                  <input
+                    type="number"
+                    value={variant.salePrice || 0}
+                    readOnly
+                    className="w-full border px-2 py-1 rounded bg-gray-100"
+                  />
+                </div>
               </div>
 
               {/* Variant Images */}
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={(e) => uploadVariantImages(e.target.files, index)}
-                className="border px-2 py-1 rounded w-full"
-                disabled={isUploading}
-              />
-
-              {variant.images?.length > 0 && (
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  {variant.images.map((img, imgIndex) => (
-                    <div key={imgIndex} className="relative">
-                      <img
-                        src={img}
-                        alt="variant"
-                        className="w-16 h-16 object-cover rounded border"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeVariantImage(index, imgIndex)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => removeVariant(index)}
-                className="bg-red-500 text-white px-3 py-1 rounded"
-              >
-                Remove Variant
-              </button>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Variant Images</label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => uploadVariantImages(e.target.files, index)}
+                  className="w-full border px-2 py-1 rounded"
+                  disabled={isUploading}
+                />
+                {variant.images?.length > 0 && (
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {variant.images.map((img, imgIndex) => (
+                      <div key={imgIndex} className="relative">
+                        <img
+                          src={img}
+                          alt="variant"
+                          className="w-16 h-16 object-cover rounded border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeVariantImage(index, imgIndex)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           ))}
 
           <button
             type="button"
             onClick={addVariant}
-            className="bg-blue-600 text-white px-4 py-1 rounded"
+            className="bg-blue-600 text-white px-4 py-2 rounded"
           >
-            Add Variant
+            + Add Variant
           </button>
         </div>
 
         {/* Main Price & Discount - Only show if no variants */}
         {!hasVariants && (
           <>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                name="regularPrice"
-                value={form.regularPrice}
-                onChange={handleChange}
-                placeholder="Regular Price"
-                className="w-full border px-3 py-2 rounded"
-                required
-              />
+            <div className="border-t pt-4">
+              <h3 className="font-medium mb-3">Pricing (when no variants)</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Regular Price *</label>
+                  <input
+                    type="number"
+                    name="regularPrice"
+                    value={form.regularPrice}
+                    onChange={handleChange}
+                    placeholder="Regular Price"
+                    className="w-full border px-3 py-2 rounded"
+                    required={!hasVariants}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Stock Quantity *</label>
+                  <input
+                    type="number"
+                    name="stock"
+                    value={form.stock}
+                    onChange={handleChange}
+                    placeholder="Stock Quantity"
+                    className="w-full border px-3 py-2 rounded"
+                    required={!hasVariants}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <select
-                name="discount.type"
-                value={form.discount.type}
-                onChange={handleChange}
-                className="w-1/2 border px-3 py-2 rounded"
-              >
-                <option value="">Select discount type</option>
-                <option value="percentage">Percentage</option>
-                <option value="fixed">Fixed</option>
-              </select>
 
-              <input
-                name="discount.value"
-                value={form.discount.value}
-                onChange={handleChange}
-                className="w-1/2 border px-3 py-2 rounded"
-                placeholder="Discount value"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Discount Type</label>
+                <select
+                  name="discount.type"
+                  value={form.discount.type}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                >
+                  <option value="">No Discount</option>
+                  <option value="percentage">Percentage</option>
+                  <option value="fixed">Fixed</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Discount Value</label>
+                <input
+                  name="discount.value"
+                  value={form.discount.value}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                  placeholder="0"
+                />
+              </div>
             </div>
           </>
         )}
 
-        {/* Stock - Only show if no variants */}
-        {!hasVariants && (
-          <input
-            type="number"
-            name="stock"
-            value={form.stock}
-            onChange={handleChange}
-            placeholder="Stock Quantity"
-            className="w-full border px-3 py-2 rounded"
-            required
-          />
-        )}
-
         {/* Tags */}
-        <input
-          type="text"
-          name="tags"
-          value={form.tags}
-          onChange={handleChange}
-          placeholder="Tags (comma separated)"
-          className="w-full border px-3 py-2 rounded"
-        />
-
-        {/* Featured / Bestseller / NewArrival */}
-        <div className="flex gap-4">
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="featured"
-              checked={form.featured}
-              onChange={handleChange}
-            />
-            Featured
-          </label>
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="bestseller"
-              checked={form.bestseller}
-              onChange={handleChange}
-            />
-            Bestseller
-          </label>
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="newArrival"
-              checked={form.newArrival}
-              onChange={handleChange}
-            />
-            New Arrival
-          </label>
+        <div>
+          <label className="block text-sm font-medium mb-1">Tags</label>
+          <input
+            type="text"
+            name="tags"
+            value={form.tags}
+            onChange={handleChange}
+            placeholder="Tags (comma separated)"
+            className="w-full border px-3 py-2 rounded"
+          />
         </div>
 
-        <button
-          disabled={isLoading || isUploading}
-          type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
-        >
-          {isLoading
-            ? 'Adding...'
-            : isUploading
-              ? 'Uploading images...'
-              : 'Add Product'}
-        </button>
+        {/* Featured / Bestseller / NewArrival */}
+        <div className="border-t pt-4">
+          <h3 className="font-medium mb-3">Product Flags</h3>
+          <div className="flex gap-6">
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="featured"
+                checked={form.featured}
+                onChange={handleChange}
+                className="rounded"
+              />
+              <span>Featured</span>
+            </label>
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="bestseller"
+                checked={form.bestseller}
+                onChange={handleChange}
+                className="rounded"
+              />
+              <span>Bestseller</span>
+            </label>
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="newArrival"
+                checked={form.newArrival}
+                onChange={handleChange}
+                className="rounded"
+              />
+              <span>New Arrival</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="border-t pt-6">
+          <button
+            disabled={isLoading || isUploading}
+            type="submit"
+            className="bg-blue-600 text-white px-8 py-3 rounded font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading
+              ? 'Adding Product...'
+              : isUploading
+                ? 'Uploading Images...'
+                : 'Add Product'}
+          </button>
+        </div>
       </form>
     </div>
   );
