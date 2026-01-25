@@ -1,15 +1,19 @@
+import { setCategories } from '@/store/slices/categorySlice';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
 
 const API_URL = '/api/categories';
 
 // Get all categories with subcategories
 export const useCategories = () => {
+  const dispatch = useDispatch();
   return useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       try {
         const { data } = await axios.get(API_URL);
+        dispatch(setCategories(data));
         return data;
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -31,7 +35,7 @@ export const useAddCategory = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['categories']);
-    }
+    },
   });
 };
 
@@ -40,12 +44,15 @@ export const useAddSubCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ parentId, subCategoryData }) => {
-      const { data } = await axios.post(`${API_URL}/${parentId}/subcategories`, subCategoryData);
+      const { data } = await axios.post(
+        `${API_URL}/${parentId}/subcategories`,
+        subCategoryData
+      );
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['categories']);
-    }
+    },
   });
 };
 
@@ -58,7 +65,7 @@ export const useDeleteCategory = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['categories']);
-    }
+    },
   });
 };
 
@@ -71,7 +78,7 @@ export const useDeleteSubCategory = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['categories']);
-    }
+    },
   });
 };
 
@@ -85,6 +92,6 @@ export const useUpdateCategory = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['categories']);
-    }
+    },
   });
 };

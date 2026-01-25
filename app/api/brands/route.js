@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import {connectDB} from '@/lib/db';
+import { connectDB } from '@/lib/db';
 import Brand from '@/models/Brand';
 import slugify from 'slugify';
 
@@ -8,7 +8,12 @@ export async function GET() {
   try {
     await connectDB();
     const brands = await Brand.find().sort({ createdAt: -1 });
-    return NextResponse.json(brands);
+    return NextResponse.json(
+      { success: true, brands },
+      {
+        status: 201,
+      }
+    );
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -18,22 +23,20 @@ export async function GET() {
 export async function POST(request) {
   try {
     await connectDB();
-	  const body = await request.json();
-	  
-	  
-	  const slug = slugify(body.name, {
-      replacement: '-', 
-      remove: undefined, 
-      lower: true, 
-      strict: true, 
-      locale: 'en', 
+    const body = await request.json();
+
+    const slug = slugify(body.name, {
+      replacement: '-',
+      remove: undefined,
+      lower: true,
+      strict: true,
+      locale: 'en',
       trim: true,
     });
 
-	  const brand = await Brand.create({
-		  ...body,
-		  slug: slug
-
+    const brand = await Brand.create({
+      ...body,
+      slug: slug,
     });
 
     return NextResponse.json(brand, { status: 201 });

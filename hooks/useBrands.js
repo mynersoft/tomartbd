@@ -30,47 +30,6 @@ export function useBrands() {
   });
 }
 
-// single brand  by userId
-export function useSingleBrand(userId) {
-  const dispatch = useDispatch();
-  return useQuery({
-    queryKey: ['brand', userId],
-    queryFn: async () => {
-      if (!userId) {
-        throw new Error('Brand ID is required');
-      }
-      try {
-        const res = await axios.get(`/api/brands/userid/${userId}`);
-
-        if (!res.data.success) {
-          throw new Error(res.data.error || 'Failed to fetch brand');
-        }
-        // Dispatch to Redux store
-        if (res.data.brand) {
-          dispatch(setSingleBrand(res.data.brand));
-        }
-
-        return res.data.brand;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          throw new Error(
-            error.response?.data?.error ||
-              error.response?.data?.message ||
-              'Failed to fetch brand'
-          );
-        }
-        throw error;
-      }
-    },
-
-    onSuccess: (data) => {
-      if (data) {
-        toast.success('Brand details loaded successfully');
-      }
-    },
-  });
-}
-
 export function useAddBrand() {
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
@@ -101,16 +60,6 @@ export function useAddBrand() {
   });
 }
 
-export const useUpdateBrandstatus = () => {
-  const qc = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, status }) =>
-      axios.patch(`/api/brands/${id}`, { status }),
-    onSuccess: () => qc.invalidateQueries(['brands']),
-  });
-};
-
 export const useDeleteBrand = () => {
   const qc = useQueryClient();
   const dispatch = useDispatch();
@@ -120,9 +69,7 @@ export const useDeleteBrand = () => {
       return res.data;
     },
     onSuccess: (_data, id) => {
-      // Invalidate react-query
       qc.invalidateQueries(['brands']);
-      // Update redux slice
       dispatch(removeBrand(id));
       toast.success('Brand deleted successfully');
     },

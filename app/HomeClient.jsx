@@ -1,23 +1,19 @@
 'use client';
 
-import CategoriesSection from '@/components/Home/CategoriesSection';
+import CategoriesSection from '@/components/CategoriesSection';
 import FeaturedVendors from '@/components/FeaturedVendors';
-import ProductCardNew from '@/components/Product/ProductCardNew';
 import { useSelector } from 'react-redux';
 import ProductGrid from '@/components/Product/ProductGrid';
-import ComboOffer from '@/components/Home/ComboOffer';
-import CategorySidebar from "@/components/Home/CategorySidebar";
 
 import FeaturedProductsSlider from './FeaturedProductsSlider';
-import ProductSlider from "@/components/Product/ProductSlider"
+import ProductSlider from '@/components/Product/ProductSlider';
 import { HeroComboSection } from '../components/Home/HeroComboBanner';
+import { ChevronRight } from 'lucide-react';
 
 export default function Home() {
-  
   const { products } = useSelector((state) => state.product);
-  const featuredProducts = products.filter(product => product.type === "featured");
-  
-  const { combos, isLoading } = useSelector((state) => state.combo);
+
+  const { combos } = useSelector((state) => state.combo);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -27,6 +23,18 @@ export default function Home() {
         <HeroComboSection combos={combos || []} />
         {/* Categories Section */}
         <div className="mb-6">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h2 className=" font-bold text-gray-900">Shop by Category</h2>
+              <p className="text-gray-600 mt-2">
+                Browse products from various categories
+              </p>
+            </div>
+            <button className="text-blue-600 font-semibold flex items-center hover:text-blue-700">
+              View All Categories
+              <ChevronRight className="h-5 w-5 ml-1" />
+            </button>
+          </div>
           <CategoriesSection />
         </div>
 

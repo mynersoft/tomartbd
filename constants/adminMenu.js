@@ -37,6 +37,11 @@ export const menuItems = [
     icon: <Layers className="w-5 h-5" />,
   },
   {
+    name: 'Brand',
+    href: '/admin/brands',
+    icon: <Building className="w-5 h-5" />,
+  },
+  {
     name: 'Category',
     href: '/admin/categories',
     icon: <Building className="w-5 h-5" />,

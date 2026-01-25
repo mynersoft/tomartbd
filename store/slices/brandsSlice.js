@@ -23,9 +23,6 @@ const brandSlice = createSlice({
         (brand) => brand._id !== action.payload
       );
     },
-    setSingleBrand: (state, action) => {
-      state.brand = action.payload.brands;
-    },
     setBrands(state, action) {
       state.brands = action.payload.brands;
     },
