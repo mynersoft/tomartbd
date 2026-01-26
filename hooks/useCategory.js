@@ -25,6 +25,9 @@ export const useCategories = () => {
   });
 };
 
+
+
+
 // Add main category
 export const useAddCategory = () => {
   const queryClient = useQueryClient();

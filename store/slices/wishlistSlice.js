@@ -101,7 +101,7 @@ const wishlistSlice = createSlice({
             saveWishlistToStorage([]);
         },
 
-        setWishlist: (state, action) => {
+        setWishlist: (state, action) => {            
             const items = action.payload || [];
 
             // Validate items

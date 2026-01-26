@@ -70,4 +70,6 @@ state - react redux
 ===========API Route============
 
 /brands
-/brands/id
+/brands/:id
+
+/wishlists/:id

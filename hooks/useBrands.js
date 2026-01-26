@@ -9,7 +9,6 @@ import {
   removeBrand,
 } from '@/store/slices/brandsSlice';
 import toast from 'react-hot-toast';
-import { clearCart } from '@/store/slices/cartSlice';
 
 export function useBrands() {
   const dispatch = useDispatch();

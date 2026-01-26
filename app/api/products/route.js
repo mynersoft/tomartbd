@@ -4,7 +4,7 @@ import { generateSKU } from '@/lib/generateSKU';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
-
+import User from '@/models/User';
 // GET
 export async function GET() {
   await connectDB();
@@ -35,10 +35,21 @@ function calculateSalePrice(regularPrice, discount) {
 // -------------------- POST API --------------------
 export async function POST(req) {
   try {
+    const { user } = await getServerSession(authOptions);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Unauthorised',
+        },
+        { status: 404 }
+      );
+    }
+
     await connectDB();
 
     const data = await req.json();
-    console.log('Received data variants:', data.variants); // Fixed: removed .images
 
     const {
       name,
@@ -148,6 +159,7 @@ export async function POST(req) {
       sku,
       regularPrice,
       salePrice,
+      vendor: user.id,
       stock,
       variants,
       images: data.images || [],
@@ -158,6 +170,14 @@ export async function POST(req) {
       ...(discountData && { discount: discountData }),
     });
 
+    await User.findByIdAndUpdate(
+      user.id,
+      {
+        $push: { products: product._id },
+      },
+      { new: true }
+    );
+
     return NextResponse.json(
       { success: true, product, message: 'Product added successfully' },
       { status: 201 }
@@ -165,10 +185,12 @@ export async function POST(req) {
   } catch (err) {
     console.error('Error creating product:', err);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: err.message || 'Something went wrong',
-        details: err.errors ? Object.values(err.errors).map(e => e.message) : null
+        details: err.errors
+          ? Object.values(err.errors).map((e) => e.message)
+          : null,
       },
       { status: 500 }
     );

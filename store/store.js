@@ -17,6 +17,7 @@ import bogoReducer from './slices/bogoSlice';
 import vendorReducer from './slices/vendorSlice';
 import uiReducer from './slices/uiSlice';
 import categoryReducer from './slices/categorySlice';
+import brandReducer from './slices/brandsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -25,6 +26,7 @@ export const store = configureStore({
     auth: authReducer,
     ui: uiReducer,
     product: productReducer,
+    brand: brandReducer,
     category: categoryReducer,
     cart: cartReducer,
     wishlist: wishlistReducer,

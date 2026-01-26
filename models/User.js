@@ -33,11 +33,17 @@ const UserSchema = new Schema(
     },
     // ✅ Correct: Only ONE address field as AddressSchema
     address: {
-      area: { type: String,  trim: true },
-      thana: { type: String,  trim: true },
-      city: { type: String,  trim: true },
+      area: { type: String, trim: true },
+      thana: { type: String, trim: true },
+      city: { type: String, trim: true },
     },
-    // Seller-only fields
+    products: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        default: [],
+      },
+    ],
     shopName: String,
     shopAddress: String,
     bankAccount: String,

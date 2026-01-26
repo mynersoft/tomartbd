@@ -32,13 +32,6 @@ const VariantSchema = new mongoose.Schema(
 
       default: Date.now,
     },
-    vendor: {
-      type: mongoose.Schema.Types.ObjectId,
-
-      ref: 'User',
-
-      required: true, // BOGOs belong to vendors
-    },
     endDate: {
       type: Date,
     },
@@ -46,7 +39,6 @@ const VariantSchema = new mongoose.Schema(
   },
   { _id: false }
 );
-
 
 /* ---------- Product Schema ---------- */
 const ProductSchema = new mongoose.Schema(
@@ -93,6 +85,10 @@ const ProductSchema = new mongoose.Schema(
       default: 0,
     },
     variants: [VariantSchema],
+    vendor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
 
     description: String,
 

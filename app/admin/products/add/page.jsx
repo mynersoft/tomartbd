@@ -4,26 +4,31 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAddProduct } from '@/hooks/useProducts';
+import { useSelector } from 'react-redux';
 
 export default function AddProductPage() {
   const { mutate, isLoading } = useAddProduct();
+  const { brands } = useSelector((state) => state.brand);
+  const { categories } = useSelector((state) => state.category);
 
   const colors = [
-    { name: "White", value: "#ffffff" },
-    { name: "Black", value: "#000000" },
-    { name: "Red", value: "#ff0000" },
-    { name: "Blue", value: "#0000ff" },
-    { name: "Green", value: "#00ff00" },
-    { name: "Yellow", value: "#ffff00" },
-    { name: "Purple", value: "#800080" },
-    { name: "Orange", value: "#ffa500" },
-    { name: "Gray", value: "#808080" },
+    { name: 'White', value: '#ffffff' },
+    { name: 'Black', value: '#000000' },
+    { name: 'Red', value: '#ff0000' },
+    { name: 'Blue', value: '#0000ff' },
+    { name: 'Green', value: '#00ff00' },
+    { name: 'Yellow', value: '#ffff00' },
+    { name: 'Purple', value: '#800080' },
+    { name: 'Orange', value: '#ffa500' },
+    { name: 'Gray', value: '#808080' },
   ];
 
   const [form, setForm] = useState({
     name: '',
     description: '',
     category: '',
+    subCategory: '',
+    childCategory: '',
     brand: '',
     regularPrice: '',
     stock: '',
@@ -36,10 +41,23 @@ export default function AddProductPage() {
     variants: [],
   });
 
+  const selectedCategory = categories?.find((c) => c._id === form.category);
+
+  const levelOneSubs =
+    selectedCategory?.subCategories?.filter((sub) => sub.level === 1) || [];
+
+  const levelTwoSubs =
+    selectedCategory?.subCategories?.filter(
+      (sub) =>
+        sub.level === 2 &&
+        sub.parentSubCategory ===
+          levelOneSubs.find((s) => s._id === form.subCategory)?.slug
+    ) || [];
+
   const [selectedColor, setSelectedColor] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  const hasVariants = form.variants.length > 0;
+  const hasVariants = form.variants?.length > 0;
 
   // -------------------- HANDLERS --------------------
   const handleChange = (e) => {
@@ -47,12 +65,18 @@ export default function AddProductPage() {
 
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
-        [parent]: { ...prev[parent], [child]: type === 'checkbox' ? checked : value },
+        [parent]: {
+          ...prev[parent],
+          [child]: type === 'checkbox' ? checked : value,
+        },
       }));
     } else {
-      setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+      setForm((prev) => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+      }));
     }
   };
 
@@ -67,7 +91,10 @@ export default function AddProductPage() {
     for (const file of files) {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_PRESET);
+      formData.append(
+        'upload_preset',
+        process.env.NEXT_PUBLIC_CLOUDINARY_PRESET
+      );
 
       try {
         const res = await fetch(
@@ -86,31 +113,31 @@ export default function AddProductPage() {
     toast.dismiss();
     if (uploaded.length > 0) {
       toast.success('Images uploaded!');
-      setForm(prev => ({ ...prev, images: [...prev.images, ...uploaded] }));
+      setForm((prev) => ({ ...prev, images: [...prev.images, ...uploaded] }));
     }
     setIsUploading(false);
   };
 
   const removeImage = (index) => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: prev.images.filter((_, i) => i !== index),
     }));
   };
 
   const addVariant = () => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       variants: [
         ...prev.variants,
-        { 
-          size: '', 
-          color: '', 
-          price: '', 
-          stock: '', 
-          discount: { type: '', value: '' }, 
-          salePrice: 0, 
-          images: [] 
+        {
+          size: '',
+          color: '',
+          price: '',
+          stock: '',
+          discount: { type: '', value: '' },
+          salePrice: 0,
+          images: [],
         },
       ],
     }));
@@ -119,22 +146,25 @@ export default function AddProductPage() {
   const updateVariant = (index, field, value) => {
     const newVariants = [...form.variants];
     newVariants[index][field] = value;
-    
+
     // Recalculate sale price when price changes
     if (field === 'price') {
       const price = Number(value || 0);
       const discountValue = Number(newVariants[index].discount.value || 0);
-      
+
       if (newVariants[index].discount.type === 'percentage') {
-        newVariants[index].salePrice = Math.max(0, price - (price * discountValue) / 100);
+        newVariants[index].salePrice = Math.max(
+          0,
+          price - (price * discountValue) / 100
+        );
       } else if (newVariants[index].discount.type === 'fixed') {
         newVariants[index].salePrice = Math.max(0, price - discountValue);
       } else {
         newVariants[index].salePrice = price;
       }
     }
-    
-    setForm(prev => ({ ...prev, variants: newVariants }));
+
+    setForm((prev) => ({ ...prev, variants: newVariants }));
   };
 
   const updateVariantDiscount = (index, field, value) => {
@@ -146,7 +176,10 @@ export default function AddProductPage() {
 
     if (field === 'value' || field === 'type') {
       if (newVariants[index].discount.type === 'percentage') {
-        newVariants[index].salePrice = Math.max(0, price - (price * discountValue) / 100);
+        newVariants[index].salePrice = Math.max(
+          0,
+          price - (price * discountValue) / 100
+        );
       } else if (newVariants[index].discount.type === 'fixed') {
         newVariants[index].salePrice = Math.max(0, price - discountValue);
       } else {
@@ -154,13 +187,13 @@ export default function AddProductPage() {
       }
     }
 
-    setForm(prev => ({ ...prev, variants: newVariants }));
+    setForm((prev) => ({ ...prev, variants: newVariants }));
   };
 
   const removeVariant = (index) => {
     const newVariants = [...form.variants];
     newVariants.splice(index, 1);
-    setForm(prev => ({ ...prev, variants: newVariants }));
+    setForm((prev) => ({ ...prev, variants: newVariants }));
   };
 
   const uploadVariantImages = async (files, index) => {
@@ -209,7 +242,7 @@ export default function AddProductPage() {
   const removeVariantImage = (variantIndex, imageIndex) => {
     const newVariants = [...form.variants];
     newVariants[variantIndex].images.splice(imageIndex, 1);
-    setForm(prev => ({ ...prev, variants: newVariants }));
+    setForm((prev) => ({ ...prev, variants: newVariants }));
   };
 
   // -------------------- SUBMIT --------------------
@@ -228,25 +261,28 @@ export default function AddProductPage() {
     }
 
     // If no variants, check for regular price
-    if (!hasVariants && (!form.regularPrice || Number(form.regularPrice) <= 0)) {
+    if (
+      !hasVariants &&
+      (!form.regularPrice || Number(form.regularPrice) <= 0)
+    ) {
       toast.error('Regular price is required when there are no variants');
       return;
     }
 
     const hasDiscount = form.discount.type && Number(form.discount.value) > 0;
 
-    const variants = form.variants.map(v => ({
+    const variants = form.variants.map((v) => ({
       size: v.size,
       color: v.color,
       price: Number(v.price),
       stock: Number(v.stock || 0),
       salePrice: Number(v.salePrice),
       images: v.images || [],
-      ...(v.discount?.value && { 
-        discount: { 
-          type: v.discount.type, 
-          value: Number(v.discount.value) 
-        } 
+      ...(v.discount?.value && {
+        discount: {
+          type: v.discount.type,
+          value: Number(v.discount.value),
+        },
       }),
     }));
 
@@ -257,15 +293,20 @@ export default function AddProductPage() {
       brand: form.brand,
       stock: hasVariants ? 0 : Number(form.stock || 0), // Stock is sum of variants if variants exist
       images: form.images,
-      tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(t => t) : [],
+      tags: form.tags
+        ? form.tags
+            .split(',')
+            .map((t) => t.trim())
+            .filter((t) => t)
+        : [],
       featured: form.featured,
       bestseller: form.bestseller,
       newArrival: form.newArrival,
-      ...(hasDiscount && { 
-        discount: { 
-          type: form.discount.type, 
-          value: Number(form.discount.value) 
-        } 
+      ...(hasDiscount && {
+        discount: {
+          type: form.discount.type,
+          value: Number(form.discount.value),
+        },
       }),
     };
 
@@ -301,7 +342,7 @@ export default function AddProductPage() {
       },
       onError: (error) => {
         toast.error(error.message || 'Failed to add product');
-      }
+      },
     });
   };
 
@@ -321,7 +362,9 @@ export default function AddProductPage() {
       <form className="space-y-4" onSubmit={handleAddProduct}>
         {/* Product Name */}
         <div>
-          <label className="block text-sm font-medium mb-1">Product Name *</label>
+          <label className="block text-sm font-medium mb-1">
+            Product Name *
+          </label>
           <input
             type="text"
             name="name"
@@ -335,7 +378,9 @@ export default function AddProductPage() {
 
         {/* Main Images */}
         <div>
-          <label className="block text-sm font-medium mb-1">Product Images</label>
+          <label className="block text-sm font-medium mb-1">
+            Product Images
+          </label>
           <input
             type="file"
             multiple
@@ -344,9 +389,9 @@ export default function AddProductPage() {
             className="w-full border px-3 py-2 rounded"
             disabled={isUploading}
           />
-          {form.images.length > 0 && (
+          {form.images?.length > 0 && (
             <div className="flex gap-2 mt-2 flex-wrap">
-              {form.images.map((img, index) => (
+              {form.images?.map((img, index) => (
                 <div key={index} className="relative">
                   <img
                     src={img}
@@ -379,35 +424,88 @@ export default function AddProductPage() {
           />
         </div>
 
-        {/* Brand & Category */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Brand</label>
-            <input
-              type="text"
+
+            <select
               name="brand"
               value={form.brand}
-              onChange={handleChange}
-              placeholder="Brand"
-              className="w-full border px-3 py-2 rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Category *</label>
-            <select
-              name="category"
-              value={form.category}
               onChange={handleChange}
               className="w-full border px-3 py-2 rounded"
               required
             >
-              <option value="">Select Category</option>
-              <option value="electronics">Electronics</option>
-              <option value="mobile">Mobile</option>
-              <option value="fashion">Fashion</option>
-              <option value="hardware">Hardware</option>
-              <option value="other">Other</option>
+              <option value="">Select Brand</option>
+              {brands &&
+                brands?.map((brand, index) => (
+                  <option key={index} value={brand._id}>
+                    {brand.name}
+                  </option>
+                ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Category *</label>
+            <select
+              value={form.category}
+              onChange={(e) => {
+                setForm((prev) => ({
+                  ...prev,
+                  category: e.target.value,
+                  subCategory: '',
+                  childCategory: '',
+                }));
+              }}
+              className="w-full border px-3 py-2 rounded"
+              required
+            >
+              <option value="">Select Category</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.icon} {cat.name}
+                </option>
+              ))}
+            </select>
+            {levelOneSubs.length > 0 && (
+              <select
+                value={form.subCategory}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    subCategory: e.target.value,
+                    childCategory: '',
+                  }))
+                }
+                className="w-full border px-3 py-2 rounded mt-3"
+                required
+              >
+                <option value="">Select Sub Category</option>
+                {levelOneSubs.map((sub) => (
+                  <option key={sub._id} value={sub._id}>
+                    {sub.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            {levelTwoSubs.length > 0 && (
+              <select
+                value={form.childCategory}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    childCategory: e.target.value,
+                  }))
+                }
+                className="w-full border px-3 py-2 rounded mt-3"
+              >
+                <option value="">Select Child Category</option>
+                {levelTwoSubs.map((sub) => (
+                  <option key={sub._id} value={sub._id}>
+                    {sub.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -415,11 +513,11 @@ export default function AddProductPage() {
         <div className="border-t pt-4">
           <h2 className="text-lg font-semibold mb-2">Variants (Optional)</h2>
           <p className="text-sm text-gray-600 mb-4">
-            Add variants if your product comes in different sizes/colors. 
-            If no variants, use the main price and stock fields below.
+            Add variants if your product comes in different sizes/colors. If no
+            variants, use the main price and stock fields below.
           </p>
 
-          {form.variants.map((variant, index) => (
+          {form.variants?.map((variant, index) => (
             <div key={index} className="border p-4 rounded mb-4 space-y-3">
               <div className="flex justify-between items-center">
                 <h3 className="font-medium">Variant #{index + 1}</h3>
@@ -434,20 +532,28 @@ export default function AddProductPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Size</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    Size
+                  </label>
                   <input
                     type="text"
                     value={variant.size}
-                    onChange={(e) => updateVariant(index, 'size', e.target.value)}
+                    onChange={(e) =>
+                      updateVariant(index, 'size', e.target.value)
+                    }
                     placeholder="e.g., M, L, XL"
                     className="w-full border px-2 py-1 rounded"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Color</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    Color
+                  </label>
                   <select
                     value={variant.color}
-                    onChange={(e) => updateVariant(index, 'color', e.target.value)}
+                    onChange={(e) =>
+                      updateVariant(index, 'color', e.target.value)
+                    }
                     className="w-full border px-2 py-1 rounded"
                   >
                     <option value="">Select Color</option>
@@ -462,22 +568,30 @@ export default function AddProductPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Price *</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    Price *
+                  </label>
                   <input
                     type="number"
                     value={variant.price}
-                    onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                    onChange={(e) =>
+                      updateVariant(index, 'price', e.target.value)
+                    }
                     placeholder="Price"
                     className="w-full border px-2 py-1 rounded"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Stock *</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    Stock *
+                  </label>
                   <input
                     type="number"
                     value={variant.stock}
-                    onChange={(e) => updateVariant(index, 'stock', e.target.value)}
+                    onChange={(e) =>
+                      updateVariant(index, 'stock', e.target.value)
+                    }
                     placeholder="Stock"
                     className="w-full border px-2 py-1 rounded"
                     required
@@ -488,10 +602,14 @@ export default function AddProductPage() {
               {/* Discount & Sale Price */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Discount Type</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    Discount Type
+                  </label>
                   <select
                     value={variant.discount.type}
-                    onChange={(e) => updateVariantDiscount(index, 'type', e.target.value)}
+                    onChange={(e) =>
+                      updateVariantDiscount(index, 'type', e.target.value)
+                    }
                     className="w-full border px-2 py-1 rounded"
                   >
                     <option value="">No Discount</option>
@@ -500,17 +618,23 @@ export default function AddProductPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Discount Value</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    Discount Value
+                  </label>
                   <input
                     type="number"
                     value={variant.discount.value}
-                    onChange={(e) => updateVariantDiscount(index, 'value', e.target.value)}
+                    onChange={(e) =>
+                      updateVariantDiscount(index, 'value', e.target.value)
+                    }
                     placeholder="0"
                     className="w-full border px-2 py-1 rounded"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">Sale Price</label>
+                  <label className="block text-xs text-gray-600 mb-1">
+                    Sale Price
+                  </label>
                   <input
                     type="number"
                     value={variant.salePrice || 0}
@@ -522,7 +646,9 @@ export default function AddProductPage() {
 
               {/* Variant Images */}
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Variant Images</label>
+                <label className="block text-xs text-gray-600 mb-1">
+                  Variant Images
+                </label>
                 <input
                   type="file"
                   multiple
@@ -571,7 +697,9 @@ export default function AddProductPage() {
               <h3 className="font-medium mb-3">Pricing (when no variants)</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Regular Price *</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Regular Price *
+                  </label>
                   <input
                     type="number"
                     name="regularPrice"
@@ -583,7 +711,9 @@ export default function AddProductPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Stock Quantity *</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Stock Quantity *
+                  </label>
                   <input
                     type="number"
                     name="stock"
@@ -599,7 +729,9 @@ export default function AddProductPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Discount Type</label>
+                <label className="block text-sm font-medium mb-1">
+                  Discount Type
+                </label>
                 <select
                   name="discount.type"
                   value={form.discount.type}
@@ -612,7 +744,9 @@ export default function AddProductPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Discount Value</label>
+                <label className="block text-sm font-medium mb-1">
+                  Discount Value
+                </label>
                 <input
                   name="discount.value"
                   value={form.discount.value}

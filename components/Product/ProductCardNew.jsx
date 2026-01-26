@@ -9,32 +9,21 @@ import { toggleWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getProductInfo } from '@/utils/productPriceInfo';
 
 const ProductCardNew = ({ product }) => {
   const [isAddedToCart, setIsAddedToCart] = useState(false);
+
   const [quantity, setQuantity] = useState(1);
   const [open, setOpen] = useState(false);
 
   const dispatch = useDispatch();
 
-  const hasVariants = product?.variants?.length > 0;
 
-  // Get the correct image source
-  const getImageSrc = () => {
-    if (!product) return '/placeholder.png';
-
-    if (hasVariants && product.variants[0]?.images?.[0]) {
-      return product.variants[0].images[0];
-    }
-
-    if (product.images?.[0]) {
-      return product.images[0];
-    }
-
-    return '/placeholder.png';
-  };
-
-  const imgSrc = getImageSrc();
+  // get price info 
+  const { hasDiscount, discountValue, regularPrice, salePrice, stock, imgSrc } =
+    getProductInfo(product);
+  
 
   const wishlist = useSelector((state) => state.wishlist.items || []);
   const cart = useSelector((state) => state.cart.items || []);
@@ -73,63 +62,6 @@ const ProductCardNew = ({ product }) => {
   const productSlug = product?.slug || product?._id || '';
   const productUrl = `/product/${productSlug}`;
 
-  // Get discount value safely
-  const getDiscountValue = () => {
-    if (!product) return null;
-
-    if (hasVariants && product.variants[0]?.discount?.value > 0) {
-      return product.variants[0].discount.value;
-    }
-
-    if (product.discount?.value > 0) {
-      return product.discount.value;
-    }
-
-    return null;
-  };
-
-  const discountValue = getDiscountValue();
-
-  // Get price info safely
-  const getPriceInfo = () => {
-    if (!product) {
-      return { hasDiscount: false, regularPrice: 0, salePrice: 0 };
-    }
-
-    let hasDiscount = false;
-    let regularPrice = 0;
-    let salePrice = 0;
-
-    if (hasVariants && product.variants?.[0]) {
-      const variant = product.variants[0];
-      regularPrice = variant.price || 0;
-      salePrice = variant.salePrice || variant.price || 0;
-      hasDiscount = variant.discount?.value > 0;
-    } else {
-      regularPrice = product.regularPrice || product.price || 0;
-      salePrice =
-        product.salePrice || product.regularPrice || product.price || 0;
-      hasDiscount = product.discount?.value > 0;
-    }
-
-    return { hasDiscount, regularPrice, salePrice };
-  };
-
-  const { hasDiscount, regularPrice, salePrice } = getPriceInfo();
-
-  // Get stock safely
-  const getStock = () => {
-    if (!product) return 0;
-
-    if (hasVariants && product.variants?.[0]?.stock !== undefined) {
-      return product.variants[0].stock;
-    }
-
-    return product.stock || 0;
-  };
-
-  const stock = getStock();
-
   // Safely get rating
   const rating = product?.rating || 0;
   const reviewCount = product?.reviewCount || 0;
@@ -155,7 +87,7 @@ const ProductCardNew = ({ product }) => {
           {/* Discount Badge */}
           {discountValue !== null && (
             <div className="absolute top-4 left-4 z-10">
-              <span className="bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-sm px-3 py-1.5 rounded-full shadow-md">
+              <span className="bg-linear-to-r from-red-500 to-red-600 text-white font-bold text-sm px-3 py-1.5 rounded-full shadow-md">
                 -{discountValue}% OFF
               </span>
             </div>
