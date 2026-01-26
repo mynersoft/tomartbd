@@ -21,9 +21,13 @@ export default function Providers({ children }) {
   const [activeTab, setActiveTab] = useState('Home');
   const pathname = usePathname();
 
+const isAdmin = pathname.startsWith('/admin');
+const isSeller = pathname.startsWith('/seller');
+const isUser = pathname.startsWith('/user');
+
   // Routes where Header should be hidden
   const hideHeader =
-    pathname.startsWith('/admin') || pathname.startsWith('/seller');
+    pathname.startsWith('/admin') || pathname.startsWith('/seller') || pathname.startsWith('/user');
 
   return (
     <SessionProvider>
@@ -36,11 +40,7 @@ export default function Providers({ children }) {
           {/* Header only for non-admin/seller routes */}
           {!hideHeader && <Header />}
 
-        
-
-         
-            {children}
-        
+          {children}
 
           <WhatsappChat />
 

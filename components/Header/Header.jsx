@@ -125,8 +125,6 @@ export default function Header() {
     setIsMenuOpen(false);
   };
 
-  
-
   const userMenuItems =
     user?.role === 'admin'
       ? [
@@ -315,316 +313,316 @@ export default function Header() {
       />
 
       {/* ================= MAIN HEADER ================= */}
-      <header
-        ref={headerRef}
-        className={`sticky top-0 z-40 bg-white transition-all duration-300 ${
-          scrolled
-            ? 'shadow-lg border-b border-gray-200 py-2'
-            : 'border-b border-gray-100 py-3'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Main Header Row */}
-          <div className="flex items-center justify-between gap-4">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="flex-shrink-0 flex items-center gap-3 group"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <div className="flex flex-col">
-                <span className="text-2xl font-bold text-gray-900 leading-tight">
-                  Tomart<span className="text-orange-500">BD</span>
-                </span>
-              </div>
-            </Link>
-
-            {/* Search Bar - Desktop */}
-            <div className="hidden lg:flex flex-1 max-w-2xl mx-8">
-              <form onSubmit={handleSearch} className="w-full relative">
-                <input
-                  type="text"
-                  placeholder="Search for products, brands, and more..."
-                  className="w-full p-3.5 pl-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-gray-700 placeholder-gray-400"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Search
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={20}
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  Search
-                </button>
-              </form>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2 sm:gap-4">
-              {/* Search - Mobile */}
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="lg:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
-                aria-label="Search"
-              >
-                <Search size={22} className="text-gray-600" />
-              </button>
-
-              {/* Wishlist */}
+      <header>
+        <div className="mx-auto container">
+          <div
+            className={` container mx-auto    transition-all duration-300 z-[999] ${
+              scrolled
+                ? 'bg-white fixed w-full  duration-300  top-0'
+                : 'bg-white  duration-300 top-9 border-b border-gray-100'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-4">
+              {/* Logo */}
               <Link
-                href="/wishlist"
-                className="hidden sm:flex items-center gap-2 p-2.5 hover:bg-gray-50 rounded-xl transition-colors group relative"
-                aria-label="Wishlist"
+                href="/"
+                className="shrink-0 flex items-center gap-3 group"
+                onClick={() => setIsMenuOpen(false)}
               >
-                <div className="relative">
-                  <Heart
-                    size={22}
-                    className="text-gray-600 group-hover:text-red-500 group-hover:fill-red-500 transition-colors"
-                  />
-                  {mounted && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-white">
-                      <span className="text-xs text-white font-bold">3</span>
-                    </div>
-                  )}
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-gray-900 leading-tight">
+                    Tomart<span className="text-orange-500">BD</span>
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-gray-700 hidden xl:inline">
-                  Wishlist
-                </span>
               </Link>
 
-              {/* Cart - FIXED: Safe cart total display */}
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center gap-2 p-2.5 hover:bg-gray-50 rounded-xl transition-colors group"
-                aria-label="Open cart"
-              >
-                <div className="relative">
-                  <ShoppingCart
-                    size={22}
-                    className="text-gray-600 group-hover:text-blue-600 transition-colors"
+              {/* Search Bar - Desktop */}
+              <div className="hidden lg:flex flex-1 max-w-2xl mx-8">
+                <form onSubmit={handleSearch} className="w-full relative">
+                  <input
+                    type="text"
+                    placeholder="Search for products, brands, and more..."
+                    className="w-full p-3.5 pl-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-gray-700 placeholder-gray-400"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  {mounted && qty > 0 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center border-2 border-white">
-                      <span className="text-xs text-white font-bold">
-                        {qty}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="hidden xl:block text-left">
-                  <span className="text-sm font-medium text-gray-700">
-                    Cart
-                  </span>
-                  <p className="text-xs text-gray-500">${cartTotal}</p>
-                </div>
-              </button>
+                  <Search
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={20}
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Search
+                  </button>
+                </form>
+              </div>
 
-              {/* User Account */}
-              <div className="relative" ref={userMenuRef}>
-                {user ? (
-                  <>
-                    <button
-                      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className="hidden sm:flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors group"
-                      aria-label="Account menu"
-                    >
-                      <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-transparent group-hover:border-blue-200 transition-colors">
-                        {user.image ? (
-                          <Image
-                            src={user.image}
-                            alt={user.name}
-                            width={36}
-                            height={36}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                            <User size={18} className="text-blue-600" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="hidden xl:block text-left">
-                        <p className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
-                          Hi, {user.name?.split(' ')[0]}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {user.role === 'admin'
-                            ? 'Administrator'
-                            : 'Premium Member'}
-                        </p>
-                      </div>
-                      <ChevronDown
-                        size={16}
-                        className={`text-gray-400 transition-transform ${
-                          isUserMenuOpen ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </button>
+              {/* Actions */}
+              <div className="flex items-center gap-2 sm:gap-4">
+                {/* Search - Mobile */}
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="lg:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
+                  aria-label="Search"
+                >
+                  <Search size={22} className="text-gray-600" />
+                </button>
 
-                    {/* User Dropdown */}
-                    {isUserMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 animate-fadeIn">
-                        <div className="px-4 py-3 border-b border-gray-100">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100">
-                              {user.image ? (
-                                <Image
-                                  src={user.image}
-                                  alt={user.name}
-                                  width={40}
-                                  height={40}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <User size={20} className="text-blue-600" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-900 truncate">
-                                {user.name}
-                              </p>
-                              <p className="text-sm text-gray-500 truncate">
-                                {user.email}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="mt-2 flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
-                              <Shield size={10} />
-                              {user.role === 'admin'
-                                ? 'Administrator'
-                                : 'Premium'}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              Member since 2024
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="py-2 max-h-[60vh] overflow-y-auto">
-                          {userMenuItems.map((item, index) => (
-                            <div key={index}>
-                              {item.divider ? (
-                                <div className="border-t border-gray-100 my-2" />
-                              ) : item.href ? (
-                                <Link
-                                  href={item.href}
-                                  className="flex items-center justify-between gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors group/item"
-                                  onClick={() => setIsUserMenuOpen(false)}
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className="text-gray-400 group-hover/item:text-blue-600">
-                                      {item.icon}
-                                    </div>
-                                    <span className="font-medium">
-                                      {item.label}
-                                    </span>
-                                  </div>
-                                  {item.badge && (
-                                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                                      {item.badge}
-                                    </span>
-                                  )}
-                                </Link>
-                              ) : (
-                                <button
-                                  onClick={() => {
-                                    item.action?.();
-                                    setIsUserMenuOpen(false);
-                                  }}
-                                  className="flex items-center justify-between w-full px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors text-left"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    {item.icon}
-                                    <span className="font-medium">
-                                      {item.label}
-                                    </span>
-                                  </div>
-                                </button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                {/* Wishlist */}
+                <Link
+                  href="/wishlist"
+                  className="hidden sm:flex items-center gap-2 p-2.5 hover:bg-gray-50 rounded-xl transition-colors group relative"
+                  aria-label="Wishlist"
+                >
+                  <div className="relative">
+                    <Heart
+                      size={22}
+                      className="text-gray-600 group-hover:text-red-500 group-hover:fill-red-500 transition-colors"
+                    />
+                    {mounted && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-white">
+                        <span className="text-xs text-white font-bold">3</span>
                       </div>
                     )}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 hidden xl:inline">
+                    Wishlist
+                  </span>
+                </Link>
 
-                    {/* Mobile User Button */}
+                {/* Cart - FIXED: Safe cart total display */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative flex items-center gap-2 p-2.5 hover:bg-gray-50 rounded-xl transition-colors group"
+                  aria-label="Open cart"
+                >
+                  <div className="relative">
+                    <ShoppingCart
+                      size={22}
+                      className="text-gray-600 group-hover:text-blue-600 transition-colors"
+                    />
+                    {mounted && qty > 0 && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center border-2 border-white">
+                        <span className="text-xs text-white font-bold">
+                          {qty}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="hidden xl:block text-left">
+                    <span className="text-sm font-medium text-gray-700">
+                      Cart
+                    </span>
+                    <p className="text-xs text-gray-500">${cartTotal}</p>
+                  </div>
+                </button>
+
+                {/* User Account */}
+                <div className="relative" ref={userMenuRef}>
+                  {user ? (
+                    <>
+                      <button
+                        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                        className="hidden sm:flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors group"
+                        aria-label="Account menu"
+                      >
+                        <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-transparent group-hover:border-blue-200 transition-colors">
+                          {user.image ? (
+                            <Image
+                              src={user.image}
+                              alt={user.name}
+                              width={36}
+                              height={36}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                              <User size={18} className="text-blue-600" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="hidden xl:block text-left">
+                          <p className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
+                            Hi, {user.name?.split(' ')[0]}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {user.role === 'admin'
+                              ? 'Administrator'
+                              : 'Premium Member'}
+                          </p>
+                        </div>
+                        <ChevronDown
+                          size={16}
+                          className={`text-gray-400 transition-transform ${
+                            isUserMenuOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+
+                      {/* User Dropdown */}
+                      {isUserMenuOpen && (
+                        <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 animate-fadeIn">
+                          <div className="px-4 py-3 border-b border-gray-100">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100">
+                                {user.image ? (
+                                  <Image
+                                    src={user.image}
+                                    alt={user.name}
+                                    width={40}
+                                    height={40}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <User size={20} className="text-blue-600" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-gray-900 truncate">
+                                  {user.name}
+                                </p>
+                                <p className="text-sm text-gray-500 truncate">
+                                  {user.email}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+                                <Shield size={10} />
+                                {user.role === 'admin'
+                                  ? 'Administrator'
+                                  : 'Premium'}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Member since 2024
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="py-2 max-h-[60vh] overflow-y-auto">
+                            {userMenuItems.map((item, index) => (
+                              <div key={index}>
+                                {item.divider ? (
+                                  <div className="border-t border-gray-100 my-2" />
+                                ) : item.href ? (
+                                  <Link
+                                    href={item.href}
+                                    className="flex items-center justify-between gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors group/item"
+                                    onClick={() => setIsUserMenuOpen(false)}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="text-gray-400 group-hover/item:text-blue-600">
+                                        {item.icon}
+                                      </div>
+                                      <span className="font-medium">
+                                        {item.label}
+                                      </span>
+                                    </div>
+                                    {item.badge && (
+                                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                        {item.badge}
+                                      </span>
+                                    )}
+                                  </Link>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      item.action?.();
+                                      setIsUserMenuOpen(false);
+                                    }}
+                                    className="flex items-center justify-between w-full px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors text-left"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      {item.icon}
+                                      <span className="font-medium">
+                                        {item.label}
+                                      </span>
+                                    </div>
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Mobile User Button */}
+                      <Link
+                        href="/user/profile"
+                        className="sm:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
+                        aria-label="User account"
+                      >
+                        <User size={22} className="text-gray-600" />
+                      </Link>
+                    </>
+                  ) : (
                     <Link
-                      href="/user/profile"
-                      className="sm:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
-                      aria-label="User account"
+                      href="/auth/login"
+                      className="hidden sm:flex items-center gap-2.5 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 rounded-xl transition-all duration-300 group"
+                      aria-label="Login"
                     >
-                      <User size={22} className="text-gray-600" />
+                      <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center group-hover:border-blue-300 transition-colors">
+                        <User size={16} className="text-blue-600" />
+                      </div>
+                      <div className="hidden xl:block text-left">
+                        <p className="text-sm font-medium text-gray-900">
+                          Sign In
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Account & Orders
+                        </p>
+                      </div>
                     </Link>
-                  </>
-                ) : (
-                  <Link
-                    href="/auth/login"
-                    className="hidden sm:flex items-center gap-2.5 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 rounded-xl transition-all duration-300 group"
-                    aria-label="Login"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center group-hover:border-blue-300 transition-colors">
-                      <User size={16} className="text-blue-600" />
-                    </div>
-                    <div className="hidden xl:block text-left">
-                      <p className="text-sm font-medium text-gray-900">
-                        Sign In
-                      </p>
-                      <p className="text-xs text-gray-500">Account & Orders</p>
-                    </div>
-                  </Link>
-                )}
-              </div>
+                  )}
+                </div>
 
-              {/* Mobile Menu Toggle */}
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
-                aria-label="Menu"
-              >
-                {isMenuOpen ? (
-                  <X size={22} className="text-gray-600" />
-                ) : (
-                  <Menu size={22} className="text-gray-600" />
-                )}
-              </button>
+                {/* Mobile Menu Toggle */}
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="lg:hidden p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
+                  aria-label="Menu"
+                >
+                  {isMenuOpen ? (
+                    <X size={22} className="text-gray-600" />
+                  ) : (
+                    <Menu size={22} className="text-gray-600" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-
-          {/* Navigation Menu (Desktop) */}
-          <nav className="hidden lg:flex items-center justify-between py-3 mt-2 border-t border-gray-100">
-            <div className="flex items-center gap-1">
-              <HeaderNavigation />
-            </div>
-
-            <div className="flex items-center gap-6 text-sm">
-              <div className="flex items-center gap-2 text-blue-600">
-                <Phone size={16} />
-                <span className="font-medium">Support: 09678-123456</span>
-              </div>
-              <Link
-                href="/track-order"
-                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
-              >
-                <Truck size={16} />
-                <span>Track Order</span>
-              </Link>
-              <Link
-                href="/help"
-                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
-              >
-                <HelpCircle size={16} />
-                <span>Help Center</span>
-              </Link>
-            </div>
-          </nav>
         </div>
+        {/* Navigation Menu (Desktop) */}
+        <nav className="hidden lg:flex items-center justify-between py-3 mt-2 border-t border-gray-100">
+          <div className="flex items-center gap-1">
+            <HeaderNavigation />
+          </div>
 
+          <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-2 text-blue-600">
+              <Phone size={16} />
+              <span className="font-medium">Support: 09678-123456</span>
+            </div>
+            <Link
+              href="/track-order"
+              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              <Truck size={16} />
+              <span>Track Order</span>
+            </Link>
+            <Link
+              href="/help"
+              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              <HelpCircle size={16} />
+              <span>Help Center</span>
+            </Link>
+          </div>
+        </nav>
         {/* Mobile Menu */}
         <div
           className={`lg:hidden fixed inset-0 z-30 bg-white transform transition-transform duration-300 ease-in-out ${

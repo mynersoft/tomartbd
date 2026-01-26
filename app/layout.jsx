@@ -7,54 +7,54 @@ import Eruda from '@/components/Eruda';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const metadata = {
-	title: 'Tomartbd Shop - Hardware, Home Decor & Accessories Online',
-	description:
-		'Shop high-quality hardware, home decor, electrical items, and accessories at Tomartbd. Affordable prices, fast delivery, and a wide selection for every home and project.',
+  title: 'Tomartbd Shop - Hardware, Home Decor & Accessories Online',
+  description:
+    'Shop high-quality hardware, home decor, electrical items, and accessories at Tomartbd. Affordable prices, fast delivery, and a wide selection for every home and project.',
 
-	keywords: [
-		'Tomartbd',
-		'Hardware',
-		'Home Decor',
-		'Electrical Items',
-		'Accessories',
-		'Online Shop Bangladesh',
-	],
+  keywords: [
+    'Tomartbd',
+    'Hardware',
+    'Home Decor',
+    'Electrical Items',
+    'Accessories',
+    'Online Shop Bangladesh',
+  ],
 
-	authors: [{ name: 'Tomartbd' }],
+  authors: [{ name: 'Tomartbd' }],
 
-	openGraph: {
-		title: 'Tomartbd Shop - Hardware, Home Decor & Accessories Online',
-		description:
-			'Shop high-quality hardware, home decor, electrical items, and accessories at Tomartbd.',
-		url: BASE_URL,
-		siteName: 'Tomartbd Shop',
-		images: [
-			{
-				url: `${BASE_URL}/og-image.png`,
-				width: 1200,
-				height: 630,
-				alt: 'Tomartbd Shop',
-			},
-		],
-		type: 'website',
-	},
+  openGraph: {
+    title: 'Tomartbd Shop - Hardware, Home Decor & Accessories Online',
+    description:
+      'Shop high-quality hardware, home decor, electrical items, and accessories at Tomartbd.',
+    url: BASE_URL,
+    siteName: 'Tomartbd Shop',
+    images: [
+      {
+        url: `${BASE_URL}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: 'Tomartbd Shop',
+      },
+    ],
+    type: 'website',
+  },
 
-	twitter: {
-		card: 'summary_large_image',
-		title: 'Tomartbd Shop - Hardware, Home Decor & Accessories Online',
-		description:
-			'Shop high-quality hardware, home decor, electrical items, and accessories at Tomartbd.',
-		images: [`${BASE_URL}/og-image.png`],
-	},
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Tomartbd Shop - Hardware, Home Decor & Accessories Online',
+    description:
+      'Shop high-quality hardware, home decor, electrical items, and accessories at Tomartbd.',
+    images: [`${BASE_URL}/og-image.png`],
+  },
 
-	robots: {
-		index: true,
-		follow: true,
-	},
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }) {
-	return (
+  return (
     <html lang="en">
       <meta
         name="google-site-verification"

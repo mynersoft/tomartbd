@@ -7,7 +7,6 @@ import {
   setBrands,
   addBrand,
   removeBrand,
-  setSingleBrand,
 } from '@/store/slices/brandsSlice';
 import toast from 'react-hot-toast';
 import { clearCart } from '@/store/slices/cartSlice';
@@ -42,7 +41,6 @@ export function useAddBrand() {
 
     onSuccess: (newBrand) => {
       queryClient.invalidateQueries(['brands']);
-      dispatch(clearCart());
       toast.success('Brand added successfully!', { id: 'add-brand' });
     },
     onError: (error) => {

@@ -61,3 +61,13 @@ state - react redux
 					Content
 				</Modal>
 
+
+
+
+
+
+
+===========API Route============
+
+/brands
+/brands/id

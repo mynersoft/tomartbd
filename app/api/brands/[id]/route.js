@@ -24,27 +24,7 @@ export async function GET(req, context) {
   }
 }
 
-// ✅ UPDATE brand
-export async function PUT(req, context) {
-  try {
-    await connectDB();
-    const { id } = await context.params;
-    const body = await req.json();
 
-    const brand = await Brand.findByIdAndUpdate(id, body, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!brand) {
-      return NextResponse.json({ error: 'Brand not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(brand);
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
-  }
-}
 
 // ✅ DELETE brand
 export async function DELETE(req, context) {

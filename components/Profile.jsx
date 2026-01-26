@@ -19,13 +19,14 @@ import {
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
-export default function ProfilePage() {
+export default function Profile() {
   const dispatch = useDispatch();
   const { data: session, status } = useSession();
   console.log(session);
 
-  const { user } = useSelector((state) => state.user);
-
+	const { user } = useSelector((state) => state.user);
+	console.log(user);
+	
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -148,12 +149,9 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Profile Settings
+          <h1 className="text-xl md:text-4xl font-bold text-gray-900">
+            Profile
           </h1>
-          <p className="text-gray-600 mt-2">
-            Update your personal and business information
-          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -426,7 +424,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={updateProfile.isPending}
-                  className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                  className="px-8 py-3.5 bg-linear-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2"
                 >
                   {updateProfile.isPending ? (
                     <>

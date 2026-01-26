@@ -54,6 +54,7 @@ export default function UserManagementPage() {
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || user.role === selectedRole;
     return matchesSearch && matchesRole;
@@ -266,8 +267,34 @@ export default function UserManagementPage() {
                   <td className="py-4 px-6">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-gray-700">
-                        <Mail className="w-4 h-4 text-gray-400" />
-                        <span>{user.email}</span>
+                        📞
+                        {user.phone ? (
+                          <a
+                            href={`tel:${user.phone}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {user.phone}
+                          </a>
+                        ) : (
+                          <span className="text-sm">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-gray-700">
+                        ✉
+                        {user.phone ? (
+                          <a
+                            href={`mailto:${user.email}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {user.email}
+                          </a>
+                        ) : (
+                          <span className="text-sm">N/A</span>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -300,7 +327,10 @@ export default function UserManagementPage() {
                   {/* Actions */}
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
-                      <Link href={`/user/${user._id}`} className="p-2 text-green-600 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Link
+                        href={`/user/${user._id}`}
+                        className="p-2 text-green-600 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
                         <Eye className="w-5 h-5" />
                       </Link>
                       <button

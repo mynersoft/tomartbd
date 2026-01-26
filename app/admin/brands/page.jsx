@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBrands, useAddBrand, useDeleteBrand } from '@/hooks/useBrands';
 import { ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function BrandAdminPage() {
   const { data: brands = [], isLoading, error } = useBrands();
@@ -19,6 +20,13 @@ export default function BrandAdminPage() {
     });
     setNewBrand({ name: '', icon: 'Home' });
   };
+
+const handleBrandDelete = (id) => {
+  if (confirm('⚠️ This brand will be permanently deleted. Continue?')) {
+    deleteBrand.mutate(id);
+  }
+};
+
 
   if (isLoading) {
     return (
@@ -95,7 +103,7 @@ export default function BrandAdminPage() {
                           {brand.name}
                         </span>
                       </div>
-                      <button onClick={() => deleteBrand.mutate(brand._id)}>
+                      <button onClick={() => handleBrandDelete(brand._id)}>
                         <Trash2 size={14} className="text-red-500" />
                       </button>
                     </div>

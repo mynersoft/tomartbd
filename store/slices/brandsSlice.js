@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import toast from 'react-hot-toast';
+import { createSlice } from '@reduxjs/toolkit';
+
 
 /* ================= SLICE ================= */
 const brandSlice = createSlice({
@@ -13,11 +13,6 @@ const brandSlice = createSlice({
   },
 
   reducers: {
-    resetBrand(state) {
-      state.loading = false;
-      state.success = false;
-      state.error = null;
-    },
     removeBrand: (state, action) => {
       state.brands = state.brands.filter(
         (brand) => brand._id !== action.payload
@@ -33,6 +28,6 @@ const brandSlice = createSlice({
   extraReducers: () => {},
 });
 
-export const { resetBrand, setBrands, setSingleBrand, addBrand, removeBrand } =
+export const { setBrands, addBrand, removeBrand } =
   brandSlice.actions;
 export default brandSlice.reducer;
