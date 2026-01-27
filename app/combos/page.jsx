@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from "@tanstack/react-query";
-import { getCombos } from "@/services/combo.api";
+
 import { useDispatch } from "react-redux";
 import { addComboToCart } from "@/redux/cartSlice";
 
