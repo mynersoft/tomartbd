@@ -5,23 +5,14 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAddProduct } from '@/hooks/useProducts';
 import { useSelector } from 'react-redux';
+import RichTextEditor from '@/components/TinyMCEEditor';
+import { colors } from '@/constants/colors';
+import { handleImageUpload } from '@/utils/cloudinaryUploader';
 
 export default function AddProductPage() {
   const { mutate, isLoading } = useAddProduct();
   const { brands } = useSelector((state) => state.brand);
   const { categories } = useSelector((state) => state.category);
-
-  const colors = [
-    { name: 'White', value: '#ffffff' },
-    { name: 'Black', value: '#000000' },
-    { name: 'Red', value: '#ff0000' },
-    { name: 'Blue', value: '#0000ff' },
-    { name: 'Green', value: '#00ff00' },
-    { name: 'Yellow', value: '#ffff00' },
-    { name: 'Purple', value: '#800080' },
-    { name: 'Orange', value: '#ffa500' },
-    { name: 'Gray', value: '#808080' },
-  ];
 
   const [form, setForm] = useState({
     name: '',
@@ -33,7 +24,8 @@ export default function AddProductPage() {
     regularPrice: '',
     stock: '',
     discount: { type: '', value: '' },
-    images: [],
+    galleryImages: [],
+    featureImg: '',
     tags: '',
     featured: false,
     bestseller: false,
@@ -60,8 +52,18 @@ export default function AddProductPage() {
   const hasVariants = form.variants?.length > 0;
 
   // -------------------- HANDLERS --------------------
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (eOrValue, fieldName) => {
+    // 🟢 Case 1: TinyMCE (string value)
+    if (typeof eOrValue === 'string') {
+      setForm((prev) => ({
+        ...prev,
+        [fieldName]: eOrValue,
+      }));
+      return;
+    }
+
+    // 🟢 Case 2: Normal input event
+    const { name, value, type, checked } = eOrValue.target;
 
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
@@ -80,48 +82,51 @@ export default function AddProductPage() {
     }
   };
 
-  const handleUploadImages = async (e) => {
-    const files = e.target.files;
-    if (!files || !files.length) return;
+  // const handleUploadImages = async (e) => {
+  //   const files = e.target.files;
+  //   if (!files || !files.length) return;
 
-    setIsUploading(true);
-    toast.loading('Uploading images...');
-    const uploaded = [];
+  //   setIsUploading(true);
+  //   toast.loading('Uploading images...');
+  //   const uploaded = [];
 
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append(
-        'upload_preset',
-        process.env.NEXT_PUBLIC_CLOUDINARY_PRESET
-      );
+  //   for (const file of files) {
+  //     const formData = new FormData();
+  //     formData.append('file', file);
+  //     formData.append(
+  //       'upload_preset',
+  //       process.env.NEXT_PUBLIC_CLOUDINARY_PRESET
+  //     );
 
-      try {
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          { method: 'POST', body: formData }
-        );
+  //     try {
+  //       const res = await fetch(
+  //         `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+  //         { method: 'POST', body: formData }
+  //       );
 
-        const data = await res.json();
-        uploaded.push(data.secure_url);
-      } catch (error) {
-        console.error('Upload error:', error);
-        toast.error(`Failed to upload ${file.name}`);
-      }
-    }
+  //       const data = await res.json();
+  //       uploaded.push(data.secure_url);
+  //     } catch (error) {
+  //       console.error('Upload error:', error);
+  //       toast.error(`Failed to upload ${file.name}`);
+  //     }
+  //   }
 
-    toast.dismiss();
-    if (uploaded.length > 0) {
-      toast.success('Images uploaded!');
-      setForm((prev) => ({ ...prev, images: [...prev.images, ...uploaded] }));
-    }
-    setIsUploading(false);
-  };
+  //   toast.dismiss();
+  //   if (uploaded.length > 0) {
+  //     toast.success('Images uploaded!');
+  //     setForm((prev) => ({ ...prev, images: [...prev.images, ...uploaded] }));
+  //   }
+  //   setIsUploading(false);
+  // };
 
-  const removeImage = (index) => {
+  const removeImage = (field, index = null) => {
     setForm((prev) => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index),
+      [field]:
+        index === null
+          ? '' // single image
+          : prev[field].filter((_, i) => i !== index), // multiple
     }));
   };
 
@@ -346,6 +351,8 @@ export default function AddProductPage() {
     });
   };
 
+  console.log(form);
+
   // -------------------- UI --------------------
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded mt-6">
@@ -376,51 +383,82 @@ export default function AddProductPage() {
           />
         </div>
 
-        {/* Main Images */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Product Images
-          </label>
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleUploadImages}
-            className="w-full border px-3 py-2 rounded"
-            disabled={isUploading}
-          />
-          {form.images?.length > 0 && (
-            <div className="flex gap-2 mt-2 flex-wrap">
-              {form.images?.map((img, index) => (
+        {/*  Images */}
+        <div className="flex ">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Feature Image
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                handleImageUpload({
+                  e,
+                  field: 'featureImg',
+                  multiple: false,
+                  form,
+                  setForm,
+                  setIsUploading,
+                  toast,
+                })
+              }
+              disabled={isUploading}
+            />
+
+            {form.featureImg && (
+              <div className="relative w-24 mt-2">
+                <img
+                  src={form.featureImg}
+                  className="w-24 h-24 object-cover rounded"
+                />
+                <button onClick={() => removeImage('featureImg')}>✕</button>
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Gallery Images
+            </label>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) =>
+                handleImageUpload({
+                  e,
+                  field: 'galleryImages',
+                  multiple: true,
+                  form,
+                  setForm,
+                  setIsUploading,
+                  toast,
+                })
+              }
+              disabled={isUploading}
+            />
+
+            <div className="flex gap-2 flex-wrap mt-2">
+              {form.galleryImages?.map((img, index) => (
                 <div key={index} className="relative">
-                  <img
-                    src={img}
-                    alt="product"
-                    className="w-16 h-16 object-cover rounded border"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                  >
+                  <img src={img} className="w-16 h-16 object-cover rounded" />
+                  <button onClick={() => removeImage('galleryImages', index)}>
                     ✕
                   </button>
                 </div>
               ))}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Description */}
         <div>
           <label className="block text-sm font-medium mb-1">Description</label>
-          <textarea
-            name="description"
+          <RichTextEditor
             value={form.description}
-            onChange={handleChange}
-            placeholder="Description"
-            rows="4"
-            className="w-full border px-3 py-2 rounded"
+            onChange={(content) => handleChange(content, 'description')}
+            height={450}
+            placeholder="Write product description..."
           />
         </div>
 

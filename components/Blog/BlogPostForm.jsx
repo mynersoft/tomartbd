@@ -19,23 +19,32 @@ export default function BlogPostForm() {
   const [blobImages, setBlobImages] = useState([]);
   const editorRef = useRef(null);
 
-  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm();
 
   const mutation = useMutation({
     mutationFn: async (data) => {
       // Convert blob URLs to base64 or upload to server
-      const processedContent = await processContentWithBlobs(content, blobImages);
-      
+      const processedContent = await processContentWithBlobs(
+        content,
+        blobImages
+      );
+
       const response = await fetch('/api/blog', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          ...data, 
-          slug, 
-          tags, 
-          keywords, 
+        body: JSON.stringify({
+          ...data,
+          slug,
+          tags,
+          keywords,
           images,
-          content: processedContent
+          content: processedContent,
         }),
       });
       if (!response.ok) throw new Error('Failed to create post');
@@ -63,30 +72,30 @@ export default function BlogPostForm() {
   // Process content to handle blob URLs
   const processContentWithBlobs = async (content, blobs) => {
     if (!content) return content;
-    
+
     let processedContent = content;
-    
+
     // Replace blob URLs with uploaded URLs or base64
     for (const blob of blobs) {
       if (blob.url.startsWith('blob:')) {
         try {
           // Convert blob to base64
           const base64Data = await blobToBase64(blob.blob);
-          processedContent = processedContent.replace(
-            blob.url,
-            base64Data
-          );
+          processedContent = processedContent.replace(blob.url, base64Data);
         } catch (error) {
           console.error('Failed to convert blob to base64:', error);
           // Optionally, upload to server
-          const uploadedUrl = await uploadBlobToServer(blob.blob, blob.filename);
+          const uploadedUrl = await uploadBlobToServer(
+            blob.blob,
+            blob.filename
+          );
           if (uploadedUrl) {
             processedContent = processedContent.replace(blob.url, uploadedUrl);
           }
         }
       }
     }
-    
+
     return processedContent;
   };
 
@@ -104,7 +113,7 @@ export default function BlogPostForm() {
   const uploadBlobToServer = async (blob, filename) => {
     const formData = new FormData();
     formData.append('image', blob, filename);
-    
+
     try {
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -140,29 +149,32 @@ export default function BlogPostForm() {
       const imgRegex = /<img[^>]+src="([^">]+)"/g;
       const matches = [];
       let match;
-      
+
       while ((match = imgRegex.exec(content)) !== null) {
         matches.push(match[1]);
       }
-      
+
       // Track blob URLs
-      const blobUrls = matches.filter(src => src.startsWith('blob:'));
-      
+      const blobUrls = matches.filter((src) => src.startsWith('blob:'));
+
       // Update blob images tracking
       blobUrls.forEach(async (blobUrl) => {
-        if (!blobImages.find(img => img.url === blobUrl)) {
+        if (!blobImages.find((img) => img.url === blobUrl)) {
           try {
             const response = await fetch(blobUrl);
             const blob = await response.blob();
             const filename = `image-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${blob.type.split('/')[1] || 'png'}`;
-            
-            setBlobImages(prev => [...prev, {
-              url: blobUrl,
-              blob,
-              filename,
-              type: blob.type,
-              size: blob.size
-            }]);
+
+            setBlobImages((prev) => [
+              ...prev,
+              {
+                url: blobUrl,
+                blob,
+                filename,
+                type: blob.type,
+                size: blob.size,
+              },
+            ]);
           } catch (error) {
             console.error('Failed to fetch blob:', error);
           }
@@ -179,8 +191,9 @@ export default function BlogPostForm() {
       setTagInput('');
     }
   };
-  
-  const removeTag = (tagToRemove) => setTags(tags.filter(tag => tag !== tagToRemove));
+
+  const removeTag = (tagToRemove) =>
+    setTags(tags.filter((tag) => tag !== tagToRemove));
 
   const addKeyword = (e) => {
     e.preventDefault();
@@ -189,8 +202,9 @@ export default function BlogPostForm() {
       setKeywordInput('');
     }
   };
-  
-  const removeKeyword = (keywordToRemove) => setKeywords(keywords.filter(k => k !== keywordToRemove));
+
+  const removeKeyword = (keywordToRemove) =>
+    setKeywords(keywords.filter((k) => k !== keywordToRemove));
 
   const addImage = (e) => {
     e.preventDefault();
@@ -199,24 +213,28 @@ export default function BlogPostForm() {
       setImageInput('');
     }
   };
-  
-  const removeImage = (imgToRemove) => setImages(images.filter(i => i !== imgToRemove));
+
+  const removeImage = (imgToRemove) =>
+    setImages(images.filter((i) => i !== imgToRemove));
 
   // Handle file upload for TinyMCE - using blob URLs
   const handleImageUpload = (blobInfo, progress) => {
     return new Promise((resolve, reject) => {
       // Create blob URL for immediate display
       const blobUrl = URL.createObjectURL(blobInfo.blob());
-      
+
       // Store blob information for later processing
-      setBlobImages(prev => [...prev, {
-        url: blobUrl,
-        blob: blobInfo.blob(),
-        filename: blobInfo.filename(),
-        type: blobInfo.blob().type,
-        size: blobInfo.blob().size
-      }]);
-      
+      setBlobImages((prev) => [
+        ...prev,
+        {
+          url: blobUrl,
+          blob: blobInfo.blob(),
+          filename: blobInfo.filename(),
+          type: blobInfo.blob().type,
+          size: blobInfo.blob().size,
+        },
+      ]);
+
       // Resolve with blob URL for immediate display in editor
       resolve(blobUrl);
     });
@@ -226,27 +244,32 @@ export default function BlogPostForm() {
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
-    
+
     setUploading(true);
-    
+
     try {
       for (const file of files) {
         // Create blob URL
         const blobUrl = URL.createObjectURL(file);
-        
+
         // Store blob information
-        setBlobImages(prev => [...prev, {
-          url: blobUrl,
-          blob: file,
-          filename: file.name,
-          type: file.type,
-          size: file.size,
-          uploadedAt: new Date().toISOString()
-        }]);
-        
+        setBlobImages((prev) => [
+          ...prev,
+          {
+            url: blobUrl,
+            blob: file,
+            filename: file.name,
+            type: file.type,
+            size: file.size,
+            uploadedAt: new Date().toISOString(),
+          },
+        ]);
+
         // Insert into editor if it's open
         if (editorRef.current) {
-          editorRef.current.insertContent(`<img src="${blobUrl}" alt="${file.name}" style="max-width: 100%; height: auto;" />`);
+          editorRef.current.insertContent(
+            `<img src="${blobUrl}" alt="${file.name}" style="max-width: 100%; height: auto;" />`
+          );
         }
       }
     } catch (error) {
@@ -260,25 +283,32 @@ export default function BlogPostForm() {
   // Insert image into editor
   const insertImageToEditor = (imageUrl) => {
     if (editorRef.current) {
-      editorRef.current.insertContent(`<img src="${imageUrl}" alt="Uploaded image" style="max-width: 100%; height: auto;" />`);
+      editorRef.current.insertContent(
+        `<img src="${imageUrl}" alt="Uploaded image" style="max-width: 100%; height: auto;" />`
+      );
     }
   };
 
   // Remove blob image
   const removeBlobImage = (index) => {
     const imageToRemove = blobImages[index];
-    
+
     // Revoke blob URL to prevent memory leaks
     if (imageToRemove.url.startsWith('blob:')) {
       URL.revokeObjectURL(imageToRemove.url);
     }
-    
+
     // Remove from tracking
-    setBlobImages(prev => prev.filter((_, i) => i !== index));
-    
+    setBlobImages((prev) => prev.filter((_, i) => i !== index));
+
     // Remove from content if present
     if (content.includes(imageToRemove.url)) {
-      setContent(prev => prev.replace(new RegExp(`<img[^>]*src="${imageToRemove.url}"[^>]*>`, 'g'), ''));
+      setContent((prev) =>
+        prev.replace(
+          new RegExp(`<img[^>]*src="${imageToRemove.url}"[^>]*>`, 'g'),
+          ''
+        )
+      );
     }
   };
 
@@ -287,29 +317,37 @@ export default function BlogPostForm() {
       alert('Please add at least one tag');
       return;
     }
-    
+
     if (!content || content.trim() === '') {
       alert('Please add content using the editor');
       return;
     }
-    
+
     mutation.mutate(data);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Create New Blog Post</h1>
-          <p className="text-gray-600">Fill in the details below to publish your article</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Create New Blog Post
+          </h1>
+          <p className="text-gray-600">
+            Fill in the details below to publish your article
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-8">
-          
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-8"
+        >
           {/* Basic Information Section */}
           <div className="border-b pb-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Basic Information</h2>
-            
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              Basic Information
+            </h2>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column */}
               <div className="space-y-6">
@@ -324,12 +362,18 @@ export default function BlogPostForm() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-3 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="Enter blog post title"
                   />
-                  {errors.title && <p className="mt-2 text-sm text-red-600">{errors.title.message}</p>}
+                  {errors.title && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {errors.title.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Slug */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Slug</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Slug
+                  </label>
                   <div className="flex items-center gap-2">
                     <input
                       value={slug}
@@ -345,7 +389,9 @@ export default function BlogPostForm() {
                       Copy
                     </button>
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">Automatically generated from title</p>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Automatically generated from title
+                  </p>
                 </div>
 
                 {/* Author */}
@@ -355,11 +401,17 @@ export default function BlogPostForm() {
                     <span className="ml-1 text-red-500">*</span>
                   </label>
                   <input
-                    {...register('author.name', { required: 'Author is required' })}
+                    {...register('author.name', {
+                      required: 'Author is required',
+                    })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-3 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="Enter author name"
                   />
-                  {errors.author?.name && <p className="mt-2 text-sm text-red-600">{errors.author.name.message}</p>}
+                  {errors.author?.name && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {errors.author.name.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -368,7 +420,9 @@ export default function BlogPostForm() {
                 {/* Category & Status Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Category
+                    </label>
                     <input
                       {...register('category')}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-3 focus:ring-blue-500 focus:border-transparent"
@@ -377,7 +431,9 @@ export default function BlogPostForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Status
+                    </label>
                     <select
                       {...register('status')}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-3 focus:ring-blue-500 focus:border-transparent bg-white"
@@ -392,16 +448,20 @@ export default function BlogPostForm() {
                 {/* Featured & Read Time */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex items-center space-x-3 bg-gray-50 p-4 rounded-xl">
-                    <input 
-                      type="checkbox" 
-                      {...register('isFeatured')} 
-                      className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500" 
+                    <input
+                      type="checkbox"
+                      {...register('isFeatured')}
+                      className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
                     />
-                    <label className="text-sm font-semibold text-gray-700">Featured Post</label>
+                    <label className="text-sm font-semibold text-gray-700">
+                      Featured Post
+                    </label>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Read Time (minutes)</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Read Time (minutes)
+                    </label>
                     <input
                       {...register('readTime', { valueAsNumber: true })}
                       type="number"
@@ -422,18 +482,22 @@ export default function BlogPostForm() {
               <span className="ml-1 text-red-500">*</span>
             </label>
             <textarea
-              {...register('excerpt', { 
-                required: 'Excerpt is required', 
-                maxLength: { 
-                  value: 300, 
-                  message: 'Excerpt must be 300 characters or less' 
-                } 
+              {...register('excerpt', {
+                required: 'Excerpt is required',
+                maxLength: {
+                  value: 300,
+                  message: 'Excerpt must be 300 characters or less',
+                },
               })}
               rows="3"
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-3 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="Brief summary of your post (max 300 characters)"
             />
-            {errors.excerpt && <p className="mt-2 text-sm text-red-600">{errors.excerpt.message}</p>}
+            {errors.excerpt && (
+              <p className="mt-2 text-sm text-red-600">
+                {errors.excerpt.message}
+              </p>
+            )}
             <div className="mt-2 text-sm text-gray-500 text-right">
               {watch('excerpt')?.length || 0}/300 characters
             </div>
@@ -446,7 +510,7 @@ export default function BlogPostForm() {
                 <span>Content</span>
                 <span className="ml-1 text-red-500">*</span>
               </label>
-              
+
               {/* Image Upload Button */}
               <div className="flex items-center gap-2">
                 <label className="px-4 py-2 bg-green-100 text-green-700 font-semibold rounded-lg hover:bg-green-200 transition-colors cursor-pointer">
@@ -460,9 +524,7 @@ export default function BlogPostForm() {
                   />
                 </label>
                 {uploading && (
-                  <span className="text-sm text-gray-600">
-                    Uploading...
-                  </span>
+                  <span className="text-sm text-gray-600">Uploading...</span>
                 )}
               </div>
             </div>
@@ -471,36 +533,54 @@ export default function BlogPostForm() {
             <div className="border border-gray-300 rounded-xl overflow-hidden mb-4">
               <Editor
                 apiKey={process.env.NEXT_PUBLIC_TINY_MCE}
-                onInit={(evt, editor) => editorRef.current = editor}
+                onInit={(evt, editor) => (editorRef.current = editor)}
                 value={content}
                 onEditorChange={(newContent) => setContent(newContent)}
-init={{
-  height: 500,
-  menubar: true,
-  plugins: [
-    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-    'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount',
-    'quickbars'  // Removed 'imagetools'
-  ],
-  toolbar: 'undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code | fullscreen preview',
-  images_upload_handler: handleImageUpload,
-  automatic_uploads: true,
-  file_picker_types: 'image',
-  paste_data_images: true,
-  content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px; line-height:1.6; } img { max-width: 100%; height: auto; }',
-  skin: 'oxide',
-  content_css: 'default',
-  branding: false,
-  image_caption: true,
-  image_advtab: false,  // Changed from true to false
-  quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote',
-  quickbars_insert_toolbar: 'quickimage quicktable',
-  contextmenu: 'link image table',
-  images_reuse_filename: true,
-  image_dimensions: false,
-  image_description: true
-}}
+                init={{
+                  height: 500,
+                  menubar: true,
+                  plugins: [
+                    'advlist',
+                    'autolink',
+                    'lists',
+                    'link',
+                    'image',
+                    'charmap',
+                    'preview',
+                    'anchor',
+                    'searchreplace',
+                    'visualblocks',
+                    'code',
+                    'fullscreen',
+                    'insertdatetime',
+                    'media',
+                    'table',
+                    'code',
+                    'help',
+                    'wordcount',
+                    'quickbars', // Removed 'imagetools'
+                  ],
+                  toolbar:
+                    'undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code | fullscreen preview',
+                  images_upload_handler: handleImageUpload,
+                  automatic_uploads: true,
+                  file_picker_types: 'image',
+                  paste_data_images: true,
+                  content_style:
+                    'body { font-family:Helvetica,Arial,sans-serif; font-size:16px; line-height:1.6; } img { max-width: 100%; height: auto; }',
+                  skin: 'oxide',
+                  content_css: 'default',
+                  branding: false,
+                  image_caption: true,
+                  image_advtab: false, // Changed from true to false
+                  quickbars_selection_toolbar:
+                    'bold italic | quicklink h2 h3 blockquote',
+                  quickbars_insert_toolbar: 'quickimage quicktable',
+                  contextmenu: 'link image table',
+                  images_reuse_filename: true,
+                  image_dimensions: false,
+                  image_description: true,
+                }}
               />
             </div>
 
@@ -515,16 +595,18 @@ init={{
                     </span>
                   </h3>
                   <div className="text-sm text-gray-600">
-                    {blobImages.reduce((total, img) => total + img.size, 0) / 1024 / 1024 > 1 
+                    {blobImages.reduce((total, img) => total + img.size, 0) /
+                      1024 /
+                      1024 >
+                    1
                       ? `${(blobImages.reduce((total, img) => total + img.size, 0) / 1024 / 1024).toFixed(2)} MB total`
-                      : `${(blobImages.reduce((total, img) => total + img.size, 0) / 1024).toFixed(1)} KB total`
-                    }
+                      : `${(blobImages.reduce((total, img) => total + img.size, 0) / 1024).toFixed(1)} KB total`}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                   {blobImages.map((image, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="relative group border border-gray-200 rounded-lg overflow-hidden bg-gray-50"
                     >
                       <div className="aspect-square relative">
@@ -533,7 +615,8 @@ init={{
                           alt={image.filename}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjNmMyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZTwvdGV4dD48L3N2Zz4=';
+                            e.target.src =
+                              'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjNmMyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZTwvdGV4dD48L3N2Zz4=';
                           }}
                         />
                       </div>
@@ -558,7 +641,10 @@ init={{
                         </div>
                       </div>
                       <div className="p-2">
-                        <p className="text-xs text-gray-600 truncate" title={image.filename}>
+                        <p
+                          className="text-xs text-gray-600 truncate"
+                          title={image.filename}
+                        >
                           {image.filename}
                         </p>
                         <div className="flex justify-between items-center">
@@ -575,14 +661,18 @@ init={{
                 </div>
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-800">
-                    <span className="font-semibold">Note:</span> Images are stored as blob URLs temporarily. 
-                    They will be converted to base64 format or uploaded to your server when you submit the post.
+                    <span className="font-semibold">Note:</span> Images are
+                    stored as blob URLs temporarily. They will be converted to
+                    base64 format or uploaded to your server when you submit the
+                    post.
                   </p>
                 </div>
               </div>
             )}
 
-            {!content && <p className="mt-2 text-sm text-red-600">Content is required</p>}
+            {!content && (
+              <p className="mt-2 text-sm text-red-600">Content is required</p>
+            )}
           </div>
 
           {/* Tags & Keywords Section */}
@@ -602,9 +692,9 @@ init={{
                   placeholder="Add a tag"
                   onKeyPress={(e) => e.key === 'Enter' && addTag(e)}
                 />
-                <button 
-                  type="button" 
-                  onClick={addTag} 
+                <button
+                  type="button"
+                  onClick={addTag}
                   className="px-6 py-3 bg-blue-100 text-blue-700 font-semibold rounded-xl hover:bg-blue-200 transition-colors"
                 >
                   Add
@@ -612,14 +702,14 @@ init={{
               </div>
               <div className="flex flex-wrap gap-2 min-h-[48px]">
                 {tags.map((tag) => (
-                  <span 
-                    key={tag} 
+                  <span
+                    key={tag}
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-800 px-4 py-2 rounded-full border border-blue-200"
                   >
                     <span className="font-medium">{tag}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => removeTag(tag)} 
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
                       className="text-blue-600 hover:text-blue-800 text-lg font-bold transition-colors"
                     >
                       ×
@@ -636,7 +726,9 @@ init={{
 
             {/* Keywords */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">SEO Keywords</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                SEO Keywords
+              </label>
               <div className="flex gap-2 mb-3">
                 <input
                   type="text"
@@ -646,9 +738,9 @@ init={{
                   placeholder="Add a keyword"
                   onKeyPress={(e) => e.key === 'Enter' && addKeyword(e)}
                 />
-                <button 
-                  type="button" 
-                  onClick={addKeyword} 
+                <button
+                  type="button"
+                  onClick={addKeyword}
                   className="px-6 py-3 bg-green-100 text-green-700 font-semibold rounded-xl hover:bg-green-200 transition-colors"
                 >
                   Add
@@ -656,14 +748,14 @@ init={{
               </div>
               <div className="flex flex-wrap gap-2 min-h-[48px]">
                 {keywords.map((keyword) => (
-                  <span 
-                    key={keyword} 
+                  <span
+                    key={keyword}
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-green-100 text-green-800 px-4 py-2 rounded-full border border-green-200"
                   >
                     <span className="font-medium">{keyword}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => removeKeyword(keyword)} 
+                    <button
+                      type="button"
+                      onClick={() => removeKeyword(keyword)}
                       className="text-green-600 hover:text-green-800 text-lg font-bold transition-colors"
                     >
                       ×
@@ -678,7 +770,9 @@ init={{
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Featured Image */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Featured Image URL</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Featured Image URL
+              </label>
               <div className="space-y-3">
                 <input
                   {...register('coverImage')}
@@ -687,12 +781,13 @@ init={{
                 />
                 {watch('coverImage') && (
                   <div className="relative">
-                    <img 
-                      src={watch('coverImage')} 
-                      alt="Featured preview" 
+                    <img
+                      src={watch('coverImage')}
+                      alt="Featured preview"
                       className="w-full h-48 object-cover rounded-xl border"
                       onError={(e) => {
-                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjNmMyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Ob3QgRm91bmQ8L3RleHQ+PC9zdmc+';
+                        e.target.src =
+                          'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjNmMyIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Ob3QgRm91bmQ8L3RleHQ+PC9zdmc+';
                       }}
                     />
                   </div>
@@ -702,7 +797,9 @@ init={{
 
             {/* Additional Images */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Additional Image URLs</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Additional Image URLs
+              </label>
               <div className="flex gap-2 mb-3">
                 <input
                   type="text"
@@ -712,9 +809,9 @@ init={{
                   placeholder="https://example.com/image.jpg"
                   onKeyPress={(e) => e.key === 'Enter' && addImage(e)}
                 />
-                <button 
-                  type="button" 
-                  onClick={addImage} 
+                <button
+                  type="button"
+                  onClick={addImage}
                   className="px-6 py-3 bg-purple-100 text-purple-700 font-semibold rounded-xl hover:bg-purple-200 transition-colors"
                 >
                   Add
@@ -722,27 +819,30 @@ init={{
               </div>
               <div className="space-y-2 max-h-48 overflow-y-auto p-2">
                 {images.map((img) => (
-                  <div 
-                    key={img} 
+                  <div
+                    key={img}
                     className="flex items-center justify-between bg-gradient-to-r from-purple-50 to-purple-100 px-4 py-3 rounded-xl border border-purple-200"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded border bg-white overflow-hidden">
-                        <img 
-                          src={img} 
+                        <img
+                          src={img}
                           alt=""
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.style.display = 'none';
-                            e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">404</div>';
+                            e.target.parentElement.innerHTML =
+                              '<div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">404</div>';
                           }}
                         />
                       </div>
-                      <span className="text-sm text-purple-800 truncate flex-1">{img}</span>
+                      <span className="text-sm text-purple-800 truncate flex-1">
+                        {img}
+                      </span>
                     </div>
-                    <button 
-                      type="button" 
-                      onClick={() => removeImage(img)} 
+                    <button
+                      type="button"
+                      onClick={() => removeImage(img)}
                       className="text-purple-600 hover:text-purple-800 font-bold text-lg transition-colors ml-2"
                     >
                       ×
@@ -755,10 +855,14 @@ init={{
 
           {/* SEO Section */}
           <div className="border-t pt-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">SEO Settings</h2>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              SEO Settings
+            </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Meta Title</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Meta Title
+                </label>
                 <input
                   {...register('metaTitle')}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-3 focus:ring-indigo-500 focus:border-transparent"
@@ -766,7 +870,9 @@ init={{
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Meta Description</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Meta Description
+                </label>
                 <textarea
                   {...register('metaDescription')}
                   rows="3"
@@ -808,17 +914,35 @@ init={{
             >
               {mutation.isLoading ? (
                 <span className="flex items-center justify-center">
-                  <svg className="animate-spin h-5 w-5 mr-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-5 w-5 mr-3 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
-                  {blobImages.length > 0 ? 'Processing images...' : 'Creating Post...'}
+                  {blobImages.length > 0
+                    ? 'Processing images...'
+                    : 'Creating Post...'}
                 </span>
               ) : (
                 'Publish Blog Post'
               )}
             </button>
-            
+
             <div className="mt-4 text-center">
               <button
                 type="button"
@@ -830,7 +954,7 @@ init={{
                   setSlug('');
                   setContent('');
                   // Revoke all blob URLs
-                  blobImages.forEach(img => {
+                  blobImages.forEach((img) => {
                     if (img.url.startsWith('blob:')) {
                       URL.revokeObjectURL(img.url);
                     }

@@ -74,8 +74,14 @@ const ProductSchema = new mongoose.Schema(
       value: Number,
     },
 
-    brand: String,
-    category: String,
+    brand: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Brand',
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+    },
     sold: {
       type: Number,
       default: 0,
@@ -92,7 +98,8 @@ const ProductSchema = new mongoose.Schema(
 
     description: String,
 
-    images: [String],
+    featureImg: String,
+    galleryImages: [String],
 
     type: {
       type: String,

@@ -164,6 +164,9 @@ export default function ProductSinglePage() {
     toast.success('🎉 Added to cart!');
   };
 
+   
+
+
   const handleBuyNow = () => {
     if (!product) {
       toast.error('Product not available');

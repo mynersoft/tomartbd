@@ -1,12 +1,14 @@
 'use client';
-import { MessageSquare } from 'lucide-react';
+import { Check, MessageSquare } from 'lucide-react';
 import ReviewForm from './ReviewForm';
 import { useState } from 'react';
 import ProductQuestions from '@/components/Product/ProductQuestions';
 
-const TabContent = ({product}) => {
+const TabContent = ({ product }) => {
+  
+  
   const [activeTab, setActiveTab] = useState('description');
-    const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
   return (
     <div className="border-t border-gray-100">
       <div className="flex overflow-x-auto">
@@ -33,8 +35,7 @@ const TabContent = ({product}) => {
             <ProductQuestions
               productId={product._id}
               productName={product.name}
-              userId={'6958968aa2a045f211bb0654'}
-              // userId={user?.id || null}
+              userId={user?.id || null}
             />
           </div>
         )}
@@ -44,23 +45,12 @@ const TabContent = ({product}) => {
             <h3 className="text-2xl font-bold text-gray-900">
               Product Description
             </h3>
-            <p className="text-gray-700 leading-relaxed">
-              {product.description ||
-                'Experience cutting-edge technology with this premium device. Featuring advanced specifications and top-notch build quality, designed to exceed expectations.'}
-            </p>
-            {product.highlights && product.highlights.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {product.highlights.map((highlight, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                  >
-                    <Check className="w-5 h-5 text-green-500" />
-                    <span>{highlight}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div
+              className="prose max-w-none"
+              dangerouslySetInnerHTML={{
+                __html: product.description,
+              }}
+            />
           </div>
         )}
 

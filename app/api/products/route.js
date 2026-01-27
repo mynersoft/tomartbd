@@ -5,12 +5,26 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 import User from '@/models/User';
-// GET
+
 export async function GET() {
-  await connectDB();
-  const products = await Product.find().sort({ createdAt: -1 });
-  return Response.json(products);
+  try {
+    await connectDB();
+
+    const products = await Product.find()
+      // .populate('brand', 'name')
+      // .populate('Category', 'name')
+      .sort({ createdAt: -1 });
+
+    return NextResponse.json(products, { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: 'Failed to fetch products' },
+      { status: 500 }
+    );
+  }
 }
+
 
 // -------------------- SALE PRICE CALC --------------------
 function calculateSalePrice(regularPrice, discount) {
