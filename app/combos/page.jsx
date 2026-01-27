@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { useDispatch } from "react-redux";
-import { addComboToCart } from "@/redux/cartSlice";
+
 
 export default function CombosPage() {
   const dispatch = useDispatch();
@@ -26,7 +26,7 @@ export default function CombosPage() {
           </p>
 
           <button
-            onClick={() => dispatch(addComboToCart(combo))}
+            
             className="mt-4 w-full bg-black text-white py-2 rounded"
           >
             Add Combo
