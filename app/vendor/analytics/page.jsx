@@ -1,3 +1,6 @@
+
+'use client';
+
 import React, { useState } from 'react';
 import DashboardLayout from '../../components/vendor/DashboardLayout';
 import AnalyticsCharts from '../../components/vendor/AnalyticsCharts';
