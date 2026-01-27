@@ -3,7 +3,7 @@ import Blog from '@/models/Blog';
 import BlogSEO from '@/components/BlogSEO';
 import BlogContent from '@/components/BlogContent';
 import RelatedPosts from '@/components/RelatedPosts';
-import ShareButtons from '@/components/ShareButtons';
+
 import AuthorBio from '@/components/AuthorBio';
 
 export async function generateMetadata({ params }) {
@@ -156,11 +156,7 @@ export default async function BlogDetailPage({ params }) {
                   </div>
                 </div>
               </div>
-              
-              <ShareButtons 
-                title={post.title}
-                url={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${post.slug}`}
-              />
+         
             </div>
           </div>
           
