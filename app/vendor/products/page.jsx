@@ -1,3 +1,5 @@
+
+'use client';
 import React, { useState } from 'react';
 import DashboardLayout from '../../components/vendor/DashboardLayout';
 import ProductTable from '../../components/vendor/ProductTable';
