@@ -15,7 +15,7 @@ import {
   Filter,
   BarChart3
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'next/link';
 
 const InventoryPage = () => {
   const [filter, setFilter] = useState('all');
