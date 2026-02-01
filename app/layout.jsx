@@ -9,7 +9,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 export const metadata = {
   title: 'TomartBD – Buy Electronics, Fashion & Daily Products Online in Bangladesh',
   description:
-    'Shop high-quality hardware, home decor, electrical items, and accessories at Tomartbd. Affordable prices, fast delivery, and a wide selection for every home and project.',
+    'Shop electronics, fashion, home & kitchen, beauty and groceries online at TomartBD. 
+Fast delivery all over Bangladesh. Best price & trusted service.',
 
   keywords: [
     'Tomartbd',
