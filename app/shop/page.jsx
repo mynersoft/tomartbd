@@ -12,7 +12,6 @@ import {
   SlidersHorizontal,
   Grid3x3,
   List,
-  ChevronDown,
   ChevronUp
 } from "lucide-react";
 

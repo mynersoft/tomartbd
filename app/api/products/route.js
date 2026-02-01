@@ -25,7 +25,6 @@ export async function GET() {
   }
 }
 
-
 // -------------------- SALE PRICE CALC --------------------
 function calculateSalePrice(regularPrice, discount) {
   if (!discount || !discount.value || Number(discount.value) <= 0) {
