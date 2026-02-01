@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import DashboardLayout from '@/components/vendor/DashboardLayout';
-import OrderTable from '@/components/vendor/OrderTable';
+import DashboardLayout from '@/components/Vendor/DashboardLayout';
+import OrderTable from '@/components/Vendor/OrderTable';
 import { 
   Filter, 
   Download, 
