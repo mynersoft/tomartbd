@@ -2,8 +2,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import DashboardLayout from '../../components/vendor/DashboardLayout';
-import SalesChart from '../../components/vendor/SalesChart';
+import DashboardLayout from '@/components/vendor/DashboardLayout';
+import SalesChart from '@/components/vendor/SalesChart';
 import { 
   DollarSign, 
   TrendingUp, 
