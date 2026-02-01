@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import DashboardLayout from '../../components/vendor/DashboardLayout';
-import InventoryTable from '../../components/vendor/InventoryTable';
+import DashboardLayout from '@/components/vendor/DashboardLayout';
+import InventoryTable from '@/components/vendor/InventoryTable';
 import { 
   Package, 
   AlertCircle, 
