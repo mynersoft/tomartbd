@@ -1,57 +1,67 @@
-'use client';
+"use client";
 
-import CategoriesSection from '@/components/CategoriesSection';
-import FeaturedVendors from '@/components/FeaturedVendors';
-import { useSelector } from 'react-redux';
-import ProductGrid from '@/components/Product/ProductGrid';
+import CategoriesSection from "@/components/CategoriesSection";
+import FeaturedVendors from "@/components/FeaturedVendors";
+import { useSelector } from "react-redux";
+import ProductGrid from "@/components/Product/ProductGrid";
 
-import FeaturedProductsSlider from './FeaturedProductsSlider';
-import ProductSlider from '@/components/Product/ProductSlider';
-import { HeroComboSection } from '../components/Home/HeroComboBanner';
-import { ChevronRight } from 'lucide-react';
+import FeaturedProductsSlider from "./FeaturedProductsSlider";
+import ProductSlider from "@/components/Product/ProductSlider";
+import { HeroComboSection } from "../components/Home/HeroComboBanner";
+import { ChevronRight } from "lucide-react";
+import ProductCardNew from "@/components/Product/ProductCardNew";
 
 export default function Home() {
-  const { products } = useSelector((state) => state.product);
+    const { products } = useSelector(state => state.product);
 
-  const { combos } = useSelector((state) => state.combo);
+    const { combos } = useSelector(state => state.combo);
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="container mx-auto py-6">
-        <ProductSlider products={products} />
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <main className="container mx-auto px-3">
+                <ProductSlider products={products} />
 
-        <HeroComboSection combos={combos || []} />
-        {/* Categories Section */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h2 className=" font-bold text-gray-900">Shop by Category</h2>
-              <p className="text-gray-600 mt-2">
-                Browse products from various categories
-              </p>
-            </div>
-            <button className="text-blue-600 font-semibold flex items-center hover:text-blue-700">
-              View All Categories
-              <ChevronRight className="h-5 w-5 ml-1" />
-            </button>
-          </div>
-          <CategoriesSection />
+                <HeroComboSection combos={combos || []} />
+                {/* Categories Section */}
+                <div className="mb-6">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h2 className=" font-bold text-gray-900">
+                                Shop by Category
+                            </h2>
+                            <p className="text-gray-600 mt-2">
+                                Browse products from various categories
+                            </p>
+                        </div>
+                        <button className="text-blue-600 font-semibold flex items-center hover:text-blue-700">
+                            View All Categories
+                            <ChevronRight className="h-5 w-5 ml-1" />
+                        </button>
+                    </div>
+                    <CategoriesSection />
+                </div>
+
+                {/* Products Grid */}
+                <div className="mb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {products.map(product => (
+                            <ProductCardNew
+                                key={product._id}
+                                product={product}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="container mx-auto">
+                    <FeaturedProductsSlider products={products} />
+                </div>
+
+                {/* Featured Vendors */}
+                <div className="mb-6">
+                    <FeaturedVendors />
+                </div>
+            </main>
         </div>
-
-        {/* Products Grid */}
-        <div className="mb-6">
-          <ProductGrid products={products} />
-        </div>
-
-        <div className="container mx-auto">
-          <FeaturedProductsSlider products={products} />
-        </div>
-
-        {/* Featured Vendors */}
-        <div className="mb-6">
-          <FeaturedVendors />
-        </div>
-      </main>
-    </div>
-  );
+    );
 }

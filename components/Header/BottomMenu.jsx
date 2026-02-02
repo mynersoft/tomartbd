@@ -36,9 +36,7 @@ const BottomNavigation = ({ activeTab, setActiveTab }) => {
     const [lastScrollY, setLastScrollY] = useState(0);
     const [isClient, setIsClient] = useState(false);
 
-const {qty:wishlist}= useSelector(state => state.wishlist);
-    
-
+    const { qty: wishlist } = useSelector(state => state.wishlist);
 
     const wishlistCount = wishlist; // Replace with actual wishlist count
 
@@ -127,31 +125,10 @@ const {qty:wishlist}= useSelector(state => state.wishlist);
     return (
         <>
             {/* Desktop Floating Action Button for Mobile View */}
-            <div className="lg:hidden fixed bottom-20 right-4 z-40">
-                <Link
-                    href="/cart"
-                    onClick={() => setActiveTab("Cart")}
-                    className="relative group"
-                >
-                    <div className="w-14 h-14 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95">
-                        <FaShoppingCart className="w-6 h-6 text-white" />
-                        {shouldShowCartBadge && (
-                            <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
-                                {qty > 9 ? "9+" : qty}
-                            </span>
-                        )}
-                    </div>
-                    <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                        Cart ({qty} items)
-                    </div>
-                </Link>
-            </div>
-
             {/* Main Bottom Navigation */}
             <nav
-                className={`fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 ${
-                    showNav ? "translate-y-0" : "translate-y-full"
-                }`}
+                className={`fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 translate-y-0
+                `}
             >
                 <div className="absolute inset-0 backdrop-blur-lg bg-white/90 dark:bg-gray-900/95 border-t border-gray-200/50 dark:border-gray-700/50" />
 

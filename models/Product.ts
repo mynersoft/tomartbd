@@ -1,17 +1,21 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
+import type { IProduct, IVariant } from '@/types/product';
 
-/* ---------- Variant Schema ---------- */
-const VariantSchema = new mongoose.Schema(
+/* =====================
+   Document Type
+===================== */
+
+export interface IProductDocument extends IProduct, Document {}
+
+/* =====================
+   Variant Schema
+===================== */
+
+const VariantSchema = new Schema<IVariant>(
   {
-    size: {
-      type: String,
-    },
-    color: {
-      type: String,
-    },
-    price: {
-      type: Number,
-    },
+    size: String,
+    color: String,
+    price: Number,
     stock: {
       type: Number,
       default: 0,
@@ -29,19 +33,19 @@ const VariantSchema = new mongoose.Schema(
     },
     startDate: {
       type: Date,
-
       default: Date.now,
     },
-    endDate: {
-      type: Date,
-    },
+    endDate: Date,
     images: [String],
   },
   { _id: false }
 );
 
-/* ---------- Product Schema ---------- */
-const ProductSchema = new mongoose.Schema(
+/* =====================
+   Product Schema
+===================== */
+
+const ProductSchema = new Schema<IProductDocument>(
   {
     name: {
       type: String,
@@ -56,15 +60,8 @@ const ProductSchema = new mongoose.Schema(
       index: true,
     },
 
-    // ✅ Base price (must)
-    regularPrice: {
-      type: Number,
-    },
-
-    // ✅ Calculated price
-    salePrice: {
-      type: Number,
-    },
+    regularPrice: Number,
+    salePrice: Number,
 
     discount: {
       type: {
@@ -75,26 +72,31 @@ const ProductSchema = new mongoose.Schema(
     },
 
     brand: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Brand',
     },
+
     category: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Category',
     },
+
+    vendor: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+
     sold: {
       type: Number,
       default: 0,
     },
+
     stock: {
       type: Number,
       default: 0,
     },
+
     variants: [VariantSchema],
-    vendor: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
 
     description: String,
 
@@ -111,20 +113,22 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
     freeDelivery: {
       type: Boolean,
       default: false,
     },
+
     reviews: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Review',
       },
     ],
 
     questions: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Question',
       },
     ],
@@ -134,7 +138,6 @@ const ProductSchema = new mongoose.Schema(
       default: true,
     },
 
-    // SEO
     metaTitle: String,
     metaDescription: String,
     keywords: [String],
@@ -147,9 +150,16 @@ const ProductSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    strict: true, // 🔒 blocks unknown fields
+    strict: true,
   }
 );
 
-export default mongoose.models.Product ||
-  mongoose.model('Product', ProductSchema);
+/* =====================
+   Model Export
+===================== */
+
+const Product: Model<IProductDocument> =
+  mongoose.models.Product ||
+  mongoose.model<IProductDocument>('Product', ProductSchema);
+
+export default Product;

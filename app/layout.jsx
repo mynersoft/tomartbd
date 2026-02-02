@@ -1,4 +1,4 @@
-import Providers from '../components/Providers';
+import Providers from '@/components/Providers';
 import './globals.css';
 import MessengerChat from '@/components/MessengerChat';
 import InitData from '@/components/InitData';

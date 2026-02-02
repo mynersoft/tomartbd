@@ -1,24 +1,27 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "target": "es6",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
+    "strict": false,
     "noEmit": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
     "plugins": [
       {
@@ -28,35 +31,13 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "types/**/*.d.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "app/api/auth/[...nextauth]/route.js",
-    "models/User.js",
-    "lib/db.js",
-    "app/layout.jsx",
-    "app/auth/login/page.jsx",
-    "hooks/useAuth.js",
-    "models/Product.js",
-    "app/dashboard/admin/layout.jsx",
-    "app/shop/ShopClient.jsx",
-    "app/api/auth/login/route.js",
-    "app/api/products/route.js",
-    "app/api/products/delete/[slug]/route.js",
-    "components/Dashboard/Admin/AdminSidebar.jsx",
-    "tailwind.config.js",
-    "app/api/wishlist/route.js",
-    "hooks/useProducts.js",
-    "lib/cloudinary.js",
-    "app/dashboard/user/order-details/page.jsx",
-    "app/dashboard/user/orders/page.jsx",
-    "app/dashboard/admin/analytics/page.jsx",
-    "app/dashboard/admin/page.jsx",
-    "models/Brand.js",
-    "lib/api.js",
-    "components/ui/Button.jsx"
+    "**/*.mts",
+    "**/*.ts",
+    "**/*.tsx"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
