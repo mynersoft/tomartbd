@@ -1,13 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useRouter } from 'next/navigation';
 import { addToCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
-import ReviewForm from '@/components/ReviewForm';
-import ProductQuestions from '@/components/Product/ProductQuestions';
-import { formatCurrency } from '@/utils/formatCurrency';
 import { toast } from 'react-hot-toast';
 import {
   Star,
@@ -21,11 +18,7 @@ import {
   ShoppingCart,
   ChevronRight,
   Package,
-  Award,
-  Clock,
-  Users,
   ChevronLeft,
-  MessageSquare,
   Minus,
   Plus,
 } from 'lucide-react';
@@ -40,7 +33,6 @@ export default function ProductSinglePage() {
   const products = useSelector((state) => state.product.products);
 
   const [product, setProduct] = useState(null);
-
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +52,6 @@ export default function ProductSinglePage() {
         setLoading(true);
 
         if (!products || products.length === 0) {
-       
           return;
         }
 
@@ -164,9 +155,6 @@ export default function ProductSinglePage() {
     toast.success('🎉 Added to cart!');
   };
 
-   
-
-
   const handleBuyNow = () => {
     if (!product) {
       toast.error('Product not available');
@@ -199,8 +187,7 @@ export default function ProductSinglePage() {
           text: `Check out ${product.name} on our store!`,
           url: window.location.href,
         });
-      } catch (error) {
-      }
+      } catch (error) {}
     } else {
       navigator.clipboard.writeText(window.location.href);
       toast.success('🔗 Link copied to clipboard!');
@@ -586,9 +573,7 @@ export default function ProductSinglePage() {
             </div>
           </div>
 
-          <TabContent
-            product={product }
-          />
+          <TabContent product={product} />
         </div>
       </div>
     </div>

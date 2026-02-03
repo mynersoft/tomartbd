@@ -13,7 +13,6 @@ const CardDrawer = ({ items = [], isCartOpen, cartRef, setIsCartOpen }) => {
   const dispatch = useDispatch();
   const router = useRouter();
 
-
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -79,45 +78,42 @@ const CardDrawer = ({ items = [], isCartOpen, cartRef, setIsCartOpen }) => {
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {items.length > 0 ? (
               items.map((item) => (
-                <div
-                  key={item._id}
-                  className="flex gap-3 border rounded-lg p-3"
-                >
+                <div key={item._id} className="flex gap-3 p-3">
                   <Image
                     src={item.image || '/placeholder.png'}
                     alt={item.name}
-                    width={80}
-                    height={80}
-                    className="rounded-lg object-cover"
+                    width={60}
+                    height={60}
+                    className="rounded-lg object-cover h-20"
                   />
 
                   <div className="flex-1">
                     <h3 className="font-medium truncate">{item.name}</h3>
 
-                    <p className="text-lg font-bold text-[#004488]">
-                      ৳{item.price}
+                    <p className="text-base font-bold text-gray-600">
+                      ৳ {item.salePrice}
                     </p>
 
-                    {item.originalPrice && (
+                    {item.discount && (
                       <p className="text-sm text-gray-400 line-through">
-                        ৳{item.originalPrice}
+                        ৳{item.regularPrice}
                       </p>
                     )}
 
                     {/* Quantity */}
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center border rounded-lg">
+                    <div className="flex items-center justify-between mt-1">
+                      <div className="flex items-center border rounded border-gray-300">
                         <button
                           onClick={() =>
                             handleQuantityChange(item._id, item.quantity - 1)
                           }
                           disabled={item.quantity <= 1}
-                          className="p-2 hover:bg-gray-100"
+                          className="px-2 py-0.5  hover:bg-gray-100"
                         >
                           <Minus size={16} />
                         </button>
 
-                        <span className="w-8 text-center font-medium">
+                        <span className="w-8 py-0.5  text-center font-medium">
                           {item.quantity}
                         </span>
 
@@ -125,7 +121,7 @@ const CardDrawer = ({ items = [], isCartOpen, cartRef, setIsCartOpen }) => {
                           onClick={() =>
                             handleQuantityChange(item._id, item.quantity + 1)
                           }
-                          className="p-2 hover:bg-gray-100"
+                          className="px-2 py-0.5 hover:bg-gray-100"
                         >
                           <Plus size={16} />
                         </button>
@@ -150,10 +146,10 @@ const CardDrawer = ({ items = [], isCartOpen, cartRef, setIsCartOpen }) => {
                 <h3 className="text-xl font-semibold mb-2">
                   Your cart is empty
                 </h3>
-                <p className="text-gray-500 mb-6">Add items to get started</p>
+
                 <button
                   onClick={() => setIsCartOpen(false)}
-                  className="px-6 py-3 bg-[#004488] text-white rounded-lg"
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg"
                 >
                   Continue Shopping
                 </button>

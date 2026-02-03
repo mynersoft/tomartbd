@@ -1,17 +1,17 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getProduct } from "@/fetch/getProduct";
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { getProduct } from '@/fetch/getProduct';
+import { Image } from 'lucide-react';
+import ProductSinglePage from './ProductSinglePage';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 /* ---------------- SEO Metadata ---------------- */
-export async function generateMetadata(
-  { params }: Props
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProduct(slug);
 
@@ -20,30 +20,30 @@ export async function generateMetadata(
   }
 
   return {
-    title: `${product.name} | Tomartbd`,
-    description: product.shortDescription,
-    keywords: product.tags,
+    title: `${product.metaTitle} | Tomartbd`,
+    description: product.metaDescription,
+    keywords: product.keywords,
 
     openGraph: {
-      title: product.name,
-      description: product.shortDescription,
+      title: product.metaTitle,
+      description: product.metaDescription,
       url: `https://mahirprostore.com/product/${product.slug}`,
       images: [
         {
-          url: product.image,
+          url: product.galleryImages,
           width: 800,
           height: 800,
           alt: product.name,
         },
       ],
-      type: "website", // ✅ valid OpenGraph type
+      type: 'website', // ✅ valid OpenGraph type
     },
 
     twitter: {
-      card: "summary_large_image",
-      title: product.name,
-      description: product.shortDescription,
-      images: [product.image],
+      card: 'summary_large_image',
+      title: product.metaTitle,
+      description: product.metaDescription,
+      images: [product.featureImg],
     },
   };
 }
@@ -54,48 +54,43 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProduct(slug);
 
   if (!product) {
-    notFound();
+    <div>Product not found</div>
   }
 
   return (
+
+
+
     <main className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{product.name}</h1>
+     
+      
+      <ProductSinglePage/>
 
-      <img
-        src={product.image}
-        alt={product.name}
-        width={500}
-        height={500}
-        className="rounded mb-4"
-      />
 
-      <p className="mb-2">{product.description}</p>
 
-      <p className="text-lg font-semibold">
-        Price: ৳{product.price}
-      </p>
+
 
       {/* -------- JSON-LD Structured Data -------- */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Product",
+            '@context': 'https://schema.org',
+            '@type': 'Product',
             name: product.name,
-            image: product.image,
-            description: product.shortDescription,
+            image: product.featureImg,
+            description: product.metaDescription,
             sku: product.sku || product.slug,
             brand: {
-              "@type": "Brand",
-              name: "MahirProStore",
+              '@type': 'Brand',
+              name: 'MahirProStore',
             },
             offers: {
-              "@type": "Offer",
+              '@type': 'Offer',
               url: `https://mahirprostore.com/product/${product.slug}`,
-              priceCurrency: "BDT",
-              price: product.price,
-              availability: "https://schema.org/InStock",
+              priceCurrency: 'BDT',
+              price: product.salePrice,
+              availability: 'https://schema.org/InStock',
             },
           }),
         }}
