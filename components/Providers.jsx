@@ -5,7 +5,7 @@ import { SessionProvider } from 'next-auth/react';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import { Toaster } from 'react-hot-toast';
-import Header from '@/components/Header/HeaderNew';
+import Header from '@/components/Header/Header';
 import BottomNavigation from '@/components/Header/BottomMenu';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';

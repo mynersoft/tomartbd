@@ -241,7 +241,7 @@ export default function Header() {
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-gray-700 transition-colors font-medium"
               >
                 Search
               </button>
@@ -597,7 +597,7 @@ export default function Header() {
           </div>
         </div>
         {/* Navigation Menu (Desktop) */}
-        <nav className="hidden lg:flex items-center justify-between py-3 mt-2 border-t border-gray-100">
+        <nav className="hidden lg:flex items-center justify-between py-3 mt-2 border-t border-gray-100 container mx-auto">
           <div className="flex items-center gap-1">
             <HeaderNavigation />
           </div>
