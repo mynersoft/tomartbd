@@ -1,6 +1,8 @@
+
+'use client';
 import React, { useState } from 'react';
-import DashboardLayout from '../../components/vendor/DashboardLayout';
-import ProductTable from '../../components/vendor/ProductTable';
+import DashboardLayout from '@/components/Vendor/DashboardLayout';
+import ProductTable from '@/components/Vendor/ProductTable';
 import { 
   Search, 
   Filter, 
@@ -12,7 +14,7 @@ import {
   Tag,
   Archive
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'next/link';
 import { useProducts } from '../../hooks/useVendorQuery';
 
 const ProductsPage = () => {

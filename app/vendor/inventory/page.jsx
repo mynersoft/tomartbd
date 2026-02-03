@@ -1,6 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
-import DashboardLayout from '../../components/vendor/DashboardLayout';
-import InventoryTable from '../../components/vendor/InventoryTable';
+import DashboardLayout from '@/components/Vendor/DashboardLayout';
+import InventoryTable from '@/components/Vendor/InventoryTable';
 import { 
   Package, 
   AlertCircle, 
@@ -13,7 +15,7 @@ import {
   Filter,
   BarChart3
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'next/link';
 
 const InventoryPage = () => {
   const [filter, setFilter] = useState('all');
