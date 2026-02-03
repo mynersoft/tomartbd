@@ -227,9 +227,9 @@ export default function ProductSinglePage() {
   // Error state
   if (error || !product) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-gray-50 to-gray-100 p-4">
         <div className="text-center space-y-6 max-w-md">
-          <div className="w-32 h-32 mx-auto bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+          <div className="w-32 h-32 mx-auto bg-linear-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
             <Package className="w-20 h-20 text-gray-400" />
           </div>
           <h2 className="text-3xl font-bold text-gray-800">
@@ -460,7 +460,7 @@ export default function ProductSinglePage() {
                           ৳ {prices.regular}
                         </span>
                         {discountPercent > 0 && (
-                          <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold">
+                          <span className="bg-linear-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold">
                             Save {discountPercent}%
                           </span>
                         )}
@@ -513,9 +513,9 @@ export default function ProductSinglePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button
                     onClick={handleAddToCart}
-                    className="group bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-3"
+                    className="group bg-green-600 text-white py-1 px-4 rounded-xl font-bold text-base transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-3"
                   >
-                    <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    <ShoppingCart className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     <span>Add to Cart</span>
                   </button>
                   <button
