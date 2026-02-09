@@ -39,11 +39,14 @@ export default function ProductTable() {
 
   // Filter and sort products
   const filteredProducts = products.filter((product) => {
+    const categoryName = product.category?.name || product.category || '';
     const matchesSearch =
       product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category?.toLowerCase().includes(searchTerm.toLowerCase());
+      categoryName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
-      selectedCategory === 'all' || product.category === selectedCategory;
+      selectedCategory === 'all' ||
+      product.category?._id === selectedCategory ||
+      product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -52,13 +55,19 @@ export default function ProductTable() {
       case 'name':
         return a.name?.localeCompare(b.name);
       case 'price-low':
-        return a.price - b.price;
+        return (
+          (a.salePrice || a.regularPrice || 0) -
+          (b.salePrice || b.regularPrice || 0)
+        );
       case 'price-high':
-        return b.price - a.price;
+        return (
+          (b.salePrice || b.regularPrice || 0) -
+          (a.salePrice || a.regularPrice || 0)
+        );
       case 'stock-low':
-        return a.stock - b.stock;
+        return (a.stock || 0) - (b.stock || 0);
       case 'stock-high':
-        return b.stock - a.stock;
+        return (b.stock || 0) - (a.stock || 0);
       case 'newest':
         return new Date(b.createdAt) - new Date(a.createdAt);
       case 'oldest':
@@ -71,7 +80,9 @@ export default function ProductTable() {
   // Get unique categories
   const categories = [
     'all',
-    ...new Set(products.map((p) => p.category).filter(Boolean)),
+    ...new Set(
+      products.map((p) => p.category?._id || p.category).filter(Boolean)
+    ),
   ];
 
   const handleDelete = (id, name) => {
@@ -120,7 +131,7 @@ export default function ProductTable() {
   };
 
   const getStockStatus = (stock) => {
-    if (stock === 0)
+    if (stock === 0 || !stock)
       return {
         label: 'Out of Stock',
         color: 'bg-red-100 text-red-800',
@@ -137,6 +148,24 @@ export default function ProductTable() {
       color: 'bg-green-100 text-green-800',
       textColor: 'text-green-600',
     };
+  };
+
+  const getProductImage = (product) => {
+    return product.featureImg || product.galleryImages?.[0] || null;
+  };
+
+  const getProductType = (product) => {
+    // Map type enum to display badge
+    const typeMap = {
+      featured: { label: 'Featured', color: 'bg-purple-100 text-purple-800' },
+      new: { label: 'New', color: 'bg-blue-100 text-blue-800' },
+      'best-selling': {
+        label: 'Best Selling',
+        color: 'bg-green-100 text-green-800',
+      },
+      regular: { label: 'Regular', color: 'bg-gray-100 text-gray-800' },
+    };
+    return typeMap[product.type] || typeMap['regular'];
   };
 
   if (isLoading) {
@@ -222,10 +251,13 @@ export default function ProductTable() {
             </button>
 
             {/* Add Product */}
-            <button className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium">
+            <Link
+              href="/admin/products/add"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+            >
               <Plus className="h-4 w-4" />
               Add Product
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -271,11 +303,27 @@ export default function ProductTable() {
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category === 'all' ? 'All Categories' : category}
-                      </option>
-                    ))}
+                    <option value="all">All Categories</option>
+                    {products
+                      .filter(
+                        (p, index, self) =>
+                          p.category &&
+                          self.findIndex(
+                            (x) =>
+                              (x.category?._id || x.category) ===
+                              (p.category?._id || p.category)
+                          ) === index
+                      )
+                      .map((product) => (
+                        <option
+                          key={product.category?._id || product.category}
+                          value={product.category?._id || product.category}
+                        >
+                          {product.category?.name ||
+                            product.category ||
+                            'Uncategorized'}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
@@ -329,10 +377,13 @@ export default function ProductTable() {
               ? 'Try adjusting your search or filters'
               : 'Start by adding your first product'}
           </p>
-          <button className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+          <Link
+            href="/admin/products/add"
+            className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
             <Plus className="h-4 w-4" />
             Add Product
-          </button>
+          </Link>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -363,7 +414,7 @@ export default function ProductTable() {
                   Stock
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Status
+                  Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Actions
@@ -373,6 +424,11 @@ export default function ProductTable() {
             <tbody className="divide-y divide-gray-200">
               {sortedProducts.map((product) => {
                 const stockStatus = getStockStatus(product.stock);
+                const productImage = getProductImage(product);
+                const productType = getProductType(product);
+                const hasDiscount =
+                  product.salePrice && product.salePrice < product.regularPrice;
+
                 return (
                   <tr
                     key={product._id}
@@ -388,16 +444,18 @@ export default function ProductTable() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        {product.images[0] ? (
+                        {productImage ? (
                           <Image
-                            src={product.images[0]}
+                            src={productImage}
                             alt={product.name}
-                            height={100}
-                            width={100}
-                            className="h-10 w-10"
+                            height={40}
+                            width={40}
+                            className="h-10 w-10 object-cover rounded"
                           />
                         ) : (
-                          <div className="rounded bg-gray-200 h-10 w-10"></div>
+                          <div className="rounded bg-gray-200 h-10 w-10 flex items-center justify-center">
+                            <Package className="h-5 w-5 text-gray-400" />
+                          </div>
                         )}
                         <div>
                           <div className="flex items-center gap-2">
@@ -405,30 +463,39 @@ export default function ProductTable() {
                               {product.name}
                             </span>
                           </div>
+                          {product.brand?.name && (
+                            <span className="text-xs text-gray-500">
+                              {product.brand.name}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                        {product.category || 'Uncategorized'}
+                        {product.category?.name ||
+                          product.category ||
+                          'Uncategorized'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-bold text-gray-900">
-                        {product.price}৳
+                      <div className="flex flex-col">
+                        <span className="font-bold text-gray-900">
+                          ৳{product.salePrice || product.regularPrice || 0}
+                        </span>
+                        {hasDiscount && (
+                          <span className="text-sm text-gray-500 line-through">
+                            ৳{product.regularPrice}
+                          </span>
+                        )}
                       </div>
-                      {product.originalPrice && (
-                        <div className="text-sm text-gray-500 line-through">
-                          {product.originalPrice}৳
-                        </div>
-                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <span
                           className={`font-medium ${stockStatus.textColor}`}
                         >
-                          {product.stock}
+                          {product.stock || 0}
                         </span>
                         <div
                           className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${stockStatus.color}`}
@@ -438,9 +505,11 @@ export default function ProductTable() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        {product.type}
-                      </div>
+                      <span
+                        className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${productType.color}`}
+                      >
+                        {productType.label}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">

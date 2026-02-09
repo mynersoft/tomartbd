@@ -11,8 +11,8 @@ export async function GET() {
     await connectDB();
 
     const products = await Product.find()
-      // .populate('brand', 'name')
-      // .populate('Category', 'name')
+      .populate('brand', 'name')
+      .populate('category', 'name')
       .sort({ createdAt: -1 });
 
     return NextResponse.json(products, { status: 200 });
@@ -24,7 +24,6 @@ export async function GET() {
     );
   }
 }
-
 
 // -------------------- SALE PRICE CALC --------------------
 function calculateSalePrice(regularPrice, discount) {
@@ -90,7 +89,7 @@ export async function POST(req) {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-    let baseSlug = `${slugify(name)}-tomartbd`;
+    const baseSlug = `${slugify(name)}-tomartbd`;
     let slug = baseSlug;
     let counter = 1;
 

@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getProduct } from '@/fetch/getProduct';
-import { Image } from 'lucide-react';
 import ProductSinglePage from './ProductSinglePage';
 
 export const dynamic = 'force-dynamic';
@@ -65,9 +64,6 @@ export default async function ProductPage({ params }: Props) {
      
       
       <ProductSinglePage/>
-
-
-
 
 
       {/* -------- JSON-LD Structured Data -------- */}

@@ -1,7 +1,49 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import type { IProduct } from '@/types/product';
+import type { IProduct, IVariant } from '@/types/product';
+
+/* =====================
+   Document Type
+===================== */
 
 export interface IProductDocument extends IProduct, Document {}
+
+/* =====================
+   Variant Schema
+===================== */
+
+const VariantSchema = new Schema<IVariant>(
+  {
+    size: String,
+    color: String,
+    price: Number,
+    stock: {
+      type: Number,
+      default: 0,
+    },
+    salePrice: {
+      type: Number,
+      default: 0,
+    },
+    discount: {
+      type: {
+        type: String,
+        enum: ['percentage', 'fixed'],
+      },
+      value: Number,
+    },
+    startDate: {
+      type: Date,
+      default: Date.now,
+    },
+    endDate: Date,
+    images: [String],
+  },
+  { _id: false }
+);
+
+/* =====================
+   Product Schema
+===================== */
 
 const ProductSchema = new Schema<IProductDocument>(
   {
@@ -53,6 +95,8 @@ const ProductSchema = new Schema<IProductDocument>(
       type: Number,
       default: 0,
     },
+
+    variants: [VariantSchema],
 
     description: String,
 
@@ -109,6 +153,10 @@ const ProductSchema = new Schema<IProductDocument>(
     strict: true,
   }
 );
+
+/* =====================
+   Model Export
+===================== */
 
 const Product: Model<IProductDocument> =
   mongoose.models.Product ||

@@ -15,7 +15,7 @@ export default function RichTextEditor({
 
   return (
     <Editor
-      apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+      apiKey={process.env.NEXT_PUBLIC_TINY_MMC_API_KEY}
       value={value}
       onInit={(evt, editor) => (editorRef.current = editor)}
       onEditorChange={(content) => onChange(content)}

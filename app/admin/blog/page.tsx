@@ -18,74 +18,6 @@ import {
 import Link from 'next/link';
 import { useSelector } from 'react-redux';
 
-// Mock data - replace with actual API call
-const mockPosts = [
-  {
-    _id: '1',
-    title: 'Getting Started with React 18',
-    slug: 'getting-started-with-react-18',
-    author: 'John Doe',
-    category: 'React',
-    tags: ['React', 'JavaScript', 'Frontend'],
-    status: 'published',
-    views: 2450,
-    comments: 42,
-    createdAt: '2024-01-15',
-    excerpt: 'Learn the new features and improvements in React 18...',
-  },
-  {
-    _id: '2',
-    title: 'Mastering Tailwind CSS',
-    slug: 'mastering-tailwind-css',
-    author: 'Jane Smith',
-    category: 'CSS',
-    tags: ['CSS', 'Tailwind', 'Design'],
-    status: 'draft',
-    views: 0,
-    comments: 0,
-    createdAt: '2024-01-18',
-    excerpt: 'Advanced techniques and best practices for using Tailwind CSS...',
-  },
-  {
-    _id: '3',
-    title: 'Next.js 14 Best Practices',
-    slug: 'nextjs-14-best-practices',
-    author: 'Mike Johnson',
-    category: 'Next.js',
-    tags: ['Next.js', 'React', 'SSR'],
-    status: 'published',
-    views: 3210,
-    comments: 56,
-    createdAt: '2024-01-10',
-    excerpt: 'Optimize your Next.js applications with these expert tips...',
-  },
-  {
-    _id: '4',
-    title: 'TypeScript for Beginners',
-    slug: 'typescript-for-beginners',
-    author: 'Sarah Williams',
-    category: 'TypeScript',
-    tags: ['TypeScript', 'JavaScript'],
-    status: 'published',
-    views: 1890,
-    comments: 23,
-    createdAt: '2024-01-05',
-    excerpt: 'A comprehensive guide to getting started with TypeScript...',
-  },
-  {
-    _id: '5',
-    title: 'Building APIs with Node.js',
-    slug: 'building-apis-with-nodejs',
-    author: 'Robert Brown',
-    category: 'Node.js',
-    tags: ['Node.js', 'Backend', 'API'],
-    status: 'scheduled',
-    views: 0,
-    comments: 0,
-    createdAt: '2024-01-25',
-    excerpt: 'Learn how to build robust REST APIs using Node.js and Express...',
-  },
-];
 
 
 export default function BlogPage() {
@@ -210,7 +142,7 @@ export default function BlogPage() {
 
         <div className="flex flex-wrap gap-3">
           <Link
-            href="/admin/blog/create"
+            href="/admin/blog/add"
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />

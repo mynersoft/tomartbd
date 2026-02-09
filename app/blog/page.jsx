@@ -22,6 +22,8 @@ import {
 
 export default function BlogHomePage() {
   const { data, isLoading } = useBlogs();
+  console.log(data);
+  
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");

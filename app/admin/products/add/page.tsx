@@ -1,26 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useUpdateProduct } from '@/hooks/useProducts';
-import { useRouter, useParams } from 'next/navigation';
+import { useAddProduct } from '@/hooks/useProducts';
 import { useSelector } from 'react-redux';
 import RichTextEditor from '@/components/TinyMCEEditor';
 import { handleImageUpload } from '@/utils/cloudinaryUploader';
 
-export default function UpdateProductPage() {
-  const { id } = useParams();
-  const router = useRouter();
-  const { mutate, isPending } = useUpdateProduct();
-
+export default function AddProductPage() {
+  const { mutate, isLoading } = useAddProduct();
   const { brands } = useSelector((state) => state.brand);
   const { categories } = useSelector((state) => state.category);
-  const { products } = useSelector(
-    (state) => state.product || { products: [] }
-  );
-
-  const product = products?.find((item) => item._id === id);
 
   const [form, setForm] = useState({
     name: '',
@@ -37,13 +28,9 @@ export default function UpdateProductPage() {
     tags: '',
     featured: false,
     bestseller: false,
-    newArrival: false,
+    newArrival: true,
     freeDelivery: false,
-    sku: '',
   });
-
-  const [isUploading, setIsUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const selectedCategory = categories?.find((c) => c._id === form.category);
 
@@ -57,6 +44,8 @@ export default function UpdateProductPage() {
         sub.parentSubCategory ===
           levelOneSubs.find((s) => s._id === form.subCategory)?.slug
     ) || [];
+
+  const [isUploading, setIsUploading] = useState(false);
 
   // Calculate sale price based on discount
   const calculateSalePrice = () => {
@@ -75,35 +64,6 @@ export default function UpdateProductPage() {
   };
 
   const salePrice = calculateSalePrice();
-
-  useEffect(() => {
-    if (product) {
-      setForm({
-        name: product.name || '',
-        description: product.description || '',
-        category: product.category?._id || product.category || '',
-        subCategory: product.subCategory?._id || product.subCategory || '',
-        childCategory:
-          product.childCategory?._id || product.childCategory || '',
-        brand: product.brand?._id || product.brand || '',
-        regularPrice: product.regularPrice || '',
-        stock: product.stock || '',
-        discount: {
-          type: product.discount?.type || '',
-          value: product.discount?.value || '',
-        },
-        galleryImages: product.galleryImages || [],
-        featureImg: product.featureImg || '',
-        tags: product.tags?.join(',') || '',
-        featured: product.type === 'featured' || false,
-        bestseller: product.type === 'best-selling' || false,
-        newArrival: product.type === 'new' || false,
-        freeDelivery: product.freeDelivery || false,
-        sku: product.sku || '',
-      });
-      setLoading(false);
-    }
-  }, [product]);
 
   // -------------------- HANDLERS --------------------
   const handleChange = (eOrValue, fieldName) => {
@@ -144,11 +104,10 @@ export default function UpdateProductPage() {
           ? '' // single image
           : prev[field].filter((_, i) => i !== index), // multiple
     }));
-    toast.success('Image removed');
   };
 
   // -------------------- SUBMIT --------------------
-  const handleUpdateProduct = (e) => {
+  const handleAddProduct = (e) => {
     e.preventDefault();
 
     // Validate required fields
@@ -169,12 +128,6 @@ export default function UpdateProductPage() {
 
     const hasDiscount = form.discount.type && Number(form.discount.value) > 0;
 
-    // Determine product type based on flags
-    let productType = 'regular';
-    if (form.featured) productType = 'featured';
-    else if (form.bestseller) productType = 'best-selling';
-    else if (form.newArrival) productType = 'new';
-
     const productData = {
       name: form.name.trim(),
       description: form.description,
@@ -191,9 +144,10 @@ export default function UpdateProductPage() {
             .map((t) => t.trim())
             .filter((t) => t)
         : [],
-      type: productType,
+      featured: form.featured,
+      bestseller: form.bestseller,
+      newArrival: form.newArrival,
       freeDelivery: form.freeDelivery,
-      sku: form.sku || undefined,
       ...(hasDiscount && {
         discount: {
           type: form.discount.type,
@@ -210,57 +164,39 @@ export default function UpdateProductPage() {
       productData.childCategory = form.childCategory;
     }
 
-    mutate(
-      { id, data: productData },
-      {
-        onSuccess: () => {
-          toast.success('Product updated successfully');
-          router.push('/admin/products');
-        },
-        onError: (error) => {
-          toast.error(error.message || 'Failed to update product');
-        },
-      }
-    );
+    mutate(productData, {
+      onSuccess: () => {
+        toast.success('Product added successfully');
+        setForm({
+          name: '',
+          description: '',
+          category: '',
+          subCategory: '',
+          childCategory: '',
+          brand: '',
+          regularPrice: '',
+          stock: '',
+          discount: { type: '', value: '' },
+          galleryImages: [],
+          featureImg: '',
+          tags: '',
+          featured: false,
+          bestseller: false,
+          newArrival: true,
+          freeDelivery: false,
+        });
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Failed to add product');
+      },
+    });
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading product...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!product) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Product Not Found
-          </h2>
-          <p className="mt-2 text-gray-600">
-            The product you're looking for doesn't exist.
-          </p>
-          <Link
-            href="/admin/products"
-            className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-          >
-            Back to Products
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   // -------------------- UI --------------------
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded mt-6">
       <div className="flex justify-between my-2">
-        <h1 className="text-2xl font-bold mb-4">Update Product</h1>
+        <h1 className="text-2xl font-bold mb-4">Add New Product</h1>
         <Link
           href="/admin/products"
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
@@ -269,7 +205,7 @@ export default function UpdateProductPage() {
         </Link>
       </div>
 
-      <form className="space-y-4" onSubmit={handleUpdateProduct}>
+      <form className="space-y-4" onSubmit={handleAddProduct}>
         {/* Product Name */}
         <div>
           <label className="block text-sm font-medium mb-1">
@@ -566,21 +502,6 @@ export default function UpdateProductPage() {
           </div>
         </div>
 
-        {/* SKU */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            SKU (Optional)
-          </label>
-          <input
-            type="text"
-            name="sku"
-            value={form.sku}
-            onChange={handleChange}
-            placeholder="Product SKU"
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
-
         {/* Tags */}
         <div>
           <label className="block text-sm font-medium mb-1">
@@ -643,25 +564,19 @@ export default function UpdateProductPage() {
           </div>
         </div>
 
-        {/* Submit Buttons */}
-        <div className="border-t pt-6 flex gap-3">
+        {/* Submit Button */}
+        <div className="border-t pt-6">
           <button
-            disabled={isPending || isUploading}
+            disabled={isLoading || isUploading}
             type="submit"
             className="bg-blue-600 text-white px-8 py-3 rounded font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPending
-              ? 'Updating Product...'
+            {isLoading
+              ? 'Adding Product...'
               : isUploading
                 ? 'Uploading Images...'
-                : 'Update Product'}
+                : 'Add Product'}
           </button>
-          <Link
-            href="/admin/products"
-            className="bg-gray-600 text-white px-8 py-3 rounded font-medium hover:bg-gray-700"
-          >
-            Cancel
-          </Link>
         </div>
       </form>
     </div>

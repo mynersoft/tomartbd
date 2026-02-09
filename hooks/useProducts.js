@@ -79,7 +79,7 @@ export const useDeleteProduct = () => {
 
   return useMutation({
     mutationFn: async (id) => {
-      const res = await axios.delete(`/api/products/${id}`);
+      const res = await axios.delete(`/api/products/id/${id}`);
       return res.data;
     },
 
@@ -113,7 +113,7 @@ export function useUpdateProduct() {
 
   return useMutation({
     mutationFn: async ({ id, data }) => {
-      const res = await axios.put(`/api/products/${id}`, data);
+      const res = await axios.put(`/api/products/id/${id}`, data);
       return res.data.product;
     },
 
