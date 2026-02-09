@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
     initCartFromStorage,
@@ -29,177 +29,99 @@ import {
 const BottomNavigation = ({ activeTab, setActiveTab }) => {
     const pathname = usePathname();
     const { data: session } = useSession();
-    const qty = useSelector(selectCartTotalItems);
-    const isCartHydrated = useSelector(state => state.cart._hydrated);
     const dispatch = useDispatch();
-    const [showNav, setShowNav] = useState(true);
-    const [lastScrollY, setLastScrollY] = useState(0);
+
+    const cartQty = useSelector(selectCartTotalItems);
+    const isCartHydrated = useSelector(state => state.cart._hydrated);
+    const wishlistQty = useSelector(state => state.wishlist.qty);
+
     const [isClient, setIsClient] = useState(false);
 
-    const { qty: wishlist } = useSelector(state => state.wishlist);
-
-    const wishlistCount = wishlist; // Replace with actual wishlist count
-
-    // Initialize client and cart
+    /* ---------- Init ---------- */
     useEffect(() => {
         setIsClient(true);
         dispatch(initCartFromStorage());
     }, [dispatch]);
 
-    // Scroll handler (client-side only)
-    useEffect(() => {
-        if (!isClient) return;
-
-        const handleScroll = () => {
-            const currentScrollY = window.scrollY;
-
-            if (currentScrollY < 100) {
-                setShowNav(true);
-            } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                setShowNav(false);
-            } else {
-                setShowNav(true);
-            }
-
-            setLastScrollY(currentScrollY);
-        };
-
-        window.addEventListener("scroll", handleScroll, { passive: true });
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [lastScrollY, isClient]);
-
-    const navItems = [
-        {
-            name: "Home",
-            href: "/",
-            icon: FiHome,
-            activeIcon: HiHome
-        },
-        {
-            name: "Shop",
-            href: "/shop",
-            icon: FiShoppingBag,
-            activeIcon: HiShoppingBag
-        },
-        {
-            name: "Wishlist",
-            href: "/wishlist",
-            icon: FiHeart,
-            activeIcon: HiHeart,
-            badge: wishlistCount > 0 ? wishlistCount : null
-        },
-        {
-            name: "Cart",
-            href: "/cart",
-            icon: FaShoppingCart,
-            activeIcon: FaShoppingCart,
-            badge: isCartHydrated && qty > 0 ? qty : null // Only show badge after hydration
-        },
-        {
-            name: "Chat",
-            href: "/messages",
-            icon: FiMessageCircle,
-            activeIcon: HiChatBubbleLeftRight,
-            badge: 5 // Replace with actual unread message count
-        },
-        {
-            name: session ? "Account" : "Login",
-            href: session ? "/dashboard/user" : "/auth/login",
-            icon: FiUser,
-            activeIcon: HiUser
-        }
-    ];
-
-    const isActive = item => {
-        return (
+    /* ---------- Active Check ---------- */
+    const isActive = useCallback(
+        item =>
             pathname === item.href ||
             activeTab === item.name ||
-            (item.href !== "/" && pathname.startsWith(item.href))
-        );
-    };
+            (item.href !== "/" && pathname.startsWith(item.href)),
+        [pathname, activeTab]
+    );
 
-    // Only render badge after hydration
-    const shouldShowCartBadge = isClient && isCartHydrated && qty > 0;
-    const shouldShowOtherBadge = badge => isClient && badge && badge > 0;
+    /* ---------- Badge Formatter ---------- */
+    const renderBadge = useCallback(
+        (count, color = "pink") => {
+            if (!isClient || !count || count <= 0) return null;
 
-    return (
-        <>
-            {/* Desktop Floating Action Button for Mobile View */}
-            {/* Main Bottom Navigation */}
-            <nav
-                className={`fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 translate-y-0
-                `}
-            >
-                <div className="absolute inset-0 backdrop-blur-lg bg-white/90 dark:bg-gray-900/95 border-t border-gray-200/50 dark:border-gray-700/50" />
+            const bg = color === "red" ? "bg-red-500" : "bg-pink-500";
 
-                <div className="relative max-w-2xl mx-auto">
-                    <div className="flex justify-around items-center px-2 py-2">
-                        {navItems.map(item => {
-                            const active = isActive(item);
-                            const Icon = active ? item.activeIcon : item.icon;
+            return (
+                <span
+                    className={`absolute -top-2 -right-2 min-w-5 h-5 flex items-center justify-center px-1 text-xs font-bold rounded-full text-white ${bg}`}
+                >
+                    {count > 9 ? "9+" : count}
+                </span>
+            );
+        },
+        [isClient]
+    );
 
-                            return (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    onClick={() => setActiveTab(item.name)}
-                                    className={`relative flex flex-col items-center justify-center flex-1 p-2 rounded-xl transition-all duration-200 group ${
-                                        active
-                                            ? "text-pink-600 dark:text-pink-400"
-                                            : "text-gray-600 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400"
-                                    }`}
-                                >
-                                    {active && (
-                                        <div className="absolute -top-2 w-10 h-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full" />
-                                    )}
+    /* ---------- Nav Items ---------- */
+    const navItems = useMemo(
+        () => [
+            {
+                name: "Home",
+                href: "/",
+                icon: FiHome,
+                activeIcon: HiHome
+            },
+            {
+                name: "Shop",
+                href: "/shop",
+                icon: FiShoppingBag,
+                activeIcon: HiShoppingBag
+            },
+            {
+                name: "Wishlist",
+                href: "/wishlist",
+                icon: FiHeart,
+                activeIcon: HiHeart,
+                badge: wishlistQty
+            },
+            {
+                name: "Cart",
+                href: "/cart",
+                icon: FaShoppingCart,
+                activeIcon: FaShoppingCart,
+                badge: isCartHydrated ? cartQty : 0,
+                badgeColor: "red"
+            },
+            {
+                name: "Chat",
+                href: "/messages",
+                icon: FiMessageCircle,
+                activeIcon: HiChatBubbleLeftRight,
+                badge: 5
+            },
+            {
+                name: session ? "Account" : "Login",
+                href: session ? "/dashboard/user" : "/auth/login",
+                icon: FiUser,
+                activeIcon: HiUser
+            }
+        ],
+        [wishlistQty, cartQty, isCartHydrated, session]
+    );
 
-                                    <div className="relative">
-                                        <Icon
-                                            className={`w-6 h-6 transition-transform duration-200 ${
-                                                active
-                                                    ? "scale-110"
-                                                    : "group-hover:scale-105"
-                                            }`}
-                                        />
-
-                                        {item.name === "Cart"
-                                            ? shouldShowCartBadge && (
-                                                  <span className="absolute -top-2 -right-2 min-w-5 h-5 flex items-center justify-center px-1 text-xs font-bold rounded-full bg-red-500 text-white">
-                                                      {item.badge > 9
-                                                          ? "9+"
-                                                          : item.badge}
-                                                  </span>
-                                              )
-                                            : shouldShowOtherBadge(
-                                                  item.badge
-                                              ) && (
-                                                  <span className="absolute -top-2 -right-2 min-w-5 h-5 flex items-center justify-center px-1 text-xs font-bold rounded-full bg-pink-500 text-white">
-                                                      {item.badge > 9
-                                                          ? "9+"
-                                                          : item.badge}
-                                                  </span>
-                                              )}
-                                    </div>
-
-                                    <span
-                                        className={`text-[10px] font-semibold mt-1 transition-all duration-200 ${
-                                            active ? "scale-110" : ""
-                                        }`}
-                                    >
-                                        {item.name}
-                                    </span>
-
-                                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 to-purple-600/0 rounded-xl transition-all duration-300 group-hover:from-pink-500/5 group-hover:to-purple-600/5" />
-                                </Link>
-                            );
-                        })}
-                    </div>
-                </div>
-            </nav>
-
-            {/* Desktop Side Navigation */}
-            <nav className="hidden lg:flex fixed left-0 top-1/2 transform -translate-y-1/2 z-40 ml-4">
-                <div className="flex flex-col items-center space-y-3 bg-white/90 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl p-3 shadow-xl border border-gray-200/50 dark:border-gray-700/50">
+    /* ---------- Shared Nav Renderer ---------- */
+    const renderNav = (containerClass, itemClass, iconSize = "w-6 h-6") => (
+        <nav className={containerClass}>
+            <div className="bg-white/90 dark:bg-gray-900/95 backdrop-blur-lg border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-xl">
+                <div className="flex">
                     {navItems.map(item => {
                         const active = isActive(item);
                         const Icon = active ? item.activeIcon : item.icon;
@@ -209,101 +131,56 @@ const BottomNavigation = ({ activeTab, setActiveTab }) => {
                                 key={item.name}
                                 href={item.href}
                                 onClick={() => setActiveTab(item.name)}
-                                className={`relative flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-200 group ${
+                                className={`${itemClass} ${
                                     active
-                                        ? "text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20"
-                                        : "text-gray-600 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                        ? "text-pink-600 dark:text-pink-400"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-pink-500"
                                 }`}
                             >
                                 <div className="relative">
                                     <Icon
-                                        className={`w-6 h-6 transition-transform duration-200 ${
-                                            active
-                                                ? "scale-110"
-                                                : "group-hover:scale-105"
+                                        className={`${iconSize} ${
+                                            active ? "scale-110" : ""
                                         }`}
                                     />
-
-                                    {item.name === "Cart"
-                                        ? shouldShowCartBadge && (
-                                              <span className="absolute -top-2 -right-2 min-w-5 h-5 flex items-center justify-center px-1 text-xs font-bold rounded-full bg-red-500 text-white">
-                                                  {item.badge > 9
-                                                      ? "9+"
-                                                      : item.badge}
-                                              </span>
-                                          )
-                                        : shouldShowOtherBadge(item.badge) && (
-                                              <span className="absolute -top-2 -right-2 min-w-5 h-5 flex items-center justify-center px-1 text-xs font-bold rounded-full bg-pink-500 text-white">
-                                                  {item.badge > 9
-                                                      ? "9+"
-                                                      : item.badge}
-                                              </span>
-                                          )}
+                                    {item.badge &&
+                                        renderBadge(
+                                            item.badge,
+                                            item.badgeColor
+                                        )}
                                 </div>
-
-                                <span className="text-[10px] font-semibold mt-2">
+                                <span className="text-[10px] font-semibold mt-1">
                                     {item.name}
                                 </span>
                             </Link>
                         );
                     })}
                 </div>
-            </nav>
+            </div>
+        </nav>
+    );
 
-            {/* Tablet Bottom Navigation */}
-            <nav className="hidden md:flex lg:hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 z-40">
-                <div className="flex items-center bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl p-2 shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
-                    {navItems.map(item => {
-                        const active = isActive(item);
-                        const Icon = active ? item.activeIcon : item.icon;
+    return (
+        <>
+            {/* Mobile Bottom */}
+            {renderNav(
+                "fixed bottom-0 left-0 right-0 z-40 max-w-2xl mx-auto  ",
+                "flex-1 flex flex-col items-center p-2 rounded-xl transition"
+            )}
 
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                onClick={() => setActiveTab(item.name)}
-                                className={`relative flex items-center p-3 rounded-xl transition-all duration-200 group mx-1 ${
-                                    active
-                                        ? "text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20"
-                                        : "text-gray-600 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400"
-                                }`}
-                            >
-                                <div className="relative">
-                                    <Icon
-                                        className={`w-5 h-5 transition-transform duration-200 ${
-                                            active
-                                                ? "scale-110"
-                                                : "group-hover:scale-105"
-                                        }`}
-                                    />
+            {/* Desktop Side */}
+            {renderNav(
+                "hidden lg:flex fixed left-4 top-1/2 -translate-y-1/2 z-40",
+                "flex flex-col items-center p-3 rounded-xl transition",
+                "w-6 h-6"
+            )}
 
-                                    {item.name === "Cart"
-                                        ? shouldShowCartBadge && (
-                                              <span className="absolute -top-2 -right-2 min-w-4 h-4 flex items-center justify-center px-1 text-[10px] font-bold rounded-full bg-red-500 text-white">
-                                                  {item.badge > 9
-                                                      ? "9+"
-                                                      : item.badge}
-                                              </span>
-                                          )
-                                        : shouldShowOtherBadge(item.badge) && (
-                                              <span className="absolute -top-2 -right-2 min-w-4 h-4 flex items-center justify-center px-1 text-[10px] font-bold rounded-full bg-pink-500 text-white">
-                                                  {item.badge > 9
-                                                      ? "9+"
-                                                      : item.badge}
-                                              </span>
-                                          )}
-                                </div>
-
-                                {active && (
-                                    <span className="ml-2 text-sm font-semibold">
-                                        {item.name}
-                                    </span>
-                                )}
-                            </Link>
-                        );
-                    })}
-                </div>
-            </nav>
+            {/* Tablet Bottom */}
+            {renderNav(
+                "hidden md:flex lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 px-2 py-2",
+                "flex items-center p-3 rounded-xl transition mx-1",
+                "w-5 h-5"
+            )}
         </>
     );
 };

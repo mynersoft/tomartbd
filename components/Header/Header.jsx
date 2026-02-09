@@ -40,6 +40,9 @@ import HeaderNavigation from './HeaderNavigation';
 export default function Header() {
   const router = useRouter();
   const { items, qty } = useSelector((state) => state.cart);
+  
+ 
+  
   const { categories } = useSelector((state) => state.category);
   const { user } = useLoginUser();
 

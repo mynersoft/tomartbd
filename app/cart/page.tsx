@@ -11,7 +11,7 @@ export default function CartPage() {
 
 const subtotal = items.reduce((acc, item) => {
   // Calculate item price based on discount type
-  let itemPrice = item.price;
+  let itemPrice = item.salePrice;
 
   if (item.discount?.value) {
     if (item.discount.type === 'percentage') {

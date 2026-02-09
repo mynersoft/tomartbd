@@ -65,6 +65,14 @@ state - react redux
 
 
 
+export async function GET(req, context) {
+	await connectDB();
+	const { slug } = await context.params;
+
+	
+
+
+
 
 
 ===========API Route============
@@ -73,3 +81,5 @@ state - react redux
 /brands/:id
 
 /wishlists/:id
+
+

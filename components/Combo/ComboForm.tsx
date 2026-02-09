@@ -21,12 +21,66 @@ import {
 import { setModal, UI_MODAL_TYPE } from '@/store/slices/uiSlice';
 import { useAddCombo } from '../../hooks/useCombo';
 import toast from 'react-hot-toast';
+import { ICombo, IComboProduct, ProductType } from '@/types/combo';
+
+interface CloudinaryUploadResult {
+  url: string;
+  publicId: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  price?: number;
+  regularPrice?: number;
+  images?: string[];
+  variants?: Array<{
+    price?: number;
+    regularPrice?: number;
+    images?: string[];
+  }>;
+  isActive?: boolean;
+}
+
+interface RootState {
+  product: {
+    products: Product[];
+  };
+}
+
+interface ComboFormProps {
+  selectedCombo?: ICombo | null;
+  activeModal?: string;
+}
+
+interface FormData {
+  name: string;
+  description: string;
+  slug: string;
+  products: IComboProduct[];
+  comboPrice: number;
+  regularPrice: number;
+  discountPercent: number;
+  discountAmount: number;
+  featureImg: string;
+  galleryImages: string[];
+  isActive: boolean;
+  keywords: string[];
+  type: ProductType;
+  stock: number;
+  freeDelivery: boolean;
+  brand?: string;
+  category?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  sku?: string;
+}
 
 // Cloudinary upload function
-const uploadToCloudinary = async (file) => {
+const uploadToCloudinary = async (file: File): Promise<CloudinaryUploadResult> => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+  formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '');
   formData.append('folder', 'combos');
 
   try {
@@ -53,42 +107,39 @@ const uploadToCloudinary = async (file) => {
   }
 };
 
-export const ComboForm = ({ selectedCombo, activeModal }) => {
+export const ComboForm: React.FC<ComboFormProps> = ({ selectedCombo, activeModal }) => {
   const { mutate, isPending } = useAddCombo();
-
-  const { products: productsData } = useSelector((state) => state.product);
+  const { products: productsData } = useSelector((state: RootState) => state.product);
 
   // File refs
-  const featuredImageRef = useRef(null);
-  const galleryImagesRef = useRef(null);
+  const featuredImageRef = useRef<HTMLInputElement>(null);
+  const galleryImagesRef = useRef<HTMLInputElement>(null);
 
   // Upload states
   const [uploadingFeatured, setUploadingFeatured] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  // Fix initial form state
-  const initialFormData = {
-    title: '',
+  // Initial form state
+  const initialFormData: FormData = {
+    name: '',
     description: '',
     slug: '',
     products: [],
     comboPrice: 0,
-    totalRegularPrice: 0,
+    regularPrice: 0,
     discountPercent: 0,
     discountAmount: 0,
-    featuredImage: {
-      url: '',
-      publicId: '',
-    },
+    featureImg: '',
     galleryImages: [],
     isActive: true,
-    startDate: '',
-    endDate: '',
-    tags: [],
+    keywords: [],
+    type: 'regular',
+    stock: 0,
+    freeDelivery: false,
   };
 
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [newTag, setNewTag] = useState('');
 
@@ -96,19 +147,31 @@ export const ComboForm = ({ selectedCombo, activeModal }) => {
   useEffect(() => {
     if (selectedCombo && activeModal === UI_MODAL_TYPE.EDIT) {
       setFormData({
-        ...selectedCombo,
-        startDate: new Date(selectedCombo.startDate)
-          .toISOString()
-          .split('T')[0],
-        endDate: selectedCombo.endDate
-          ? new Date(selectedCombo.endDate).toISOString().split('T')[0]
-          : initialFormData.endDate,
+        name: selectedCombo.name,
+        description: selectedCombo.description || '',
+        slug: selectedCombo.slug,
+        products: selectedCombo.products,
+        comboPrice: selectedCombo.comboPrice,
+        regularPrice: selectedCombo.regularPrice,
+        discountPercent: selectedCombo.discountPercent,
+        discountAmount: selectedCombo.discountAmount,
+        featureImg: selectedCombo.featureImg || '',
+        galleryImages: selectedCombo.galleryImages,
+        isActive: selectedCombo.isActive,
+        keywords: selectedCombo.keywords,
+        type: selectedCombo.type,
+        stock: selectedCombo.stock,
+        freeDelivery: selectedCombo.freeDelivery,
+        brand: selectedCombo.brand as string | undefined,
+        category: selectedCombo.category as string | undefined,
+        metaTitle: selectedCombo.metaTitle,
+        metaDescription: selectedCombo.metaDescription,
+        sku: selectedCombo.sku,
       });
     } else {
       setFormData(initialFormData);
     }
   }, [selectedCombo, activeModal]);
-
 
   // Calculate regular price from products
   const totalRegular = useMemo(() => {
@@ -116,63 +179,57 @@ export const ComboForm = ({ selectedCombo, activeModal }) => {
   }, [formData.products]);
 
   // Update discount calculations
-useEffect(() => {
-  const totalReg = parseFloat(totalRegular) || 0;
-  const comboPrice = parseFloat(formData.comboPrice) || 0;
+  useEffect(() => {
+    const totalReg = parseFloat(totalRegular.toString()) || 0;
+    const comboPrice = parseFloat(formData.comboPrice.toString()) || 0;
 
-  // Ensure combo price doesn't exceed total regular price
-  const safeComboPrice = Math.min(comboPrice, totalReg);
+    // Ensure combo price doesn't exceed total regular price
+    const safeComboPrice = Math.min(comboPrice, totalReg);
 
-  // Calculate discount amount
-  let discountAmount = 0;
-  let discountPercent = 0;
+    // Calculate discount amount
+    let discountAmount = 0;
+    let discountPercent = 0;
 
-  if (totalReg > 0 && safeComboPrice >= 0) {
-    discountAmount = totalReg - safeComboPrice;
-    discountPercent = (discountAmount / totalReg) * 100;
-  }
+    if (totalReg > 0 && safeComboPrice >= 0) {
+      discountAmount = totalReg - safeComboPrice;
+      discountPercent = (discountAmount / totalReg) * 100;
+    }
 
-  // Ensure non-negative values
-  discountAmount = Math.max(0, discountAmount);
-  discountPercent = Math.max(0, discountPercent);
+    // Ensure non-negative values
+    discountAmount = Math.max(0, discountAmount);
+    discountPercent = Math.max(0, discountPercent);
 
-  // Update form data only if values changed
-  if (
-    formData.totalRegularPrice !== totalReg ||
-    formData.discountAmount !== discountAmount ||
-    formData.discountPercent !== discountPercent
-  ) {
-    setFormData((prev) => ({
-      ...prev,
-      totalRegularPrice: parseFloat(totalReg.toFixed(2)),
-      discountAmount: parseFloat(discountAmount.toFixed(2)),
-      discountPercent: parseFloat(discountPercent.toFixed(2)),
-      comboPrice: parseFloat(safeComboPrice.toFixed(2)), // Update combo price if it was too high
-    }));
-  }
-}, [totalRegular, formData.comboPrice]);
+    // Update form data only if values changed
+    if (
+      formData.regularPrice !== totalReg ||
+      formData.discountAmount !== discountAmount ||
+      formData.discountPercent !== discountPercent
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        regularPrice: parseFloat(totalReg.toFixed(2)),
+        discountAmount: parseFloat(discountAmount.toFixed(2)),
+        discountPercent: parseFloat(discountPercent.toFixed(2)),
+        comboPrice: parseFloat(safeComboPrice.toFixed(2)),
+      }));
+    }
+  }, [totalRegular, formData.comboPrice]);
 
   // Get product price based on product structure
-  const getProductPrice = (product) => {
-    // Check if product has variants
+  const getProductPrice = (product: Product): number => {
     if (product.variants && product.variants.length > 0) {
-      // Use regularPrice from variant or fallback to product regularPrice
       return product.variants[0].regularPrice || product.variants[0].price || 0;
     }
-    // For products without variants, use regularPrice or price
     return product.regularPrice || product.price || 0;
   };
 
-
-  const handleAddProduct = (product) => {
-    if (formData.products.find((item) => item.productId === product._id))
-      return;
+  const handleAddProduct = (product: Product) => {
+    if (formData.products.find((item) => item.productId === product._id)) return;
 
     const price = getProductPrice(product);
-    const image =
-      product.images?.[0] || product.variants?.[0]?.images?.[0] || '';
+    const image = product.images?.[0] || product.variants?.[0]?.images?.[0] || '';
 
-    const newComboProduct = {
+    const newComboProduct: IComboProduct = {
       productId: product._id,
       name: product.name,
       price: price,
@@ -186,8 +243,7 @@ useEffect(() => {
     }));
   };
 
-  
-  const updateQuantity = (id, q) => {
+  const updateQuantity = (id: string, q: number) => {
     setFormData((prev) => ({
       ...prev,
       products: prev.products.map((p) =>
@@ -196,7 +252,7 @@ useEffect(() => {
     }));
   };
 
-  const removeProduct = (id) => {
+  const removeProduct = (id: string) => {
     setFormData((prev) => ({
       ...prev,
       products: prev.products.filter((p) => p.productId !== id),
@@ -204,14 +260,14 @@ useEffect(() => {
   };
 
   const handleAiGenerate = async () => {
-    if (!formData.title || formData.products.length === 0) {
-      alert('Please enter a title and add products first.');
+    if (!formData.name || formData.products.length === 0) {
+      alert('Please enter a name and add products first.');
       return;
     }
     setIsAiGenerating(true);
     try {
       // Simulate AI generation - replace with actual API call
-      const text = await new Promise((resolve) =>
+      const text = await new Promise<string>((resolve) =>
         setTimeout(
           () =>
             resolve(
@@ -227,29 +283,29 @@ useEffect(() => {
     setIsAiGenerating(false);
   };
 
-  const addTag = (e) => {
+  const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && newTag.trim()) {
       e.preventDefault();
-      if (!formData.tags.includes(newTag.trim())) {
+      if (!formData.keywords.includes(newTag.trim())) {
         setFormData((prev) => ({
           ...prev,
-          tags: [...prev.tags, newTag.trim()],
+          keywords: [...prev.keywords, newTag.trim()],
         }));
       }
       setNewTag('');
     }
   };
 
-  const removeTag = (tag) => {
+  const removeTag = (tag: string) => {
     setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter((t) => t !== tag),
+      keywords: prev.keywords.filter((t) => t !== tag),
     }));
   };
 
   // Handle featured image upload
-  const handleFeaturedImage = async (e) => {
-    const file = e.target.files[0];
+  const handleFeaturedImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     // Validate file
@@ -259,7 +315,6 @@ useEffect(() => {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
       toast.error('Image size should be less than 5MB');
       return;
     }
@@ -268,15 +323,10 @@ useEffect(() => {
 
     try {
       const result = await uploadToCloudinary(file);
-
       setFormData((prev) => ({
         ...prev,
-        featuredImage: {
-          url: result.url,
-          publicId: result.publicId,
-        },
+        featureImg: result.url,
       }));
-
       toast.success('Featured image uploaded successfully!');
     } catch (error) {
       console.error('Featured image upload failed:', error);
@@ -287,8 +337,8 @@ useEffect(() => {
   };
 
   // Handle gallery images upload
-  const handleGalleryImages = async (e) => {
-    const files = Array.from(e.target.files);
+  const handleGalleryImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
     if (!files.length) return;
 
     // Validate files
@@ -314,18 +364,13 @@ useEffect(() => {
     const filesToUpload = validFiles.slice(0, remainingSlots);
 
     if (filesToUpload.length < validFiles.length) {
-      toast.error(
-        `Only ${remainingSlots} more images can be added (max 6 total)`
-      );
+      toast.error(`Only ${remainingSlots} more images can be added (max 6 total)`);
     }
 
     for (const file of filesToUpload) {
       try {
         const result = await uploadToCloudinary(file);
-        newGalleryImages.push({
-          url: result.url,
-          publicId: result.publicId,
-        });
+        newGalleryImages.push(result.url);
       } catch (error) {
         console.error('Failed to upload gallery image:', error);
         toast.error(`Failed to upload ${file.name}`);
@@ -352,21 +397,16 @@ useEffect(() => {
   // Remove featured image
   const removeFeaturedImage = () => {
     if (!window.confirm('Remove featured image?')) return;
-
     setFormData((prev) => ({
       ...prev,
-      featuredImage: {
-        url: '',
-        publicId: '',
-      },
+      featureImg: '',
     }));
     toast.success('Featured image removed');
   };
 
   // Remove gallery image
-  const removeGalleryImage = (index) => {
+  const removeGalleryImage = (index: number) => {
     if (!window.confirm('Remove this image from gallery?')) return;
-
     setFormData((prev) => ({
       ...prev,
       galleryImages: prev.galleryImages.filter((_, i) => i !== index),
@@ -379,11 +419,11 @@ useEffect(() => {
       toast.error('Please add at least one product to the combo.');
       return;
     }
-    if (!formData.title.trim()) {
-      toast.error('Please enter a title for the combo.');
+    if (!formData.name.trim()) {
+      toast.error('Please enter a name for the combo.');
       return;
     }
-    if (!formData.featuredImage.url) {
+    if (!formData.featureImg) {
       toast.error('Please upload a featured image.');
       return;
     }
@@ -392,8 +432,6 @@ useEffect(() => {
       onSuccess: () => {
         setFormData(initialFormData);
         toast.success('Combo added successfully');
-        // Close modal if you have modal functionality
-        // dispatch(setModal({ type: UI_MODAL_TYPE.NONE }));
       },
       onError: (error) => {
         console.error('Error adding combo:', error);
@@ -403,15 +441,15 @@ useEffect(() => {
   };
 
   // Image Preview Modal
-  const ImagePreviewModal = ({ imageUrl, onClose }) => (
+  const ImagePreviewModal: React.FC<{ imageUrl: string; onClose: () => void }> = ({
+    imageUrl,
+    onClose,
+  }) => (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
         <div className="p-4 border-b flex justify-between items-center">
           <h3 className="font-bold text-slate-800">Image Preview</h3>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-700"
-          >
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -438,15 +476,15 @@ useEffect(() => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
-                  Bundle Title
+                  Bundle Name
                 </label>
                 <input
                   type="text"
-                  value={formData.title}
+                  value={formData.name}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      title: e.target.value,
+                      name: e.target.value,
                       slug: e.target.value.toLowerCase().replace(/ /g, '-'),
                     })
                   }
@@ -461,20 +499,18 @@ useEffect(() => {
                   <Image className="w-4 h-4" /> Featured Image *
                 </label>
                 <div className="space-y-2">
-                  {formData.featuredImage.url ? (
+                  {formData.featureImg ? (
                     <div className="relative group">
                       <div className="h-40 rounded-xl overflow-hidden border-2 border-slate-200">
                         <img
-                          src={formData.featuredImage.url}
+                          src={formData.featureImg}
                           alt="Featured"
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl">
                         <button
-                          onClick={() =>
-                            setPreviewImage(formData.featuredImage.url)
-                          }
+                          onClick={() => setPreviewImage(formData.featureImg)}
                           className="p-2 bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 transition-transform"
                           title="Preview"
                         >
@@ -499,9 +535,7 @@ useEffect(() => {
                   ) : (
                     <div className="h-40 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center bg-slate-50">
                       <ImageIcon className="w-8 h-8 text-slate-400 mb-2" />
-                      <p className="text-sm text-slate-500">
-                        No featured image
-                      </p>
+                      <p className="text-sm text-slate-500">No featured image</p>
                     </div>
                   )}
 
@@ -527,9 +561,7 @@ useEffect(() => {
                     ) : (
                       <>
                         <Upload className="w-4 h-4" />
-                        {formData.featuredImage.url
-                          ? 'Change Image'
-                          : 'Upload Featured Image'}
+                        {formData.featureImg ? 'Change Image' : 'Upload Featured Image'}
                       </>
                     )}
                   </button>
@@ -551,14 +583,14 @@ useEffect(() => {
                       <div key={index} className="relative group">
                         <div className="aspect-square rounded-lg overflow-hidden border border-slate-200">
                           <img
-                            src={image.url}
+                            src={image}
                             alt={`Gallery ${index + 1}`}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 rounded-lg">
                           <button
-                            onClick={() => setPreviewImage(image.url)}
+                            onClick={() => setPreviewImage(image)}
                             className="p-1.5 bg-white/90 backdrop-blur-sm rounded-full hover:scale-110 transition-transform"
                             title="Preview"
                           >
@@ -644,7 +676,7 @@ useEffect(() => {
                   <Tag className="w-4 h-4" /> Tags
                 </label>
                 <div className="flex flex-wrap gap-2 p-2 border border-slate-200 rounded-xl min-h-[46px] bg-slate-50">
-                  {formData.tags.map((tag) => (
+                  {formData.keywords.map((tag) => (
                     <span
                       key={tag}
                       className="bg-white border text-slate-700 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1 group"
@@ -670,29 +702,15 @@ useEffect(() => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Start Date
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Stock Quantity
                 </label>
                 <input
-                  type="date"
-                  value={formData.startDate}
+                  type="number"
+                  min="0"
+                  value={formData.stock}
                   onChange={(e) =>
-                    setFormData({ ...formData, startDate: e.target.value })
-                  }
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, endDate: e.target.value })
+                    setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })
                   }
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
@@ -732,18 +750,12 @@ useEffect(() => {
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-800 truncate">
-                        {p.name}
-                      </p>
-                      <p className="text-xs text-emerald-600 font-semibold">
-                        ৳{p.price}
-                      </p>
+                      <p className="text-sm font-bold text-slate-800 truncate">{p.name}</p>
+                      <p className="text-xs text-emerald-600 font-semibold">৳{p.price}</p>
                     </div>
                     <div className="flex items-center bg-slate-100 rounded-xl p-1">
                       <button
-                        onClick={() =>
-                          updateQuantity(p.productId, p.quantity - 1)
-                        }
+                        onClick={() => updateQuantity(p.productId as string, p.quantity - 1)}
                         className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors font-bold text-slate-600"
                       >
                         -
@@ -752,16 +764,14 @@ useEffect(() => {
                         {p.quantity}
                       </span>
                       <button
-                        onClick={() =>
-                          updateQuantity(p.productId, p.quantity + 1)
-                        }
+                        onClick={() => updateQuantity(p.productId as string, p.quantity + 1)}
                         className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-lg transition-colors font-bold text-slate-600"
                       >
                         +
                       </button>
                     </div>
                     <button
-                      onClick={() => removeProduct(p.productId)}
+                      onClick={() => removeProduct(p.productId as string)}
                       className="p-2.5 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -794,9 +804,7 @@ useEffect(() => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-emerald-400">
-                    OFFER PRICE
-                  </label>
+                  <label className="text-xs font-bold text-emerald-400">OFFER PRICE</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-300 font-bold">
                       ৳
@@ -820,22 +828,15 @@ useEffect(() => {
                     <p className="text-[10px] text-emerald-300 font-bold uppercase mb-1">
                       Savings
                     </p>
-                    <p className="text-lg font-black">
-                      ৳{formData.discountAmount}
-                    </p>
+                    <p className="text-lg font-black">৳{formData.discountAmount}</p>
                   </div>
                   <div className="bg-orange-500 p-3 rounded-2xl text-center shadow-lg shadow-orange-950/20">
-                    <p className="text-[10px] text-white font-bold uppercase mb-1">
-                      Discount
-                    </p>
-                    <p className="text-lg font-black">
-                      {formData.discountPercent}%
-                    </p>
+                    <p className="text-[10px] text-white font-bold uppercase mb-1">Discount</p>
+                    <p className="text-lg font-black">{formData.discountPercent}%</p>
                   </div>
                 </div>
               </div>
             </div>
-
           </section>
 
           <section className="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col h-[400px]">
@@ -867,9 +868,7 @@ useEffect(() => {
                   >
                     <img
                       src={
-                        product.images?.[0] ||
-                        product.variants?.[0]?.images?.[0] ||
-                        ''
+                        product.images?.[0] || product.variants?.[0]?.images?.[0] || ''
                       }
                       className="w-11 h-11 rounded-xl object-cover shadow-sm group-hover:rotate-3 transition-transform"
                     />
@@ -877,12 +876,14 @@ useEffect(() => {
                       <p className="text-xs font-black text-slate-800 leading-tight">
                         {product.name}
                       </p>
-                      <p className="text-[10px] text-slate-500 font-bold mt-0.5">
-                        ৳{price}
-                      </p>
+                      <p className="text-[10px] text-slate-500 font-bold mt-0.5">৳{price}</p>
                     </div>
                     <div
-                      className={`p-1.5 rounded-lg transition-colors ${isAdded ? 'bg-slate-200 text-slate-400' : 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white'}`}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        isAdded
+                          ? 'bg-slate-200 text-slate-400'
+                          : 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white'
+                      }`}
                     >
                       {isAdded ? (
                         <CheckCircle className="w-4 h-4" />
@@ -912,9 +913,7 @@ useEffect(() => {
               />
               <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
             </div>
-            <span className="text-sm font-bold text-slate-700">
-              Publish Offer
-            </span>
+            <span className="text-sm font-bold text-slate-700">Publish Offer</span>
           </label>
           <div className="h-6 w-px bg-slate-200"></div>
           <p className="text-xs text-slate-400 font-medium">
@@ -925,7 +924,7 @@ useEffect(() => {
           </p>
         </div>
 
-        <div className=" ">
+        <div>
           <button
             onClick={handleSubmit}
             disabled={isPending || uploadingFeatured || uploadingGallery}
@@ -943,10 +942,7 @@ useEffect(() => {
 
       {/* Image Preview Modal */}
       {previewImage && (
-        <ImagePreviewModal
-          imageUrl={previewImage}
-          onClose={() => setPreviewImage(null)}
-        />
+        <ImagePreviewModal imageUrl={previewImage} onClose={() => setPreviewImage(null)} />
       )}
     </>
   );
