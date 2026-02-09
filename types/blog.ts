@@ -1,49 +1,38 @@
-import { Types } from 'mongoose';
+import { Types } from "mongoose";
 
-/* --------------------------
-   SEO Types
--------------------------- */
-export interface ISEO {
+/* ---------- IMAGE ---------- */
+export interface IBlogImage {
+  url?: string;
+  alt?: string;
+  caption?: string;
+}
+
+/* ---------- SEO ---------- */
+export interface IBlogSEO {
   metaTitle?: string;
   metaDescription?: string;
   keywords?: string[];
   canonicalUrl?: string;
+
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+
   twitterTitle?: string;
   twitterDescription?: string;
   twitterImage?: string;
 }
 
-/* --------------------------
-   Author Type
--------------------------- */
-export interface IAuthor {
-  id?: Types.ObjectId; // Ref: User
+/* ---------- AUTHOR ---------- */
+export interface IBlogAuthor {
   name: string;
+  id?: Types.ObjectId | string;
   avatar?: string;
 }
 
-/* --------------------------
-   Image Type
--------------------------- */
-export interface IBlogImage {
-  url: string;
-  alt?: string;
-  caption?: string;
-}
-
-/* --------------------------
-   Blog Status
--------------------------- */
-export type BlogStatus = 'draft' | 'published' | 'archived';
-
-/* --------------------------
-   Blog Type
--------------------------- */
+/* ---------- MAIN BLOG ---------- */
 export interface IBlog {
-  _id?: Types.ObjectId;
+  _id?: Types.ObjectId | string;
 
   title: string;
   slug: string;
@@ -53,37 +42,29 @@ export interface IBlog {
   coverImage?: string;
   images?: IBlogImage[];
 
-  /* ---------- SEO ---------- */
-  seo?: ISEO;
+  seo?: IBlogSEO;
 
-  /* ---------- Taxonomy ---------- */
   category?: string;
   tags?: string[];
 
-  /* ---------- Status ---------- */
-  status?: BlogStatus;
+  status?: "draft" | "published" | "archived";
   isFeatured?: boolean;
 
-  /* ---------- Author ---------- */
-  author: IAuthor;
+  author: IBlogAuthor;
 
-  /* ---------- Stats ---------- */
   views?: number;
   likes?: number;
-  readTime?: number; // minutes
-  wordCount?: number;
+  readTime?: number;
 
   publishedAt?: Date;
   lastModifiedAt?: Date;
+  wordCount?: number;
 
-  /* ---------- Related Posts ---------- */
-  relatedPosts?: Types.ObjectId[];
+  relatedPosts?: (Types.ObjectId | string)[];
 
-  /* ---------- Timestamps ---------- */
   createdAt?: Date;
   updatedAt?: Date;
 
-  /* ---------- Virtuals ---------- */
+  /* ---------- VIRTUAL ---------- */
   fullUrl?: string;
-}
 }
