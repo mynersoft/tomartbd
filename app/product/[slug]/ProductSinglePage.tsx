@@ -517,7 +517,7 @@ export default function ProductSinglePage() {
                   >
                     <ShoppingCart className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     <span>Add to Cart</span>
-                  </button>
+                  </button>  
                   <button
                     onClick={handleBuyNow}
                     className="group bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-red-600 hover:to-red-700 hover:shadow-2xl hover:scale-[1.02]"
