@@ -20,8 +20,8 @@ export interface IUser {
 
   address?: IUserAddress;
 
-  products?: Types.ObjectId[]; // List of Product IDs
-
+//for vendor products
+  products?: Types.ObjectId[];
   shopName?: string;
   shopAddress?: string;
 

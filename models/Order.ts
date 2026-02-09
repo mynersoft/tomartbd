@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema(
   {
-    invoice: { type: String, unique: true, required: true },
+    invoiceNo: { type: String, unique: true, required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
     customer: {

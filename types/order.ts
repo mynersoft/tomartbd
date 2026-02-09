@@ -1,75 +1,62 @@
 import { Types } from "mongoose";
+import {IUser} from "@/types/user";
 
-/* --------------------------
-   Payment Type
--------------------------- */
-export type PaymentMethod = 'COD' | 'Card' | 'Bkash' | 'Rocket' | string;
-export type PaymentStatus = 'unpaid' | 'paid' | 'failed';
-
-export interface IPayment {
-  method?: PaymentMethod;
-  status?: PaymentStatus;
-  transactionId?: string;
-}
-
-/* --------------------------
-   Customer Type
--------------------------- */
-export interface ICustomer {
-  name: string;
-  email: string;
-  phone: string;
-}
-
-/* --------------------------
-   Shipping Address Type
--------------------------- */
-export interface IShippingAddress {
-  thana?: string;
-  area?: string;
-  city?: string;
-  phone?: string;
-}
-
-/* --------------------------
-   Order Item Type
--------------------------- */
-export interface IOrderItem {
-  productId: Types.ObjectId | string;
+/* -------- Order Item -------- */
+export interface OrderItem {
+  productId: string;
   name: string;
   quantity: number;
   price: number;
   image?: string;
 }
 
-/* --------------------------
-   Order Status
--------------------------- */
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
-/* --------------------------
-   Order Type
--------------------------- */
-export interface IOrder {
-  _id?: Types.ObjectId;
+/* -------- Shipping -------- */
+export interface ShippingAddress {
+  thana?: string;
+  area?: string;
+  city?: string;
+  phone?: string;
+}
 
-  invoice: string;
-  userId?: Types.ObjectId; // Ref: User
+/* -------- Payment -------- */
+export type PaymentStatus = "unpaid" | "paid" | "failed";
 
-  customer: ICustomer;
+export interface PaymentInfo {
+  method: string; // COD, SSL, Stripe etc
+  status: PaymentStatus;
+  transactionId?: string;
+}
+
+/* -------- Order Status -------- */
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+/* -------- Main Order -------- */
+export interface Order {
+  _id?: string;
+
+  invoiceNo: string;
+  userId?: Types.ObjectId | string;
+
+  customer: IUser;
 
   subtotal: number;
-  total: number;
   shippingFee: number;
-  discount?: number;
+  discount: number;
+  total: number;
 
-  status?: OrderStatus;
+  status: OrderStatus;
 
-  payment?: IPayment;
+  payment: PaymentInfo;
 
-  shippingAddress?: IShippingAddress;
+  shippingAddress: ShippingAddress;
 
-  orderItems: IOrderItem[];
+  orderItems: OrderItem[];
 
   createdAt?: Date;
   updatedAt?: Date;
