@@ -78,14 +78,29 @@ export default function CheckoutClient() {
   }, [orderData.phone, user]);
 
   /* ================= TOTAL ================= */
-  const subtotal = cart.reduce((sum, item) => {
-    const price = item.discount
-      ? (item.price * (100 - item.discount.value)) / 100
-      : item.price;
-    return sum + price * item.quantity;
-  }, 0);
+const subtotal = cart.reduce((sum, item) => {
+  let price = item.salePrice;
 
-  // calculate Shipping Fee;
+  if (item.discount) {
+    if (item.discount.type === 'percentage') {
+      price = price - (price * item.discount.value) / 100;
+    }
+
+    if (item.discount.type === 'fixed') {
+      price = price - item.discount.value;
+    }
+  }
+
+  // negative price avoid
+  price = Math.max(price, 0);
+
+  return sum + price * item.quantity;
+}, 0);
+
+ 
+
+  console.log(subtotal);
+  
 
   const shippingFee = calculateShippingFee({
     subtotal,

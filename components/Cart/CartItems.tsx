@@ -15,51 +15,72 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import CheckEmptyCart from './CheckEmptyCart';
+import { RootState } from '@/store';
+import { IProduct } from '@/types/product';
 
-const CartItems = ({ subtotal }) => {
+interface CartItem extends IProduct {
+  quantity: number;
+}
+
+const CartItems: React.FC = () => {
   const dispatch = useDispatch();
-  const { items } = useSelector((state) => state.cart);
+  const { items } = useSelector((state: RootState) => state.cart);
 
-  const handleRemove = (productId) => {
+  const handleRemove = (productId: string) => {
     dispatch(removeFromCart(productId));
     toast.success('Product removed from cart');
   };
 
-  const handleQuantityChange = (productId, newQty) => {
+  const handleQuantityChange = (productId: string, newQty: number) => {
     if (newQty < 1) return;
     dispatch(updateQuantity({ productId, quantity: newQty }));
   };
 
-  // Helper function to calculate discounted price
-  const calculateDiscountedPrice = (price, discount) => {
-    if (!discount?.value) return price;
-
-    if (discount.type === 'percentage') {
-      return (price * (100 - discount.value)) / 100;
-    } else if (discount.type === 'fixed') {
-      return Math.max(price - discount.value, 0);
-    }
-
-    return price;
+  // Get product image
+  const getProductImage = (item: CartItem): string => {
+    if (item.featureImg) return item.featureImg;
+    if (item.galleryImages && item.galleryImages.length > 0)
+      return item.galleryImages[0];
+    return '/placeholder.png';
   };
 
-  // Helper function to get discount text
-  const getDiscountText = (discount) => {
-    if (!discount?.value) return null;
+  // Calculate final price after discount
+  const calculateFinalPrice = (item: CartItem): number => {
+    const basePrice = item.salePrice || item.regularPrice || 0;
 
-    if (discount.type === 'percentage') {
-      return `${discount.value}% OFF`;
-    } else if (discount.type === 'fixed') {
-      return `৳${discount.value} OFF`;
+    if (!item.discount?.value) return basePrice;
+
+    if (item.discount.type === 'percentage') {
+      return (basePrice * (100 - item.discount.value)) / 100;
+    } else if (item.discount.type === 'fixed') {
+      return Math.max(basePrice - item.discount.value, 0);
+    }
+
+    return basePrice;
+  };
+
+  // Get discount text
+  const getDiscountText = (item: CartItem): string | null => {
+    if (!item.discount?.value) return null;
+
+    if (item.discount.type === 'percentage') {
+      return `${item.discount.value}% OFF`;
+    } else if (item.discount.type === 'fixed') {
+      return `৳${item.discount.value} OFF`;
     }
 
     return null;
   };
 
   // Calculate item total
-  const calculateItemTotal = (item) => {
-    const discountedPrice = calculateDiscountedPrice(item.price, item.discount);
-    return discountedPrice * item.quantity;
+  const calculateItemTotal = (item: CartItem): number => {
+    const finalPrice = calculateFinalPrice(item);
+    return finalPrice * item.quantity;
+  };
+
+  // Get original price (before discount)
+  const getOriginalPrice = (item: CartItem): number => {
+    return item.salePrice || item.regularPrice || 0;
   };
 
   return (
@@ -78,15 +99,15 @@ const CartItems = ({ subtotal }) => {
           </div>
 
           {/* Cart Items */}
-          {items.map((item, index) => {
-            const discountedPrice = calculateDiscountedPrice(
-              item.price,
-              item.discount
-            );
-            const discountText = getDiscountText(item.discount);
+          {items.map((item: CartItem, index: number) => {
+            const originalPrice = getOriginalPrice(item);
+            const finalPrice = calculateFinalPrice(item);
+            const discountText = getDiscountText(item);
             const itemTotal = calculateItemTotal(item);
-            const originalItemTotal = item.price * item.quantity;
+            const originalItemTotal = originalPrice * item.quantity;
             const savedAmount = originalItemTotal - itemTotal;
+            const productImage = getProductImage(item);
+            const hasDiscount = finalPrice < originalPrice;
 
             return (
               <div
@@ -96,47 +117,40 @@ const CartItems = ({ subtotal }) => {
                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                   {/* Product Image & Info */}
                   <div className="flex items-start gap-4 md:w-5/12">
-                    <div className="relative w-24 h-24 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 p-2 shrink-0">
+                    <div className="relative w-24 h-24 bg-linear-to-br from-gray-50 to-white rounded-xl border border-gray-100 p-2 shrink-0">
                       <Image
-                        src={item.images?.[0] || '/placeholder-product.jpg'}
+                        src={productImage}
                         alt={item.name}
                         width={96}
                         height={96}
                         className="w-full h-full object-contain"
-                        onError={(e) => {
-                          e.target.src = '/placeholder-product.jpg';
+                        onError={(e: any) => {
+                          e.target.src = '/placeholder.png';
                         }}
                       />
                       {/* Discount Badge */}
                       {discountText && (
-                        <div className="absolute -top-2 -left-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                        <div className="absolute -top-2 -left-2 bg-linear-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
                           {discountText}
                         </div>
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 text-lg mb-1 line-clamp-2">
-                        {item.name}
-                      </h3>
+                      <Link href={`/product/${item.slug}`}>
+                        <h3 className="font-semibold text-gray-900 text-lg mb-1 line-clamp-2 hover:text-blue-600 transition-colors">
+                          {item.name}
+                        </h3>
+                      </Link>
+
 
                       {/* Price Display for Mobile */}
                       <div className="md:hidden">
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-xl font-bold text-gray-900">
-                            ৳{discountedPrice.toFixed(2)}
+                            ৳{finalPrice.toLocaleString()}
                           </span>
-                          {discountedPrice < item.price && (
-                            <>
-                              <span className="text-gray-400 line-through text-sm">
-                                ৳{item.price.toFixed(2)}
-                              </span>
-                              <span className="text-green-600 text-sm font-semibold">
-                                Save ৳
-                                {(item.price - discountedPrice).toFixed(2)}
-                              </span>
-                            </>
-                          )}
+                          
                         </div>
                       </div>
                     </div>
@@ -146,16 +160,15 @@ const CartItems = ({ subtotal }) => {
                   <div className="hidden md:block md:w-2/12">
                     <div className="text-center">
                       <div className="text-xl font-bold text-gray-900 mb-1">
-                        ৳{discountedPrice.toFixed(2)}
+                        ৳{finalPrice.toLocaleString()}
                       </div>
-                      {discountedPrice < item.price && (
+                      {hasDiscount && (
                         <div className="space-y-1">
                           <div className="text-gray-400 line-through text-sm">
-                            ৳{item.price.toFixed(2)}
+                            ৳{originalPrice.toLocaleString()}
                           </div>
-                          <div className="text-green-600 text-xs font-semibold">
-                            Save ৳{(item.price - discountedPrice).toFixed(2)}
-                          </div>
+                         
+                          
                         </div>
                       )}
                     </div>
@@ -171,6 +184,7 @@ const CartItems = ({ subtotal }) => {
                           }
                           className="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-gray-200 disabled:hover:bg-transparent transition-all"
                           disabled={item.quantity <= 1}
+                          aria-label="Decrease quantity"
                         >
                           <Minus size={18} />
                         </button>
@@ -181,7 +195,9 @@ const CartItems = ({ subtotal }) => {
                           onClick={() =>
                             handleQuantityChange(item._id, item.quantity + 1)
                           }
-                          className="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                          className="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                          disabled={item.quantity >= item.stock}
+                          aria-label="Increase quantity"
                         >
                           <Plus size={18} />
                         </button>
@@ -192,10 +208,18 @@ const CartItems = ({ subtotal }) => {
                         onClick={() => handleRemove(item._id)}
                         className="md:hidden p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                         title="Remove item"
+                        aria-label="Remove item"
                       >
                         <Trash2 size={20} />
                       </button>
                     </div>
+
+                    {/* Stock Warning */}
+                    {item.quantity >= item.stock && item.stock > 0 && (
+                      <p className="text-xs text-amber-600 text-center mt-2">
+                        Max stock reached
+                      </p>
+                    )}
                   </div>
 
                   {/* Total & Remove (Desktop) */}
@@ -203,15 +227,15 @@ const CartItems = ({ subtotal }) => {
                     <div className="flex items-center justify-between md:justify-end md:flex-col md:items-end gap-4">
                       <div className="text-right">
                         <div className="text-2xl font-bold text-gray-900">
-                          ৳{itemTotal.toFixed(2)}
+                          ৳{itemTotal.toLocaleString()}
                         </div>
                         {savedAmount > 0 && (
                           <div className="text-sm text-green-600 font-semibold">
-                            Saved ৳{savedAmount.toFixed(2)}
+                            Saved ৳{savedAmount.toLocaleString()}
                           </div>
                         )}
                         <div className="text-xs text-gray-500 mt-1">
-                          ৳{discountedPrice.toFixed(2)} × {item.quantity}
+                          ৳{finalPrice.toLocaleString()} × {item.quantity}
                         </div>
                       </div>
 
@@ -220,6 +244,7 @@ const CartItems = ({ subtotal }) => {
                         onClick={() => handleRemove(item._id)}
                         className="hidden md:inline-flex items-center gap-2 px-3 py-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Remove item"
+                        aria-label="Remove item"
                       >
                         <Trash2 size={18} />
                         <span className="text-sm font-medium">Remove</span>
@@ -234,12 +259,12 @@ const CartItems = ({ subtotal }) => {
                     <div className="text-sm text-gray-600">
                       Item Total:{' '}
                       <span className="font-bold text-gray-900">
-                        ৳{itemTotal.toFixed(2)}
+                        ৳{itemTotal.toLocaleString()}
                       </span>
                     </div>
                     {savedAmount > 0 && (
                       <div className="text-sm font-semibold text-green-600">
-                        You save ৳{savedAmount.toFixed(2)}
+                        You save ৳{savedAmount.toLocaleString()}
                       </div>
                     )}
                   </div>

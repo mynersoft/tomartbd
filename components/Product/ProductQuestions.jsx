@@ -31,8 +31,6 @@ import { setFilters, setPagination } from '@/store/slices/questionsSlice';
 
 const ProductQuestions = ({ productId, productName }) => {
 
-
-  
   const dispatch = useDispatch();
 
   const { user } = useSelector((state) => state.user);
@@ -379,43 +377,7 @@ const ProductQuestions = ({ productId, productName }) => {
                         <h4 className="text-lg font-semibold text-gray-900 flex-1">
                           {question.question}
                         </h4>
-                        <div className="flex items-center gap-2">
-                          {question.status === 'answered' ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                              <CheckCircle className="h-3 w-3" />
-                              Answered
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
-                              <Clock className="h-3 w-3" />
-                              Unanswered
-                            </span>
-                          )}
-
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleVoteQuestion(question._id, 'up');
-                              }}
-                              className="p-1 hover:bg-gray-100 rounded"
-                            >
-                              <ThumbsUp className="h-4 w-4 text-gray-600" />
-                            </button>
-                            <span className="font-medium text-gray-700 min-w-[20px] text-center">
-                              {question.votes || 0}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleVoteQuestion(question._id, 'down');
-                              }}
-                              className="p-1 hover:bg-gray-100 rounded"
-                            >
-                              <ThumbsDown className="h-4 w-4 text-gray-600" />
-                            </button>
-                          </div>
-                        </div>
+                      
                       </div>
 
                       <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">

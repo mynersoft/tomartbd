@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `https://mahirprostore.com/product/${product.slug}`,
       images: [
         {
-          url: product.galleryImages,
+          url: product.galleryImages[0],
           width: 800,
           height: 800,
           alt: product.name,

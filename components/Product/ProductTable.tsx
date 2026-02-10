@@ -9,14 +9,11 @@ import {
   Edit,
   Trash2,
   Eye,
-  Star,
   Package,
-  TrendingUp,
   AlertCircle,
   RefreshCw,
   ChevronDown,
   MoreVertical,
-  Check,
   X,
   Plus,
   Download,
@@ -76,14 +73,6 @@ export default function ProductTable() {
         return 0;
     }
   });
-
-  // Get unique categories
-  const categories = [
-    'all',
-    ...new Set(
-      products.map((p) => p.category?._id || p.category).filter(Boolean)
-    ),
-  ];
 
   const handleDelete = (id, name) => {
     if (
@@ -404,8 +393,9 @@ export default function ProductTable() {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Product
                 </th>
+
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Category
+                  Discount
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Price
@@ -459,7 +449,7 @@ export default function ProductTable() {
                         )}
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-gray-900 line-clamp-1 ">
                               {product.name}
                             </span>
                           </div>
@@ -468,14 +458,17 @@ export default function ProductTable() {
                               {product.brand.name}
                             </span>
                           )}
+                          -{product.category?.name || product.category}
                         </div>
                       </div>
                     </td>
+
                     <td className="px-6 py-4">
                       <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                        {product.category?.name ||
-                          product.category ||
-                          'Uncategorized'}
+                        {product.discount &&
+                          (product.discount.type === 'percentage'
+                            ? `${product.discount.value}%`
+                            : product.discount.value)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -556,7 +549,7 @@ export default function ProductTable() {
       <div className="px-6 py-4 border-t border-gray-200">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="text-sm text-gray-600">
-            Showing <span className="font-medium">{sortedProducts.length}</span>{' '}
+            Showing <span className="font-medium">{sortedProducts.length}</span>
             of <span className="font-medium">{products.length}</span> products
           </div>
           <div className="flex items-center gap-4">

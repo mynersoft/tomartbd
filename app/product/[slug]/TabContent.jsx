@@ -5,8 +5,6 @@ import { useState } from 'react';
 import ProductQuestions from '@/components/Product/ProductQuestions';
 
 const TabContent = ({ product }) => {
-  
-  
   const [activeTab, setActiveTab] = useState('description');
   const [showReviewForm, setShowReviewForm] = useState(false);
   return (
@@ -35,16 +33,12 @@ const TabContent = ({ product }) => {
             <ProductQuestions
               productId={product._id}
               productName={product.name}
-              userId={user?.id || null}
             />
           </div>
         )}
 
         {activeTab === 'description' && (
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-gray-900">
-              Product Description
-            </h3>
+          <div className="">
             <div
               className="prose max-w-none"
               dangerouslySetInnerHTML={{

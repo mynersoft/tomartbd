@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -78,11 +77,11 @@ export default function ProductSinglePage() {
     if (!product) return ['/placeholder.png'];
 
     const images = [];
-    
+
     if (product.featureImg) {
       images.push(product.featureImg);
     }
-    
+
     if (product.galleryImages && product.galleryImages.length > 0) {
       images.push(...product.galleryImages);
     }
@@ -97,8 +96,14 @@ export default function ProductSinglePage() {
       return Math.round(product.discount.value);
     }
 
-    if (product.regularPrice && product.salePrice && product.regularPrice > product.salePrice) {
-      const discountPercent = ((product.regularPrice - product.salePrice) / product.regularPrice) * 100;
+    if (
+      product.regularPrice &&
+      product.salePrice &&
+      product.regularPrice > product.salePrice
+    ) {
+      const discountPercent =
+        ((product.regularPrice - product.salePrice) / product.regularPrice) *
+        100;
       return Math.round(discountPercent);
     }
 
@@ -181,7 +186,8 @@ export default function ProductSinglePage() {
     }
   };
 
-  const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+  const decreaseQuantity = () =>
+    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   if (loading) {
     return (
@@ -228,7 +234,7 @@ export default function ProductSinglePage() {
   const hasDiscount = regularPrice > salePrice;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50">
       <div className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center space-x-2 text-sm">
@@ -242,11 +248,12 @@ export default function ProductSinglePage() {
             {product.category && (
               <>
                 <Link
-                  href={`/categories/${product.category.slug || product.category}`}
+                  href={`/categories/${product.category.name.toLowerCase()}`}
                   className="text-gray-600 hover:text-blue-600 transition-colors"
                 >
-                  {product.category.name || 'Category'}
+                  {product.category.name}
                 </Link>
+
                 <ChevronRight className="w-4 h-4 text-gray-400" />
               </>
             )}
@@ -261,7 +268,7 @@ export default function ProductSinglePage() {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-8">
             <div className="space-y-6">
-              <div className="relative border-2 border-gray-100 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-white">
+              <div className="relative border-2 border-gray-100 rounded-2xl overflow-hidden bg-linear-to-br from-gray-50 to-white">
                 <div className="aspect-square flex items-center justify-center p-8">
                   <Image
                     src={mainImage}
@@ -271,13 +278,13 @@ export default function ProductSinglePage() {
                     className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
                     priority
                     onError={(e) => {
-                      e.target.src = '/placeholder-product.jpg';
+                      e.target.src = '/placeholder.jpg';
                     }}
                   />
 
                   <div className="absolute top-4 left-4 flex flex-col gap-2">
                     {discountPercent > 0 && (
-                      <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
+                      <span className="bg-linear-to-r from-red-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
                         -{discountPercent}%
                       </span>
                     )}
@@ -357,49 +364,55 @@ export default function ProductSinglePage() {
               <div>
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
+                    <h1 className="text-base font-medium md:text-2xl md:font-bold text-gray-900 mb-3 leading-tight pr-3">
                       {product.name}
                     </h1>
                     <div className="flex items-center gap-3 mb-3 flex-wrap">
                       {product.brand && (
-                        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
-                          {typeof product.brand === 'object' ? product.brand.name : product.brand}
+                        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[12px]  font-semibold">
+                          {typeof product.brand === 'object'
+                            ? product.brand.name
+                            : product.brand}
                         </span>
                       )}
                       {product.sku && (
-                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
+                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-[12px] font-medium">
                           SKU: {product.sku}
                         </span>
                       )}
-                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                        product.stock > 0 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-red-100 text-red-700'
-                      }`}>
-                        {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                      <span
+                        className={`px-3 py-1 rounded-full text-[12px]  font-semibold ${
+                          product.stock > 0
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {product.stock > 0
+                          ? `In Stock (${product.stock})`
+                          : 'Out of Stock'}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleWishlistToggle}
-                      className={`p-3 rounded-full transition-all ${
+                      className={`p-2 md:p-3 rounded-full transition-all ${
                         isWishlisted
                           ? 'bg-red-50 text-red-500 hover:bg-red-100'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
                       <Heart
-                        className={`w-5 h-5 ${
+                        className={`w-4 md:w-5 h-5 md:h-5 ${
                           isWishlisted ? 'fill-current' : ''
                         }`}
                       />
                     </button>
                     <button
                       onClick={handleShare}
-                      className="p-3 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
+                      className="p-2 md:p-3 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
                     >
-                      <Share2 className="w-5 h-5" />
+                      <Share2 className="w-4 md:w-5 h-5 md:h-5" />
                     </button>
                   </div>
                 </div>
@@ -428,7 +441,10 @@ export default function ProductSinglePage() {
                   {product.sold > 0 && (
                     <div className="flex items-center gap-2">
                       <span className="text-gray-600">
-                        <span className="font-bold text-gray-900">{product.sold}</span> sold
+                        <span className="font-bold text-gray-900">
+                          {product.sold}
+                        </span>{' '}
+                        sold
                       </span>
                     </div>
                   )}
@@ -459,17 +475,13 @@ export default function ProductSinglePage() {
                   {hasDiscount && (
                     <div className="flex items-center gap-2 text-green-600 font-semibold">
                       <Check className="w-5 h-5" />
-                      <span>You save ৳ {(regularPrice - salePrice).toLocaleString()}</span>
+                      <span>
+                        You save ৳ {(regularPrice - salePrice).toLocaleString()}
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
-
-              {product.description && (
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <p className="text-gray-700 line-clamp-3">{product.description}</p>
-                </div>
-              )}
 
               <div className="space-y-6">
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
@@ -499,10 +511,12 @@ export default function ProductSinglePage() {
                   <button
                     onClick={handleAddToCart}
                     disabled={product.stock < 1}
-                    className="group bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="group bg-linear-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span>{product.stock < 1 ? 'Out of Stock' : 'Add to Cart'}</span>
+                    <span>
+                      {product.stock < 1 ? 'Out of Stock' : 'Add to Cart'}
+                    </span>
                   </button>
                   <button
                     onClick={handleBuyNow}
@@ -526,7 +540,9 @@ export default function ProductSinglePage() {
                       </div>
                       <div>
                         <p className="font-bold text-gray-900">
-                          {product.freeDelivery ? 'Free Delivery' : 'Fast Delivery'}
+                          {product.freeDelivery
+                            ? 'Free Delivery'
+                            : 'Fast Delivery'}
                         </p>
                         <p className="text-sm text-gray-600">Within 2-3 days</p>
                       </div>
