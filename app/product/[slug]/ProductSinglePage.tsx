@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,7 +11,6 @@ import {
   Star,
   Truck,
   Shield,
-  X,
   RefreshCw,
   Check,
   Share2,
@@ -23,7 +23,6 @@ import {
   Plus,
 } from 'lucide-react';
 import Link from 'next/link';
-import Variants from './Variants';
 import Image from 'next/image';
 import { useProducts } from '@/hooks/useProducts';
 import TabContent from './TabContent';
@@ -33,8 +32,6 @@ export default function ProductSinglePage() {
   const products = useSelector((state) => state.product.products);
 
   const [product, setProduct] = useState(null);
-
-  const [selectedVariant, setSelectedVariant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -56,16 +53,10 @@ export default function ProductSinglePage() {
         }
 
         if (slug) {
-          // Try to find product by slug
           const foundProduct = products.find((item) => item.slug === slug);
 
           if (foundProduct) {
             setProduct(foundProduct);
-
-            // Set default variant if exists
-            if (foundProduct.variants && foundProduct.variants.length > 0) {
-              setSelectedVariant(foundProduct.variants[0]);
-            }
             setError(null);
           } else {
             setError('Product not found');
@@ -79,55 +70,38 @@ export default function ProductSinglePage() {
       }
     };
 
-    // Small delay to ensure products are loaded
     const timer = setTimeout(loadProduct, 100);
-
     return () => clearTimeout(timer);
   }, [products, slug]);
 
-  // Helper functions to get product data
   const getProductImages = () => {
-    if (!product) return [];
+    if (!product) return ['/placeholder.png'];
 
-    // Return variant images if selected variant exists, otherwise product images
-    if (
-      selectedVariant &&
-      selectedVariant.images &&
-      selectedVariant.images.length > 0
-    ) {
-      return selectedVariant.images;
+    const images = [];
+    
+    if (product.featureImg) {
+      images.push(product.featureImg);
+    }
+    
+    if (product.galleryImages && product.galleryImages.length > 0) {
+      images.push(...product.galleryImages);
     }
 
-    if (product.images && product.images.length > 0) {
-      return product.images;
-    }
-
-    return ['/placeholder.png'];
-  };
-
-  const getProductPrice = () => {
-    if (!product) return { regular: 0, sale: 0 };
-
-    if (selectedVariant && selectedVariant.price !== undefined) {
-      const salePrice = selectedVariant.salePrice || selectedVariant.price;
-      const regularPrice =
-        selectedVariant.regularPrice || selectedVariant.price;
-      return { regular: regularPrice, sale: salePrice };
-    }
-
-    return {
-      regular: product.regularPrice || product.price || 0,
-      sale: product.salePrice || product.price || 0,
-    };
+    return images.length > 0 ? images : ['/placeholder.png'];
   };
 
   const getProductDiscount = () => {
-    const prices = getProductPrice();
-    if (prices.regular > 0 && prices.sale < prices.regular) {
-      const discountPercent =
-        ((prices.regular - prices.sale) / prices.regular) * 100;
+    if (!product) return 0;
+
+    if (product.discount && product.discount.type === 'percentage') {
+      return Math.round(product.discount.value);
+    }
+
+    if (product.regularPrice && product.salePrice && product.regularPrice > product.salePrice) {
+      const discountPercent = ((product.regularPrice - product.salePrice) / product.regularPrice) * 100;
       return Math.round(discountPercent);
     }
+
     return 0;
   };
 
@@ -139,17 +113,15 @@ export default function ProductSinglePage() {
       return;
     }
 
-    const itemToAdd = {
-      ...product,
-      variant: selectedVariant,
-      selectedVariant: selectedVariant, // Include selected variant
-    };
+    if (product.stock < 1) {
+      toast.error('Product is out of stock');
+      return;
+    }
 
     dispatch(
       addToCart({
-        product: itemToAdd,
+        product: product,
         quantity,
-        variant: selectedVariant,
       })
     );
     toast.success('🎉 Added to cart!');
@@ -158,6 +130,11 @@ export default function ProductSinglePage() {
   const handleBuyNow = () => {
     if (!product) {
       toast.error('Product not available');
+      return;
+    }
+
+    if (product.stock < 1) {
+      toast.error('Product is out of stock');
       return;
     }
 
@@ -187,32 +164,25 @@ export default function ProductSinglePage() {
           text: `Check out ${product.name} on our store!`,
           url: window.location.href,
         });
-      } catch (error) {}
+      } catch (error) {
+        console.log('Share cancelled');
+      }
     } else {
       navigator.clipboard.writeText(window.location.href);
       toast.success('🔗 Link copied to clipboard!');
     }
   };
 
-  const increaseQuantity = () => setQuantity((prev) => prev + 1);
-  const decreaseQuantity = () =>
-    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
-
-  const handleVariantSelect = (variant) => {
-    setSelectedVariant(variant);
-    // Reset selected image when variant changes
-    setSelectedImage(0);
-  };
-
-  // Get current stock based on variant or product
-  const getCurrentStock = () => {
-    if (selectedVariant && selectedVariant.stock !== undefined) {
-      return selectedVariant.stock;
+  const increaseQuantity = () => {
+    if (product && quantity < product.stock) {
+      setQuantity((prev) => prev + 1);
+    } else {
+      toast.error('Maximum stock reached');
     }
-    return product?.stock || 0;
   };
 
-  // Loading state
+  const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
@@ -224,12 +194,11 @@ export default function ProductSinglePage() {
     );
   }
 
-  // Error state
   if (error || !product) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-gray-50 to-gray-100 p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
         <div className="text-center space-y-6 max-w-md">
-          <div className="w-32 h-32 mx-auto bg-linear-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+          <div className="w-32 h-32 mx-auto bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
             <Package className="w-20 h-20 text-gray-400" />
           </div>
           <h2 className="text-3xl font-bold text-gray-800">
@@ -251,17 +220,15 @@ export default function ProductSinglePage() {
     );
   }
 
-  // Get current data
   const images = getProductImages();
-  const prices = getProductPrice();
   const discountPercent = getProductDiscount();
   const mainImage = images[selectedImage] || '/placeholder-product.jpg';
-  const hasVariants = product.variants && product.variants.length > 0;
-  const currentStock = getCurrentStock();
+  const regularPrice = product.regularPrice || 0;
+  const salePrice = product.salePrice || product.regularPrice || 0;
+  const hasDiscount = regularPrice > salePrice;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      {/* Breadcrumb */}
       <div className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center space-x-2 text-sm">
@@ -272,13 +239,17 @@ export default function ProductSinglePage() {
               Home
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
-            <Link
-              href="/categories"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
-            >
-              Categories
-            </Link>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            {product.category && (
+              <>
+                <Link
+                  href={`/categories/${product.category.slug || product.category}`}
+                  className="text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  {product.category.name || 'Category'}
+                </Link>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </>
+            )}
             <span className="text-gray-800 font-semibold truncate max-w-xs">
               {product.name}
             </span>
@@ -286,13 +257,10 @@ export default function ProductSinglePage() {
         </div>
       </div>
 
-      {/* Main Product Section */}
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-8">
-            {/* Left Column - Images */}
             <div className="space-y-6">
-              {/* Main Image Container */}
               <div className="relative border-2 border-gray-100 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-white">
                 <div className="aspect-square flex items-center justify-center p-8">
                   <Image
@@ -307,16 +275,24 @@ export default function ProductSinglePage() {
                     }}
                   />
 
-                  {/* Badges */}
                   <div className="absolute top-4 left-4 flex flex-col gap-2">
                     {discountPercent > 0 && (
-                      <span className="bg-gradient-to-r flex justify-center from-red-500 to-pink-500 text-white px-4 py-1 rounded-full w-12 text-sm font-bold shadow-lg">
+                      <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
                         -{discountPercent}%
+                      </span>
+                    )}
+                    {product.type && product.type !== 'regular' && (
+                      <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg capitalize">
+                        {product.type}
+                      </span>
+                    )}
+                    {product.freeDelivery && (
+                      <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
+                        Free Delivery
                       </span>
                     )}
                   </div>
 
-                  {/* Navigation Arrows - only if multiple images */}
                   {images.length > 1 && (
                     <>
                       <button
@@ -344,7 +320,6 @@ export default function ProductSinglePage() {
                 </div>
               </div>
 
-              {/* Thumbnails Gallery */}
               {images.length > 1 && (
                 <div className="grid grid-cols-4 gap-3">
                   {images.map((img, index) => (
@@ -378,22 +353,30 @@ export default function ProductSinglePage() {
               )}
             </div>
 
-            {/* Right Column - Product Info */}
             <div className="space-y-8">
               <div>
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h1 className="text-xl font-medium text-gray-900 mb-3 leading-tight">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
                       {product.name}
                     </h1>
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-3 mb-3 flex-wrap">
                       {product.brand && (
                         <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
-                          Brand: {product.brand}
+                          {typeof product.brand === 'object' ? product.brand.name : product.brand}
                         </span>
                       )}
-                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
-                        {currentStock > 0 ? 'In Stock' : 'Out of Stock'}
+                      {product.sku && (
+                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
+                          SKU: {product.sku}
+                        </span>
+                      )}
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        product.stock > 0 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
                       </span>
                     </div>
                   </div>
@@ -421,15 +404,14 @@ export default function ProductSinglePage() {
                   </div>
                 </div>
 
-                {/* Rating & Sales */}
                 <div className="flex items-center flex-wrap gap-6 mb-6">
                   <div className="flex items-center gap-2">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-4 h-4 ${
-                            i < Math.floor(product.rating || 4.5)
+                          className={`w-5 h-5 ${
+                            i < Math.floor(product.rating || 0)
                               ? 'fill-yellow-400 text-yellow-400'
                               : 'fill-gray-200 text-gray-200'
                           }`}
@@ -437,30 +419,36 @@ export default function ProductSinglePage() {
                       ))}
                     </div>
                     <span className="text-lg font-bold text-gray-800">
-                      {(product.rating || 4.5).toFixed(1)}
+                      {(product.rating || 0).toFixed(1)}
                     </span>
                     <span className="text-gray-500">
-                      ({product.reviewCount || 0} reviews)
+                      ({product.reviews?.length || 0} reviews)
                     </span>
                   </div>
+                  {product.sold > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">
+                        <span className="font-bold text-gray-900">{product.sold}</span> sold
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Price Section */}
-              <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-50">
+              <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-100">
                 <div className="space-y-4">
-                  <div className="flex items-baseline gap-4">
-                    <span className="text-xl font-bold text-gray-900">
-                      ৳ {prices.sale}
+                  <div className="flex items-baseline gap-4 flex-wrap">
+                    <span className="text-4xl font-bold text-gray-900">
+                      ৳ {salePrice.toLocaleString()}
                     </span>
 
-                    {prices.regular > prices.sale && (
+                    {hasDiscount && (
                       <div className="flex items-center gap-3">
                         <span className="text-2xl text-gray-400 line-through">
-                          ৳ {prices.regular}
+                          ৳ {regularPrice.toLocaleString()}
                         </span>
                         {discountPercent > 0 && (
-                          <span className="bg-linear-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold">
+                          <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-1.5 rounded-full font-bold text-sm">
                             Save {discountPercent}%
                           </span>
                         )}
@@ -468,33 +456,29 @@ export default function ProductSinglePage() {
                     )}
                   </div>
 
-                  {prices.regular > prices.sale && (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 font-semibold">
-                        <Check className="w-5 h-5" />
-                        <span>You save ৳ {prices.regular - prices.sale}</span>
-                      </div>
+                  {hasDiscount && (
+                    <div className="flex items-center gap-2 text-green-600 font-semibold">
+                      <Check className="w-5 h-5" />
+                      <span>You save ৳ {(regularPrice - salePrice).toLocaleString()}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {hasVariants && (
-                <Variants
-                  productData={product}
-                  selectedVariant={selectedVariant}
-                  onVariantSelect={setSelectedVariant}
-                />
+              {product.description && (
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <p className="text-gray-700 line-clamp-3">{product.description}</p>
+                </div>
               )}
 
-              {/* Quantity & Actions */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <span className="font-semibold text-gray-700">Quantity:</span>
                   <div className="flex items-center gap-4">
                     <button
                       onClick={decreaseQuantity}
-                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
+                      disabled={quantity <= 1}
+                      className="w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
@@ -503,7 +487,8 @@ export default function ProductSinglePage() {
                     </span>
                     <button
                       onClick={increaseQuantity}
-                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
+                      disabled={quantity >= product.stock}
+                      className="w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -513,21 +498,22 @@ export default function ProductSinglePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button
                     onClick={handleAddToCart}
-                    className="group bg-green-600 text-white py-1 px-4 rounded-xl font-bold text-base transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-3"
+                    disabled={product.stock < 1}
+                    className="group bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
-                    <ShoppingCart className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    <span>Add to Cart</span>
-                  </button>  
+                    <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <span>{product.stock < 1 ? 'Out of Stock' : 'Add to Cart'}</span>
+                  </button>
                   <button
                     onClick={handleBuyNow}
-                    className="group bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-red-600 hover:to-red-700 hover:shadow-2xl hover:scale-[1.02]"
+                    disabled={product.stock < 1}
+                    className="group bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     Buy Now
                   </button>
                 </div>
               </div>
 
-              {/* Delivery Info */}
               <div className="space-y-4">
                 <h3 className="text-lg font-bold text-gray-900">
                   Delivery & Services:
@@ -539,7 +525,9 @@ export default function ProductSinglePage() {
                         <Truck className="w-6 h-6 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900">Free Delivery</p>
+                        <p className="font-bold text-gray-900">
+                          {product.freeDelivery ? 'Free Delivery' : 'Fast Delivery'}
+                        </p>
                         <p className="text-sm text-gray-600">Within 2-3 days</p>
                       </div>
                     </div>
@@ -550,10 +538,8 @@ export default function ProductSinglePage() {
                         <Shield className="w-6 h-6 text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900">
-                          2 Year Warranty
-                        </p>
-                        <p className="text-sm text-gray-600">Full coverage</p>
+                        <p className="font-bold text-gray-900">Warranty</p>
+                        <p className="text-sm text-gray-600">Genuine product</p>
                       </div>
                     </div>
                   </div>
@@ -563,8 +549,8 @@ export default function ProductSinglePage() {
                         <RefreshCw className="w-6 h-6 text-purple-600" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900">14-Day Return</p>
-                        <p className="text-sm text-gray-600">Easy returns</p>
+                        <p className="font-bold text-gray-900">Easy Return</p>
+                        <p className="text-sm text-gray-600">7-Day return</p>
                       </div>
                     </div>
                   </div>
