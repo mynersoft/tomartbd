@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
@@ -10,7 +10,46 @@ import { validateVoucher } from '@/lib/validateVoucher';
 import { createAdminNotification } from '@/utils/createNotification';
 import { shippingCost } from '@/utils/shippingCost';
 
-export async function GET(req) {
+// Types
+interface CartItem {
+  salePrice: number;
+  productId: string;
+  name: string;
+  quantity: number;
+  regularPrice: number;
+  image?: string;
+  discount?: {
+    value: number;
+  };
+}
+
+interface Address {
+  thana: string;
+  area: string;
+  city: string;
+}
+
+interface PaymentInfo {
+  method?: string;
+  status?: 'unpaid' | 'paid' | 'failed';
+  transactionId?: string;
+}
+
+interface OrderRequestBody {
+  address: Address;
+  phone: string;
+  cartItems: CartItem[];
+  voucherCode?: string;
+  payment?: PaymentInfo;
+}
+
+interface VoucherResponse {
+  valid: boolean;
+  discount: number;
+  message?: string;
+}
+
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -39,18 +78,18 @@ export async function GET(req) {
   } catch (error) {
     console.error('GET ORDERS ERROR:', error);
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: (error as Error).message },
       { status: 500 }
     );
   }
 }
 
 // ✅ Secure unique invoice
-function generateInvoiceID() {
+function generateInvoiceID(): string {
   return 'TMBD-' + crypto.randomBytes(3).toString('hex').toUpperCase();
 }
 
-export const POST = withErrorHandler(async (req) => {
+export const POST = withErrorHandler(async (req: NextRequest) => {
   // 🔐 Auth
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -58,7 +97,7 @@ export const POST = withErrorHandler(async (req) => {
   }
 
   // 📦 Body
-  let body;
+  let body: OrderRequestBody;
   try {
     body = await req.json();
   } catch {
@@ -67,7 +106,8 @@ export const POST = withErrorHandler(async (req) => {
 
   const { address, phone, cartItems, voucherCode, payment } = body;
 
-  if (!address || !cartItems) {
+  // Validation
+  if (!address || !phone || !cartItems) {
     throw new ApiError('Missing required fields', 400);
   }
 
@@ -81,29 +121,51 @@ export const POST = withErrorHandler(async (req) => {
 
   await connectDB();
 
+  
+  // Calculate subtotal
   const subtotal = cartItems.reduce((sum, item) => {
     const price = item.discount
-      ? (item.price * (100 - item.discount.value)) / 100
-      : item.price;
+      ? (item.salePrice * (100 - item.discount.value)) / 100
+      : item.salePrice;
     return sum + price * item.quantity;
   }, 0);
 
-  // voucher validation
 
-  const res = await validateVoucher({ voucherCode, cartItems, subtotal });
 
-  const checkedVoucher = await res.json();
+  // Voucher validation
+  let discountAmount = 0;
 
-  let shippingFee = shippingCost;
+  if (voucherCode) {
+    try {
+      const voucherResponse = await validateVoucher({
+        voucherCode,
+        cartItems,
+        subtotal,
+      });
+      const checkedVoucher: VoucherResponse = await voucherResponse.json();
 
-  const total = subtotal + shippingFee - checkedVoucher?.discount || 0;
+      if (checkedVoucher.valid && checkedVoucher.discount) {
+        discountAmount = checkedVoucher.discount;
+      }
+    } catch (error) {
+      console.error('Voucher validation error:', error);
+      // Continue without discount if voucher validation fails
+    }
+  }
 
-  // 🔁 invoice retry (safe)
-  let invoice;
+  // Calculate shipping fee
+  const shippingFee = shippingCost;
+
+  // Calculate total (FIXED: proper calculation)
+  const total = subtotal + shippingFee - discountAmount;
+
+  // 🔁 Invoice retry (safe)
+  let invoice: string | null = null;
   for (let i = 0; i < 5; i++) {
     invoice = generateInvoiceID();
     const exists = await Order.findOne({ invoice });
     if (!exists) break;
+    invoice = null;
   }
 
   if (!invoice) {
@@ -112,18 +174,18 @@ export const POST = withErrorHandler(async (req) => {
 
   // 🛒 Order create (NO TRANSACTION – safer on Vercel)
   const order = await Order.create({
-    invoice,
+    invoiceNo: invoice,
     userId: session.user.id,
     customer: {
       name: session.user.name,
       email: session.user.email,
       phone,
     },
-    subtotal: subtotal,
-    total: total,
+    subtotal,
+    total,
     shippingFee,
     status: 'pending',
-    discount: checkedVoucher?.discount || null,
+    discount: discountAmount,
     payment: {
       method: payment?.method || 'COD',
       status: payment?.status || 'unpaid',
@@ -144,6 +206,7 @@ export const POST = withErrorHandler(async (req) => {
     })),
   });
 
+  // Optionally create admin notification
   // await createAdminNotification({
   //   title: 'New Order',
   //   message: `${session.user.name} placed an order`,
@@ -155,7 +218,7 @@ export const POST = withErrorHandler(async (req) => {
     {
       success: true,
       message: 'Order created successfully',
-      order: order,
+      order,
     },
     { status: 200 }
   );

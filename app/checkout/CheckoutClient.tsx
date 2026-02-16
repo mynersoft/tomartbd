@@ -99,9 +99,6 @@ const subtotal = cart.reduce((sum, item) => {
 
  
 
-  console.log(subtotal);
-  
-
   const shippingFee = calculateShippingFee({
     subtotal,
     location: 'Dhaka',
